@@ -1,0 +1,22 @@
+---
+description: Handy operational workflows and commands for the agent to reuse
+globs:
+alwaysApply: false
+---
+
+Use these workflows on demand.
+
+## Running the server
+- `uv run server.py`
+
+## Code quality
+- `uv run ruff check .`, `uv run ruff format .`
+
+## Tests
+- `uv run pytest`, optionally with `-v`, `-k`, and `--cov`
+
+## Docker
+- Build: `docker build -t mcp-piwik-pro .`
+
+See @README.md for full examples.
+

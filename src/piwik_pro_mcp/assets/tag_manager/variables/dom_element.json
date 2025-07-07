@@ -1,0 +1,468 @@
+{
+  "template_name": "dom_element",
+  "display_name": "DOM Element Variable",
+  "description": "Extracts values from DOM elements on the page using CSS selectors or XPath. Perfect for reading form values, text content, attributes, or any data stored in HTML elements that needs to be captured for tracking purposes.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Extract form field values (input, select, textarea) for tracking",
+      "Read text content from specific page elements (headings, product names, prices)",
+      "Get attribute values from HTML elements (data attributes, IDs, classes)",
+      "Capture dynamic content that changes based on user interactions",
+      "Read meta information from page elements for enhanced tracking",
+      "Extract product details from e-commerce pages for conversion tracking"
+    ],
+    "common_use_cases": [
+      "Form tracking: Get values from email, name, or other form fields",
+      "E-commerce: Extract product names, prices, SKUs from product pages",
+      "Content tracking: Read article titles, categories, or author information",
+      "User input: Capture search terms, filter selections, or user preferences",
+      "Dynamic content: Get values from elements populated by JavaScript",
+      "A/B testing: Read test variant information from page elements",
+      "Error tracking: Capture error messages or validation states",
+      "Navigation: Extract current page section or breadcrumb information"
+    ],
+    "best_practices": [
+      "Use specific CSS selectors that uniquely identify the target element",
+      "Test selectors in browser developer tools before deployment",
+      "Provide meaningful fallback values for when elements are not found",
+      "Consider timing - some elements may load asynchronously",
+      "Use stable selectors that won't break with design changes",
+      "Validate that the element exists before attempting to read from it"
+    ],
+    "selector_recommendations": [
+      "Prefer ID selectors (#element-id) for unique elements",
+      "Use data attributes (data-track-value) for tracking-specific elements",
+      "Avoid complex CSS selectors that might be fragile",
+      "Test selectors across different page states and user interactions",
+      "Use :nth-child() carefully as it can break with content changes"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "function_name": "create_variable",
+      "description": "Create a new DOM element variable to extract values from page elements",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "name": {
+          "type": "string",
+          "description": "Descriptive name for the DOM element variable"
+        },
+        "variable_type": {
+          "type": "string",
+          "value": "dom_element",
+          "description": "Must be 'dom_element' for DOM element variables"
+        },
+        "element_selector": {
+          "type": "string",
+          "description": "CSS selector or XPath to identify the target element"
+        }
+      },
+      "optional_parameters": {
+        "is_active": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the variable is active"
+        },
+        "selection_method": {
+          "type": "string",
+          "default": "css",
+          "description": "Method to select element: 'css' or 'xpath'"
+        },
+        "attribute_name": {
+          "type": "string",
+          "description": "Specific attribute to extract (if not specified, gets text content)"
+        },
+        "default_value": {
+          "type": "string",
+          "description": "Fallback value when element is not found or empty"
+        }
+      }
+    },
+    "update_variable": {
+      "function_name": "update_variable",
+      "description": "Update an existing DOM element variable - only editable fields will be processed",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "variable_id": {
+          "type": "string",
+          "description": "UUID of the variable to update"
+        }
+      },
+      "optional_parameters": {
+        "name": {
+          "type": "string",
+          "description": "Updated descriptive name for the variable"
+        },
+        "is_active": {
+          "type": "boolean",
+          "description": "Whether the variable is active"
+        },
+        "element_selector": {
+          "type": "string",
+          "description": "Updated CSS selector or XPath"
+        },
+        "selection_method": {
+          "type": "string",
+          "description": "Updated selection method: 'css' or 'xpath'"
+        },
+        "attribute_name": {
+          "type": "string",
+          "description": "Updated attribute to extract"
+        },
+        "default_value": {
+          "type": "string",
+          "description": "Updated fallback value"
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Descriptive name for the DOM element variable",
+      "examples": [
+        "Product Name",
+        "Search Query",
+        "User Email",
+        "Current Price",
+        "Error Message"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 255
+      },
+      "recommendation": "Use clear names that indicate what element value is being captured"
+    },
+    "template": {
+      "type": "string",
+      "mutability": "create-only",
+      "description": "Variable template type",
+      "examples": [
+        "dom_element"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "dom_element"
+        ]
+      },
+      "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
+    },
+    "element_selector": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "CSS selector or XPath to identify the target DOM element",
+      "examples": [
+        "#product-name",
+        ".price-current",
+        "input[name='email']",
+        "[data-track='search-query']",
+        "//h1[@class='product-title']"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 500
+      },
+      "recommendation": "Use specific, stable selectors that uniquely identify the target element"
+    }
+  },
+  "optional_attributes": {
+    "is_active": {
+      "type": "boolean",
+      "mutability": "editable",
+      "description": "Whether the variable is active and available for use",
+      "examples": [
+        true,
+        false
+      ],
+      "default": true,
+      "recommendation": "Keep active unless temporarily disabling for testing"
+    },
+    "selection_method": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Method used to select the DOM element",
+      "examples": [
+        "css",
+        "xpath"
+      ],
+      "default": "css",
+      "validation": {
+        "allowed_values": [
+          "css",
+          "xpath"
+        ]
+      },
+      "recommendation": "Use 'css' for standard CSS selectors, 'xpath' for complex element navigation"
+    },
+    "attribute_name": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Specific HTML attribute to extract from the element",
+      "examples": [
+        "value",
+        "href",
+        "src",
+        "data-product-id",
+        "title",
+        "alt"
+      ],
+      "recommendation": "Leave empty to get text content, specify attribute name to get attribute value"
+    },
+    "default_value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Fallback value when element is not found or has no value",
+      "examples": [
+        "not-found",
+        "unknown",
+        "",
+        "0",
+        "default"
+      ],
+      "recommendation": "Provide meaningful fallbacks for better error handling and data consistency"
+    }
+  },
+  "read_only_attributes": {
+    "created_at": {
+      "mutability": "read-only",
+      "description": "Timestamp when the variable was created",
+      "edit_note": "🚫 Automatically set by the API, cannot be modified"
+    },
+    "updated_at": {
+      "mutability": "read-only",
+      "description": "Timestamp when the variable was last updated",
+      "edit_note": "🚫 Automatically updated by the API on changes"
+    }
+  },
+  "field_mutability_guide": {
+    "description": "Understanding field editability after variable creation",
+    "mutability_types": {
+      "editable": {
+        "description": "✅ Can be updated anytime after creation",
+        "examples": [
+          "name",
+          "is_active",
+          "element_selector",
+          "selection_method",
+          "attribute_name",
+          "default_value"
+        ],
+        "use_cases": [
+          "Updating selectors",
+          "Changing target attributes",
+          "Modifying fallback values",
+          "Renaming variables"
+        ]
+      },
+      "create-only": {
+        "description": "⚠️ Set during creation, immutable after creation",
+        "examples": [
+          "template"
+        ],
+        "explanation": "Template determines the variable type and behavior - cannot be changed to maintain data integrity"
+      },
+      "read-only": {
+        "description": "🚫 Auto-generated by API, never user-modifiable",
+        "examples": [
+          "created_at",
+          "updated_at"
+        ],
+        "explanation": "System timestamps managed automatically by Piwik PRO"
+      }
+    }
+  },
+  "complete_examples": {
+    "create_example": {
+      "description": "Creating a DOM element variable to capture product name",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Product Name",
+            "variable_type": "dom_element",
+            "element_selector": "#product-title",
+            "selection_method": "css",
+            "default_value": "Unknown Product",
+            "is_active": true
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Updating DOM element variable to target a different selector",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "Enhanced Product Name",
+            "element_selector": ".product-name h1",
+            "default_value": "Product Not Found"
+          }
+        }
+      }
+    },
+    "form_field_example": {
+      "description": "Capturing email field value from a form",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "User Email",
+            "variable_type": "dom_element",
+            "element_selector": "input[name='email']",
+            "attribute_name": "value",
+            "default_value": "not-provided"
+          }
+        }
+      }
+    },
+    "data_attribute_example": {
+      "description": "Reading a custom data attribute value",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Product SKU",
+            "variable_type": "dom_element",
+            "element_selector": "[data-product-sku]",
+            "attribute_name": "data-product-sku",
+            "default_value": "unknown-sku"
+          }
+        }
+      }
+    },
+    "xpath_example": {
+      "description": "Using XPath to select a complex element",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Article Category",
+            "variable_type": "dom_element",
+            "element_selector": "//article//span[@class='category'][1]",
+            "selection_method": "xpath",
+            "default_value": "uncategorized"
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using fragile selectors that break when page design changes",
+    "Not providing default values, leading to empty or undefined tracking data",
+    "Selecting elements that load asynchronously without proper timing considerations",
+    "Using overly complex selectors that are hard to maintain",
+    "Not testing selectors across different page states and user interactions",
+    "Forgetting to handle cases where multiple elements match the selector",
+    "Using selectors based on generated IDs or classes that might change"
+  ],
+  "troubleshooting": {
+    "element_not_found": {
+      "problem": "DOM element variable returns empty or default values",
+      "solutions": [
+        "Verify the element selector is correct using browser developer tools",
+        "Check if the element loads asynchronously and adjust timing",
+        "Ensure the selector is specific enough to target the right element",
+        "Test the selector on the actual page where the variable will be used",
+        "Confirm the element exists when the variable is being evaluated"
+      ]
+    },
+    "wrong_attribute_value": {
+      "problem": "Getting unexpected values from the DOM element",
+      "solutions": [
+        "Verify the attribute_name is correct and exists on the element",
+        "Check if you want text content (leave attribute_name empty) vs attribute value",
+        "Inspect the element to see all available attributes",
+        "Test different attribute names to find the right data",
+        "Consider if the element value changes based on user interactions"
+      ]
+    },
+    "selector_too_broad": {
+      "problem": "Selector matches multiple elements, getting wrong value",
+      "solutions": [
+        "Make the selector more specific by adding additional criteria",
+        "Use ID selectors when possible for unique elements",
+        "Add parent element context to narrow down the selection",
+        "Use pseudo-selectors like :first-child or :nth-of-type if needed",
+        "Test selectors to ensure they match exactly one element"
+      ]
+    },
+    "timing_issues": {
+      "problem": "Element exists but variable returns default value due to timing",
+      "solutions": [
+        "Ensure the element is present when the variable is evaluated",
+        "Consider using event-based triggers that fire after element loads",
+        "Add delays or conditions to wait for dynamic content",
+        "Use mutation observers or element visibility triggers",
+        "Test on pages with slower loading times"
+      ]
+    }
+  },
+  "selector_patterns": {
+    "basic_css_selectors": {
+      "description": "Common CSS selector patterns for DOM elements",
+      "examples": {
+        "by_id": "#element-id",
+        "by_class": ".class-name",
+        "by_attribute": "[data-attribute='value']",
+        "by_tag": "h1, h2, h3",
+        "descendant": ".parent .child",
+        "direct_child": ".parent > .child",
+        "nth_child": ".list-item:nth-child(2)"
+      }
+    },
+    "form_selectors": {
+      "description": "Specific selectors for form elements",
+      "examples": {
+        "input_by_name": "input[name='field-name']",
+        "input_by_type": "input[type='email']",
+        "select_dropdown": "select[name='category']",
+        "textarea": "textarea[name='message']",
+        "checkbox_checked": "input[type='checkbox']:checked",
+        "radio_selected": "input[type='radio']:checked"
+      }
+    },
+    "xpath_patterns": {
+      "description": "XPath expressions for complex element selection",
+      "examples": {
+        "by_text": "//span[text()='Exact Text']",
+        "contains_text": "//div[contains(text(), 'Partial')]",
+        "by_position": "//ul/li[1]",
+        "parent_child": "//div[@class='parent']//span[@class='child']",
+        "following_sibling": "//label[text()='Name']/following-sibling::input"
+      }
+    }
+  },
+  "related_mcp_tools": {
+    "discovery": [
+      "piwik_get_available_variable_templates() - List all available variable templates",
+      "piwik_get_variable_template() - Get detailed template information"
+    ],
+    "management": [
+      "piwik_create_variable() - Create new variables with this template",
+      "piwik_update_variable() - Update existing variables (editable fields only)",
+      "piwik_list_variables() - List all variables in your app",
+      "piwik_get_variable() - Get detailed information about specific variables"
+    ],
+    "workflow": [
+      "piwik_list_tags() - Find tags that might use this variable",
+      "piwik_list_triggers() - Find triggers that might use this variable"
+    ]
+  }
+}

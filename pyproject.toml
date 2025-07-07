@@ -1,0 +1,96 @@
+[build-system]
+requires = ["uv_build>=0.8.11,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "piwik_pro_mcp"
+
+[project]
+name = "piwik-pro-mcp"
+version = "0.1.0"
+description = "Piwik PRO MCP server"
+readme = "README.md"
+authors = [
+    {name = "Jarosław Zywert", email = "j.zywert@piwik.pro"},
+]
+license = {text = "MIT"}
+requires-python = ">=3.12"
+keywords = ["mcp", "piwik-pro", "analytics", "tag manager", "piwik", "piwik pro", "piwik pro analytics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+
+dependencies = [
+    "mcp[cli]",
+    "requests>=2.25.0",
+    "urllib3>=2.5.0",
+    "pydantic>=2.7.2",
+    "python-dotenv>=1.1.0",
+    "httpx>=0.27.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/PiwikPRO/mcp"
+Repository = "https://github.com/PiwikPRO/mcp"
+Issues = "https://github.com/PiwikPRO/mcp/issues"
+
+[project.scripts]
+piwik-pro-mcp = "piwik_pro_mcp.server:main"
+
+[tool.uv]
+package = true
+dev-dependencies = [
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.12.7",
+]
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src"] # https://docs.astral.sh/ruff/settings/#src
+
+[tool.ruff.lint]
+select = [
+    "E",  # PEP8 errors
+    "F",  # PyFlakes
+    "W",  # PEP8 warnings
+    "I",  # Imports
+    "A",  # Builtins
+    "ERA", # Commented-out code
+    "PL" # Pylint
+]
+ignore = [
+    "PLR2004", # Magic value used in comparison
+    "PLR0913", # Too many arguments
+]
+
+[tool.pytest.ini_options]
+testpaths = ["src/piwik_pro_mcp/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/piwik_pro_mcp"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]

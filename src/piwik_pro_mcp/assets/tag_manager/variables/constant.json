@@ -1,0 +1,384 @@
+{
+  "template_name": "constant",
+  "display_name": "Constant Variable",
+  "description": "Returns a static value that never changes. Perfect for storing configuration values, environment identifiers, version numbers, or any fixed data that needs to be referenced across multiple tags and triggers.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Store environment identifiers (production, staging, development)",
+      "Define configuration values used across multiple tags",
+      "Set version numbers or build identifiers for tracking",
+      "Create reusable static values to avoid hardcoding in tags",
+      "Store API keys, tracking IDs, or other configuration constants",
+      "Define default values for conditional logic in other variables"
+    ],
+    "common_use_cases": [
+      "Environment detection: 'production', 'staging', 'development'",
+      "Google Analytics tracking IDs: 'GA-XXXXXXX-X'",
+      "Version tracking: '2.1.4', 'v2024.1'",
+      "Feature flags: 'enabled', 'disabled', 'beta'",
+      "Default user segments: 'anonymous', 'guest', 'unknown'",
+      "Currency codes: 'USD', 'EUR', 'GBP'",
+      "Language codes: 'en', 'es', 'fr', 'de'",
+      "Brand identifiers: 'main-site', 'mobile-app', 'partner-site'"
+    ],
+    "best_practices": [
+      "Use descriptive variable names that clearly indicate the constant's purpose",
+      "Choose meaningful values that are self-documenting",
+      "Consider using constants for values that might change in different environments",
+      "Group related constants with consistent naming conventions",
+      "Use constants to eliminate hardcoded values in tag configurations",
+      "Document the purpose and expected usage of each constant variable"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "function_name": "create_variable",
+      "description": "Create a new constant variable that returns a fixed static value",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "name": {
+          "type": "string",
+          "description": "Descriptive name for the constant variable"
+        },
+        "variable_type": {
+          "type": "string",
+          "value": "constant",
+          "description": "Must be 'constant' for constant variables"
+        },
+        "value": {
+          "type": "string",
+          "description": "The static value this variable will always return"
+        }
+      },
+      "optional_parameters": {
+        "is_active": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the variable is active"
+        }
+      }
+    },
+    "update_variable": {
+      "function_name": "update_variable",
+      "description": "Update an existing constant variable - only editable fields will be processed",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "variable_id": {
+          "type": "string",
+          "description": "UUID of the variable to update"
+        }
+      },
+      "optional_parameters": {
+        "name": {
+          "type": "string",
+          "description": "Updated descriptive name for the variable"
+        },
+        "is_active": {
+          "type": "boolean",
+          "description": "Whether the variable is active"
+        },
+        "value": {
+          "type": "string",
+          "description": "Updated static value"
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Descriptive name for the constant variable",
+      "examples": [
+        "Environment",
+        "GA Tracking ID",
+        "App Version",
+        "Default Currency"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 255
+      },
+      "recommendation": "Use clear, descriptive names that indicate what the constant represents"
+    },
+    "template": {
+      "type": "string",
+      "mutability": "create-only",
+      "description": "Variable template type",
+      "examples": [
+        "constant"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "constant"
+        ]
+      },
+      "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
+    },
+    "value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "The static value this constant variable will return",
+      "examples": [
+        "production",
+        "GA-XXXXXXX-X",
+        "2.1.4",
+        "USD",
+        "enabled"
+      ],
+      "validation": {
+        "required": true,
+        "max_length": 1000
+      },
+      "recommendation": "Use meaningful values that are self-documenting and consistent across your implementation"
+    }
+  },
+  "optional_attributes": {
+    "is_active": {
+      "type": "boolean",
+      "mutability": "editable",
+      "description": "Whether the variable is active and available for use",
+      "examples": [
+        true,
+        false
+      ],
+      "default": true,
+      "recommendation": "Keep active unless temporarily disabling for testing"
+    }
+  },
+  "read_only_attributes": {
+    "created_at": {
+      "mutability": "read-only",
+      "description": "Timestamp when the variable was created",
+      "edit_note": "🚫 Automatically set by the API, cannot be modified"
+    },
+    "updated_at": {
+      "mutability": "read-only",
+      "description": "Timestamp when the variable was last updated",
+      "edit_note": "🚫 Automatically updated by the API on changes"
+    }
+  },
+  "field_mutability_guide": {
+    "description": "Understanding field editability after variable creation",
+    "mutability_types": {
+      "editable": {
+        "description": "✅ Can be updated anytime after creation",
+        "examples": [
+          "name",
+          "is_active",
+          "value"
+        ],
+        "use_cases": [
+          "Renaming variables",
+          "Changing constant values",
+          "Toggling active status"
+        ]
+      },
+      "create-only": {
+        "description": "⚠️ Set during creation, immutable after creation",
+        "examples": [
+          "template"
+        ],
+        "explanation": "Template determines the variable type and behavior - cannot be changed to maintain data integrity"
+      },
+      "read-only": {
+        "description": "🚫 Auto-generated by API, never user-modifiable",
+        "examples": [
+          "created_at",
+          "updated_at"
+        ],
+        "explanation": "System timestamps managed automatically by Piwik PRO"
+      }
+    }
+  },
+  "complete_examples": {
+    "create_example": {
+      "description": "Creating a constant variable for environment identification",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Environment",
+            "variable_type": "constant",
+            "value": "production",
+            "is_active": true
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Updating a constant variable value",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "Environment Status",
+            "value": "staging"
+          }
+        }
+      }
+    },
+    "tracking_id_example": {
+      "description": "Creating a constant for Google Analytics tracking ID",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "GA Tracking ID",
+            "variable_type": "constant",
+            "value": "GA-XXXXXXX-X"
+          }
+        }
+      }
+    },
+    "version_example": {
+      "description": "Creating a constant for application version",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "App Version",
+            "variable_type": "constant",
+            "value": "2.1.4"
+          }
+        }
+      }
+    },
+    "feature_flag_example": {
+      "description": "Creating a constant for feature flag status",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "New Feature Enabled",
+            "variable_type": "constant",
+            "value": "enabled"
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using constant variables for values that actually change - use other variable types instead",
+    "Not using descriptive names that clearly indicate the constant's purpose",
+    "Hardcoding values in tags instead of using reusable constant variables",
+    "Creating too many constants for values that are only used once",
+    "Not maintaining consistent naming conventions across related constants",
+    "Forgetting to update constant values when deploying to different environments"
+  ],
+  "troubleshooting": {
+    "constant_not_updating": {
+      "problem": "Constant variable value doesn't update in tags after changing",
+      "solutions": [
+        "Ensure the tag manager version is published after making changes",
+        "Clear browser cache and test in incognito/private mode",
+        "Verify the constant variable is being used correctly in tags",
+        "Check that the variable is active and not disabled"
+      ]
+    },
+    "wrong_value_in_different_environments": {
+      "problem": "Constant shows wrong value in staging/production",
+      "solutions": [
+        "Create environment-specific constants with different values",
+        "Use conditional logic in custom JavaScript variables for environment detection",
+        "Implement proper deployment processes that update constants per environment",
+        "Consider using environment-specific containers or variable configurations"
+      ]
+    },
+    "too_many_constants": {
+      "problem": "Managing too many constant variables becomes difficult",
+      "solutions": [
+        "Group related constants with consistent naming conventions (e.g., 'Config - Environment', 'Config - Version')",
+        "Use a configuration object in a single custom JavaScript variable for complex configurations",
+        "Document the purpose and usage of each constant variable",
+        "Regularly review and clean up unused constant variables"
+      ]
+    }
+  },
+  "use_case_patterns": {
+    "environment_detection": {
+      "description": "Using constants for environment-specific configurations",
+      "pattern": "Create separate constants for each environment value needed",
+      "examples": [
+        {
+          "name": "Environment",
+          "value": "production"
+        },
+        {
+          "name": "API Base URL",
+          "value": "https://api.example.com"
+        },
+        {
+          "name": "Debug Mode",
+          "value": "false"
+        }
+      ]
+    },
+    "tracking_configuration": {
+      "description": "Centralizing tracking IDs and configuration",
+      "pattern": "Use constants to avoid hardcoding tracking IDs in multiple tags",
+      "examples": [
+        {
+          "name": "GA Measurement ID",
+          "value": "G-XXXXXXXXXX"
+        },
+        {
+          "name": "Facebook Pixel ID",
+          "value": "123456789012345"
+        },
+        {
+          "name": "Conversion Goal ID",
+          "value": "goal_purchase"
+        }
+      ]
+    },
+    "feature_flags": {
+      "description": "Managing feature flags through constants",
+      "pattern": "Use constants to control feature availability across the site",
+      "examples": [
+        {
+          "name": "Chat Widget Enabled",
+          "value": "true"
+        },
+        {
+          "name": "A/B Test Active",
+          "value": "false"
+        },
+        {
+          "name": "Beta Features",
+          "value": "disabled"
+        }
+      ]
+    }
+  },
+  "related_mcp_tools": {
+    "discovery": [
+      "piwik_get_available_variable_templates() - List all available variable templates",
+      "piwik_get_variable_template() - Get detailed template information"
+    ],
+    "management": [
+      "piwik_create_variable() - Create new variables with this template",
+      "piwik_update_variable() - Update existing variables (editable fields only)",
+      "piwik_list_variables() - List all variables in your app",
+      "piwik_get_variable() - Get detailed information about specific variables"
+    ],
+    "workflow": [
+      "piwik_list_tags() - Find tags that might use this variable",
+      "piwik_list_triggers() - Find triggers that might use this variable"
+    ]
+  }
+}

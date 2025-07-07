@@ -1,0 +1,57 @@
+---
+description: Project-wide conventions for Piwik PRO MCP server (style, typing, docs, deps, security)
+globs:
+alwaysApply: true
+---
+
+These conventions apply across the entire repository. See also @README.md and @CLAUDE.md.
+
+## Code Style & Formatting
+- Use Python 3.12+; target py312
+- Max line length: 120 characters
+- Use ruff for linting (rules: E, F, W, I, A, ERA, PL) and formatting
+
+## Import Organization
+- Place all imports at the top of files: stdlib → third-party → local
+- Avoid imports inside functions unless absolutely necessary
+- Keep imports pure (no import-time side effects)
+
+## Naming Conventions
+- Functions and variables: snake_case
+- Constants: UPPER_SNAKE_CASE
+- Classes: PascalCase
+- Private helpers: prefix with _
+
+## Type Hints & Documentation
+- Add type hints for all function parameters and return types
+- Use Optional[T] for optional params and return types
+- Prefer Dict[str, Any] for flexible API responses; List[str] for string lists
+- Use Google-style docstrings with Args/Returns/Raises
+
+## Dependency Management (uv)
+- Use uv for all Python commands
+- Never call python/pip/pytest directly; prefer: `uv sync`, `uv run server.py`, `uv run pytest`, `uv run ruff check .`
+
+## Testing & Quality
+- Tests live under `tests/`; use `uv run pytest` with markers and coverage
+- Maintain linting (ruff)
+
+## Security & Best Practices
+- OAuth2 client credentials; never hardcode secrets
+- Use environment variables and optional `.env`
+- Avoid mutable default arguments; ensure session cleanup and timeouts
+
+## Anti-Patterns to Avoid
+- Imports inside functions (except for unavoidable circular fixes)
+- Import-time side effects; distributed/hidden registrations; over-engineering
+
+## Refactoring Guidelines
+- Favor explicit, simple patterns (stdlib-like constants/mappings)
+- Eliminate circular imports by decoupling responsibilities
+
+## Entry Points & Helpful Files
+- Main entry: `server.py`
+- MCP server setup: `piwik_pro_mcp/server.py`
+- API client root: `piwik_pro_api/`
+- Reference docs: @README.md
+

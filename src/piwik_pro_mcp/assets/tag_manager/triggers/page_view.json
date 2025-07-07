@@ -1,0 +1,562 @@
+{
+  "template_name": "page_view",
+  "display_name": "Page View Trigger",
+  "description": "Triggers when a page loads or is viewed, allowing you to execute tags based on page-specific conditions like URL patterns, referrer sources, or user characteristics.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Track page visits and implement page-specific analytics",
+      "Execute tags based on URL patterns or specific pages",
+      "Implement campaign attribution based on landing pages",
+      "Track first-time visitor behavior",
+      "Set up conversion tracking for specific pages"
+    ],
+    "common_use_cases": [
+      "Homepage tracking with specific analytics parameters",
+      "Thank you page conversion tracking",
+      "Product page view tracking with product-specific data",
+      "Blog article engagement tracking",
+      "Landing page performance monitoring",
+      "A/B test page variant tracking"
+    ],
+    "best_practices": [
+      "Always include URL-based conditions to control trigger firing",
+      "Use 'equals' for exact page matches, 'contains' for page categories",
+      "Consider performance impact - avoid overly complex conditions",
+      "Test conditions thoroughly before publishing triggers",
+      "Use descriptive trigger names that indicate the page or purpose"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "function_name": "create_trigger",
+      "description": "Create a new page view trigger using this template",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "name": {
+          "type": "string",
+          "description": "Descriptive name for the trigger"
+        },
+        "trigger_type": {
+          "type": "string",
+          "value": "page_view",
+          "description": "Must be 'page_view' for page view triggers"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Array of condition objects that determine when the trigger fires"
+        }
+      },
+      "optional_parameters": {
+        "relationships": {
+          "type": "object",
+          "description": "Can include tags to associate with this trigger"
+        }
+      }
+    },
+    "update_trigger": {
+      "function_name": "update_trigger",
+      "description": "Update existing page view trigger - only editable fields will be processed",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "trigger_id": {
+          "type": "string",
+          "description": "UUID of the trigger to update"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Trigger attributes to update (non-editable fields will be filtered out)"
+        }
+      },
+      "optional_parameters": {
+        "relationships": {
+          "type": "object",
+          "description": "Updated tag relationships (use '__unchanged__' to keep existing)"
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Human-readable trigger name that describes its purpose",
+      "examples": [
+        "Homepage Page View",
+        "Product Page View Tracker",
+        "Thank You Page Conversion",
+        "Blog Article View"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 255
+      },
+      "recommendation": "Use descriptive names that clearly indicate the page or purpose being tracked"
+    },
+    "trigger_type": {
+      "type": "string",
+      "mutability": "create-only",
+      "enum": [
+        "page_view"
+      ],
+      "description": "Trigger type constant - must be 'page_view'",
+      "fixed_value": "page_view",
+      "edit_note": "⚠️ Cannot be changed after trigger creation"
+    },
+    "conditions": {
+      "type": "array",
+      "mutability": "editable",
+      "description": "Array of condition objects that define when the trigger should fire",
+      "structure": {
+        "condition_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this condition (generate a new UUID)",
+          "example": "9efa6364-8982-45c5-a288-cdabdf7a4001"
+        },
+        "variable_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID of the variable to check (e.g., Page URL, Page Path, Referrer)",
+          "common_variables": {
+            "page_url": "Full page URL including domain and parameters",
+            "page_path": "URL path without domain (e.g., /product/123)",
+            "referrer": "Source URL that led to this page",
+            "page_title": "HTML title of the page"
+          }
+        },
+        "condition_type": {
+          "type": "string",
+          "enum": [
+            "equals",
+            "does_not_equal",
+            "contains",
+            "does_not_contain",
+            "starts_with",
+            "does_not_start_with",
+            "ends_with",
+            "does_not_end_with",
+            "regexp",
+            "does_not_regexp",
+            "is_set",
+            "is_not_set",
+            "is_empty",
+            "is_not_empty"
+          ],
+          "description": "Type of comparison to perform"
+        },
+        "value": {
+          "type": "string",
+          "description": "Value to compare against (can be null for is_set/is_not_set conditions)",
+          "examples": [
+            "/",
+            "/product/",
+            "https://example.com/landing-page",
+            "Thank You - Purchase Complete"
+          ]
+        },
+        "options": {
+          "type": "object",
+          "description": "Additional options for the condition (usually empty for page view triggers)",
+          "default": {}
+        }
+      },
+      "minimum_items": 1,
+      "recommendation": "Include at least one URL-based condition to control when the trigger fires"
+    }
+  },
+  "condition_patterns": {
+    "url_exact_match": {
+      "description": "Match a specific page exactly",
+      "condition_type": "equals",
+      "variable_type": "Page URL or Page Path",
+      "examples": [
+        {
+          "description": "Homepage only",
+          "condition_type": "equals",
+          "value": "/",
+          "variable": "Page Path"
+        },
+        {
+          "description": "Specific product page",
+          "condition_type": "equals",
+          "value": "https://example.com/product/premium-plan",
+          "variable": "Page URL"
+        }
+      ]
+    },
+    "url_pattern_match": {
+      "description": "Match pages that contain specific patterns",
+      "condition_type": "contains",
+      "variable_type": "Page URL or Page Path",
+      "examples": [
+        {
+          "description": "All product pages",
+          "condition_type": "contains",
+          "value": "/product/",
+          "variable": "Page Path"
+        },
+        {
+          "description": "All blog articles",
+          "condition_type": "contains",
+          "value": "/blog/",
+          "variable": "Page Path"
+        }
+      ]
+    },
+    "url_starts_with": {
+      "description": "Match pages that start with specific patterns",
+      "condition_type": "starts_with",
+      "examples": [
+        {
+          "description": "All checkout pages",
+          "condition_type": "starts_with",
+          "value": "/checkout",
+          "variable": "Page Path"
+        }
+      ]
+    },
+    "referrer_tracking": {
+      "description": "Track based on traffic source",
+      "condition_type": "contains",
+      "variable_type": "Referrer",
+      "examples": [
+        {
+          "description": "Traffic from Google",
+          "condition_type": "contains",
+          "value": "google.com",
+          "variable": "Referrer"
+        },
+        {
+          "description": "Social media traffic",
+          "condition_type": "contains",
+          "value": "facebook.com",
+          "variable": "Referrer"
+        }
+      ]
+    },
+    "page_title_tracking": {
+      "description": "Track based on page title content",
+      "condition_type": "contains",
+      "variable_type": "Page Title",
+      "examples": [
+        {
+          "description": "Thank you pages",
+          "condition_type": "contains",
+          "value": "Thank You",
+          "variable": "Page Title"
+        }
+      ]
+    }
+  },
+  "complete_examples": {
+    "homepage_tracking": {
+      "description": "Track all visits to the homepage",
+      "use_case": "Homepage analytics and conversion funnel entry point tracking",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "your-app-id-uuid",
+          "name": "Homepage Page View",
+          "trigger_type": "page_view",
+          "conditions": [
+            {
+              "condition_id": "9efa6364-8982-45c5-a288-cdabdf7a4001",
+              "variable_id": "page-path-variable-uuid",
+              "condition_type": "equals",
+              "value": "/",
+              "options": {}
+            }
+          ]
+        }
+      }
+    },
+    "product_pages_tracking": {
+      "description": "Track all product page views",
+      "use_case": "Product analytics, inventory tracking, user interest analysis",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "your-app-id-uuid",
+          "name": "Product Page Views",
+          "trigger_type": "page_view",
+          "conditions": [
+            {
+              "condition_id": "8dfa5263-7981-44c4-b187-bcabef6a3002",
+              "variable_id": "page-path-variable-uuid",
+              "condition_type": "contains",
+              "value": "/product/",
+              "options": {}
+            }
+          ]
+        }
+      }
+    },
+    "thank_you_conversion": {
+      "description": "Track conversion on thank you/success pages",
+      "use_case": "Conversion tracking, goal completion, purchase confirmation",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "your-app-id-uuid",
+          "name": "Thank You Page Conversion",
+          "trigger_type": "page_view",
+          "conditions": [
+            {
+              "condition_id": "7cfa4162-6870-43b3-a076-abacde5a2003",
+              "variable_id": "page-title-variable-uuid",
+              "condition_type": "contains",
+              "value": "Thank You",
+              "options": {}
+            }
+          ]
+        }
+      }
+    },
+    "google_traffic_landing": {
+      "description": "Track Google organic traffic landing pages",
+      "use_case": "SEO performance tracking, organic traffic analysis",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "your-app-id-uuid",
+          "name": "Google Organic Landing Pages",
+          "trigger_type": "page_view",
+          "conditions": [
+            {
+              "condition_id": "6bea3051-5769-42a2-9f65-9abccd4a1004",
+              "variable_id": "referrer-variable-uuid",
+              "condition_type": "contains",
+              "value": "google.com",
+              "options": {}
+            }
+          ]
+        }
+      }
+    },
+    "multi_condition_example": {
+      "description": "Track specific product page from specific traffic source",
+      "use_case": "Campaign-specific product performance, targeted analytics",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "your-app-id-uuid",
+          "name": "Premium Plan from Google Ads",
+          "trigger_type": "page_view",
+          "conditions": [
+            {
+              "condition_id": "5ad92f40-4658-41a1-8e54-8abcbc3a0005",
+              "variable_id": "page-path-variable-uuid",
+              "condition_type": "equals",
+              "value": "/product/premium-plan",
+              "options": {}
+            },
+            {
+              "condition_id": "4ac81e3f-3547-40b0-7d43-7abcab2a9006",
+              "variable_id": "referrer-variable-uuid",
+              "condition_type": "contains",
+              "value": "googleadservices.com",
+              "options": {}
+            }
+          ]
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Forgetting to generate unique UUIDs for condition_id fields",
+    "Using invalid variable_id references - ensure variables exist in your app",
+    "Creating overly broad conditions that fire on every page view",
+    "Using 'contains' when 'equals' would be more appropriate for exact matches",
+    "Not testing trigger conditions before associating with important tags",
+    "Using complex regex patterns that impact performance",
+    "Forgetting to include URL-based conditions, causing triggers to fire everywhere"
+  ],
+  "troubleshooting": {
+    "trigger_not_firing": {
+      "possible_causes": [
+        "Variable ID doesn't exist or is incorrect",
+        "Condition value doesn't match the actual page content",
+        "Condition type is incorrect for the data being compared",
+        "Trigger is not published or associated with tags"
+      ],
+      "debugging_steps": [
+        "Verify the variable exists using list_variables() tool",
+        "Check the actual page URL/title matches your condition value exactly",
+        "Test with simpler conditions first (e.g., contains vs equals)",
+        "Ensure trigger is published and associated with a tag"
+      ]
+    },
+    "trigger_firing_too_often": {
+      "possible_causes": [
+        "Conditions are too broad (using 'contains' when 'equals' would be better)",
+        "Missing additional conditions to narrow the scope",
+        "Variable returning unexpected values"
+      ],
+      "solutions": [
+        "Add more specific conditions to narrow the trigger scope",
+        "Use 'equals' instead of 'contains' for exact matches",
+        "Add exclusion conditions using 'does_not_contain'",
+        "Test conditions on a staging environment first"
+      ]
+    },
+    "condition_value_issues": {
+      "tips": [
+        "Page URLs include the full domain unless using Page Path variable",
+        "Page titles may include extra whitespace - use 'contains' instead of 'equals'",
+        "Referrer values may be empty for direct traffic",
+        "Case sensitivity matters - 'Home' vs 'home'"
+      ]
+    }
+  },
+  "variable_reference_guide": {
+    "built_in_variables": {
+      "page_url": {
+        "description": "Complete URL including domain, path, and parameters",
+        "example": "https://example.com/product/123?utm_source=google",
+        "best_for": "Domain-specific tracking, parameter-based conditions"
+      },
+      "page_path": {
+        "description": "URL path without domain or parameters",
+        "example": "/product/123",
+        "best_for": "Site structure-based tracking, cleaner conditions"
+      },
+      "page_title": {
+        "description": "HTML title tag content",
+        "example": "Premium Plan - Our Products",
+        "best_for": "Content-based tracking, multilingual sites"
+      },
+      "referrer": {
+        "description": "URL of the page that linked to current page",
+        "example": "https://google.com/search?q=premium+plan",
+        "best_for": "Traffic source analysis, campaign attribution"
+      }
+    },
+    "getting_variable_ids": {
+      "step_1": "Use list_variables() to see all available variables in your app",
+      "step_2": "Find the variable you need (e.g., 'Page URL', 'Page Path')",
+      "step_3": "Copy the 'id' field from the variable object",
+      "step_4": "Use that UUID as the variable_id in your trigger conditions"
+    }
+  },
+  "performance_considerations": {
+    "best_practices": [
+      "Limit the number of conditions per trigger (ideally 1-3)",
+      "Use specific conditions rather than broad patterns when possible",
+      "Avoid complex regex patterns that require heavy processing",
+      "Test trigger performance on high-traffic pages",
+      "Consider using page path instead of full URL when domain is constant"
+    ],
+    "warning_signs": [
+      "Triggers with 5+ conditions may impact page load time",
+      "Complex regex patterns can slow down trigger evaluation",
+      "Very broad conditions may cause excessive tag firing"
+    ]
+  },
+  "related_mcp_tools": {
+    "create_trigger": {
+      "description": "Main function to create page view triggers using this template",
+      "usage": "create_trigger(app_id, name, trigger_type='page_view', conditions=[...])"
+    },
+    "list_triggers": {
+      "description": "View all existing triggers in your app",
+      "usage": "list_triggers(app_id) - helpful to see existing page view triggers"
+    },
+    "get_trigger": {
+      "description": "Examine configuration of existing triggers",
+      "usage": "get_trigger(app_id, trigger_id) - study existing page view trigger setup"
+    },
+    "list_variables": {
+      "description": "Get all available variables for trigger conditions",
+      "usage": "list_variables(app_id) - find Page URL, Page Path, and other variable IDs"
+    },
+    "create_tag": {
+      "description": "Create tags that will be triggered by page view triggers",
+      "usage": "create_tag(..., triggers='trigger-uuid') - associate tags with page view triggers"
+    }
+  },
+  "workflow_example": {
+    "complete_setup_process": {
+      "step_1": {
+        "action": "Get available variables",
+        "mcp_call": "list_variables(app_id='your-app-id')",
+        "purpose": "Find the variable IDs for Page Path, Page URL, etc."
+      },
+      "step_2": {
+        "action": "Create page view trigger",
+        "mcp_call": "create_trigger(app_id='your-app-id', name='Homepage Views', trigger_type='page_view', conditions=[...])",
+        "purpose": "Create the trigger with appropriate conditions"
+      },
+      "step_3": {
+        "action": "Create or update tag",
+        "mcp_call": "create_tag(app_id='your-app-id', attributes={...}, triggers='trigger-uuid-from-step-2')",
+        "purpose": "Associate the trigger with a tag that will execute"
+      },
+      "step_4": {
+        "action": "Test and publish",
+        "purpose": "Verify trigger works correctly before going live"
+      }
+    }
+  },
+  "field_mutability_guide": {
+    "description": "Understanding field editability after page view trigger creation",
+    "mutability_types": {
+      "editable": {
+        "description": "✅ Can be updated anytime after creation",
+        "examples": [
+          "name",
+          "conditions"
+        ],
+        "note": "These fields can be safely modified through update_trigger operations"
+      },
+      "create-only": {
+        "description": "⚠️ Set during creation, immutable after creation",
+        "examples": [
+          "trigger_type"
+        ],
+        "note": "These fields are ignored in update operations and cannot be changed once the trigger is created"
+      },
+      "read-only": {
+        "description": "🚫 Auto-generated, never user-modifiable",
+        "examples": [
+          "created_at",
+          "updated_at",
+          "trigger_id"
+        ],
+        "note": "These fields are managed by the API and automatically filtered out from update requests"
+      }
+    },
+    "update_workflow": {
+      "description": "Best practices for updating page view triggers",
+      "steps": [
+        "1. Use piwik_get_trigger() to see current field values and their mutability status",
+        "2. Only include editable fields in your update_trigger attributes object",
+        "3. API automatically filters out create-only and read-only fields",
+        "4. Focus on updating conditions to refine when the trigger fires"
+      ],
+      "example_update": {
+        "valid_fields": {
+          "name": "Updated Homepage Page View Trigger",
+          "conditions": [
+            {
+              "condition_id": "updated-condition-uuid",
+              "variable_id": "page-url-variable-uuid",
+              "condition_type": "contains",
+              "value": "/new-homepage"
+            }
+          ]
+        },
+        "ignored_fields": {
+          "trigger_type": "page_view",
+          "created_at": "2024-01-01T00:00:00Z"
+        }
+      }
+    }
+  }
+}

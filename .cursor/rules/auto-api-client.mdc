@@ -1,0 +1,25 @@
+---
+description: API client layer rules (HTTP client, models, error handling)
+globs:
+  - piwik_pro_api/**
+alwaysApply: false
+---
+
+Use these standards when working in the API client layer. See @piwik_pro_api/client.py, @piwik_pro_api/auth.py, @piwik_pro_api/exceptions.py.
+
+## API Client Design
+- Provide HTTP helpers with consistent timeouts and session reuse
+- Convert HTTP errors to custom exceptions from `exceptions.py`
+- Return `Dict[str, Any]` or `None` (204) from methods
+
+## Models & Validation
+- Use Pydantic models for request/response validation, with aliases and `exclude_none=True`
+- Use explicit string enums for constants
+
+## Authentication
+- Implement OAuth2 client credentials with automatic token refresh
+
+## Imports & Style
+- All imports at top; avoid import-time side effects
+- Follow repository naming and linting rules
+

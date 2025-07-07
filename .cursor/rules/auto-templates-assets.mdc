@@ -1,0 +1,20 @@
+---
+description: Tag Manager templates and asset standards
+globs:
+  - piwik_pro_mcp/assets/tag_manager/**
+alwaysApply: false
+---
+
+Follow these conventions for templates under `piwik_pro_mcp/assets/tag_manager/`.
+
+## Organization
+- Organize by resource type: `tags/`, `triggers/`, `variables/`
+- Store well-formatted JSON with complete examples and field documentation
+
+## Discovery Pattern
+- Provide `get_available_*_templates()` and `get_*_template(name)` helpers
+- Document editable vs read-only fields and include troubleshooting notes
+
+## AI-Optimized Content
+- Include usage examples, constraints, and best practices in template docs
+

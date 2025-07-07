@@ -1,0 +1,31 @@
+---
+description: MCP layer rules (tool design, error handling, schemas, templates)
+globs:
+  - piwik_pro_mcp/**
+alwaysApply: false
+---
+
+Use these standards when working in the MCP layer. See @piwik_pro_mcp/server.py, @piwik_pro_mcp/common/tool_schemas.py, @README.md.
+
+## Architecture & Organization
+- Keep MCP logic in `piwik_pro_mcp/` separate from API client logic
+- Group tools by domain under `piwik_pro_mcp/tools/`
+
+## MCP Tool Functions
+- Prefix tool names with `piwik_` and provide comprehensive Google-style docstrings
+- Wrap all exceptions in `RuntimeError` with descriptive messages
+- Prefer simplified interfaces with `attributes: dict` for create/update
+- Return Pydantic models for structured outputs and JSON schema generation
+
+## Parameter Discovery & Schemas
+- Centralize schema mapping in `piwik_pro_mcp/common/tool_schemas.py` using module-level constants
+- Provide a discovery tool: `list_available_parameters(tool_name)`
+
+## Templates & Assets
+- Tag Manager templates live in `piwik_pro_mcp/assets/tag_manager/`
+- Provide discovery helpers for templates (list/get)
+
+## Imports & Style
+- All imports at top; avoid import-time side effects
+- Follow repository naming and linting rules
+

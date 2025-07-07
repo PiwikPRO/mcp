@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags: ["*"]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      is_semver: ${{ steps.semver.outputs.is_semver }}
+      version: ${{ steps.semver.outputs.version }}
+    steps:
+      - name: Check semver tag
+        id: semver
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_semver=true" >> "$GITHUB_OUTPUT"
+            echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG recognized as semver"
+          else
+            echo "is_semver=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG is not semver"
+          fi
+
+  docker-image-release:
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.is_semver == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  pypi-publish:
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.is_semver == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - name: Set version from tag
+        run: |
+          uv version "${{ needs.prepare.outputs.version }}" --no-sync
+      - name: Build
+        run: uv build --no-sources
+      - name: Publish
+        run: uv publish

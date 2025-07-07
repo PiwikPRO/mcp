@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      
+    - name: Install uv
+      uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a
+      with:
+        version: ">=0.8.4"
+        enable-cache: true
+        cache-dependency-glob: "**/uv.lock"
+        
+    - name: Install dependencies
+      run: uv sync --dev
+      
+    - name: Run tests
+      run: uv run pytest -v --tb=short
+
+    - name: Run ruff linting
+      run: uv run ruff check . --config pyproject.toml
+      
+    - name: Check ruff formatting
+      run: uv run ruff format --check . --config pyproject.toml

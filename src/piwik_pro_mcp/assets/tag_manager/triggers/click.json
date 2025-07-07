@@ -1,0 +1,826 @@
+{
+  "template_name": "click",
+  "display_name": "Click Trigger",
+  "description": "Triggers when users click on specific DOM elements, allowing you to track user interactions like button clicks, link clicks, form submissions, and other clickable element engagement.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Track button clicks and call-to-action (CTA) performance",
+      "Monitor link clicks and navigation patterns",
+      "Track form interactions and submission attempts",
+      "Measure user engagement with specific page elements",
+      "Implement event-driven analytics and conversion tracking"
+    ],
+    "common_use_cases": [
+      "CTA button tracking (Sign Up, Buy Now, Contact Us)",
+      "Navigation menu and footer link tracking",
+      "Social media button clicks (Share, Like, Follow)",
+      "Download link tracking (PDFs, files, resources)",
+      "External link click monitoring",
+      "Form field interactions and submission tracking",
+      "Video play button and interactive element tracking"
+    ],
+    "best_practices": [
+      "Use specific CSS selectors or XPath to target exact elements",
+      "Test selectors in browser developer tools before using",
+      "Prefer CSS selectors over XPath when possible for better performance",
+      "Use descriptive trigger names that indicate the element being tracked",
+      "Consider click frequency - avoid tracking elements clicked very frequently",
+      "Combine with page conditions when element exists on multiple pages"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "function_name": "create_trigger",
+      "description": "Create a new click trigger using this template",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "name": {
+          "type": "string",
+          "description": "Descriptive name for the click trigger"
+        },
+        "trigger_type": {
+          "type": "string",
+          "value": "click",
+          "description": "Must be 'click' for click triggers"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Array of condition objects that determine when the trigger fires on clicks"
+        }
+      },
+      "optional_parameters": {
+        "relationships": {
+          "type": "object",
+          "description": "Can include tags to associate with this trigger"
+        }
+      }
+    },
+    "update_trigger": {
+      "function_name": "update_trigger",
+      "description": "Update an existing click trigger - only editable fields can be modified",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "trigger_id": {
+          "type": "string",
+          "description": "UUID of the trigger to update"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Trigger attributes to update (only editable fields will be processed)"
+        }
+      },
+      "optional_parameters": {
+        "tags": {
+          "type": "string",
+          "description": "Comma-separated list of tag UUIDs to associate with this trigger",
+          "default": "unchanged",
+          "notes": [
+            "If not provided, existing tag associations remain unchanged",
+            "If provided (even empty string), replaces ALL existing tag associations",
+            "Use empty string to remove all tag associations from the trigger"
+          ]
+        }
+      }
+    },
+    "required_attributes": {
+      "name": {
+        "type": "string",
+        "description": "Human-readable trigger name that describes the click element or action",
+        "mutability": "editable",
+        "examples": [
+          "CTA Button Click",
+          "Download Link Clicks",
+          "Social Share Button",
+          "Header Navigation Clicks",
+          "Contact Form Submit"
+        ],
+        "validation": {
+          "required": true,
+          "min_length": 1,
+          "max_length": 255
+        },
+        "recommendation": "Use descriptive names that clearly indicate which element or action is being tracked"
+      },
+      "trigger_type": {
+        "type": "string",
+        "enum": [
+          "click"
+        ],
+        "description": "Trigger type constant - must be 'click'",
+        "mutability": "create-only",
+        "fixed_value": "click",
+        "edit_note": "⚠️ Cannot be changed after trigger creation"
+      },
+      "conditions": {
+        "type": "array",
+        "description": "Array of condition objects that define when the click trigger should fire",
+        "mutability": "editable",
+        "structure": {
+          "condition_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this condition (generate a new UUID)",
+            "example": "7dfa5263-7981-44c4-b187-bcabef6a3001"
+          },
+          "variable_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the variable to check (typically Click Element, Click URL, Click Text)",
+            "common_variables": {
+              "click_element": "CSS selector or XPath of the clicked element",
+              "click_url": "URL of the clicked link (for <a> tags)",
+              "click_text": "Text content of the clicked element",
+              "click_id": "ID attribute of the clicked element",
+              "click_classes": "CSS classes of the clicked element"
+            }
+          },
+          "condition_type": {
+            "type": "string",
+            "enum": [
+              "matches",
+              "does_not_match",
+              "is_a_child_of",
+              "is_not_a_child_of",
+              "equals",
+              "does_not_equal",
+              "contains",
+              "does_not_contain",
+              "starts_with",
+              "does_not_start_with",
+              "ends_with",
+              "does_not_end_with",
+              "regexp",
+              "does_not_regexp"
+            ],
+            "description": "Type of comparison to perform on the clicked element",
+            "variable_compatibility": {
+              "Click Element (CSS/XPath selectors)": [
+                "matches",
+                "does_not_match",
+                "is_a_child_of",
+                "is_not_a_child_of"
+              ],
+              "Click Text": [
+                "equals",
+                "does_not_equal",
+                "contains",
+                "does_not_contain",
+                "starts_with",
+                "ends_with",
+                "regexp"
+              ],
+              "Click URL": [
+                "equals",
+                "does_not_equal",
+                "contains",
+                "does_not_contain",
+                "starts_with",
+                "ends_with",
+                "regexp"
+              ]
+            }
+          },
+          "value": {
+            "type": "string",
+            "description": "Value to compare against (CSS selector, XPath, text content, etc.)",
+            "examples": [
+              "#submit-button",
+              ".cta-primary",
+              "button[type='submit']",
+              "Sign Up Now",
+              "https://example.com/download"
+            ]
+          },
+          "options": {
+            "type": "object",
+            "description": "Additional options for element selection",
+            "properties": {
+              "selector_type": {
+                "type": "string",
+                "enum": [
+                  "css",
+                  "xpath"
+                ],
+                "description": "Type of selector used in the value field",
+                "default": "css"
+              }
+            }
+          }
+        },
+        "minimum_items": 1,
+        "recommendation": "Include at least one element selector condition to specify which clicks to track"
+      }
+    },
+    "condition_patterns": {
+      "css_selector_targeting": {
+        "description": "Target elements using CSS selectors (recommended approach)",
+        "condition_type": "matches",
+        "variable_type": "Click Element",
+        "options": {
+          "selector_type": "css"
+        },
+        "examples": [
+          {
+            "description": "Button with specific ID",
+            "condition_type": "matches",
+            "value": "#submit-button",
+            "options": {
+              "selector_type": "css"
+            }
+          },
+          {
+            "description": "All buttons with specific class",
+            "condition_type": "matches",
+            "value": ".cta-primary",
+            "options": {
+              "selector_type": "css"
+            }
+          },
+          {
+            "description": "Specific button type",
+            "condition_type": "matches",
+            "value": "button[type='submit']",
+            "options": {
+              "selector_type": "css"
+            }
+          }
+        ]
+      },
+      "xpath_targeting": {
+        "description": "Target elements using XPath (for complex selections)",
+        "condition_type": "matches",
+        "variable_type": "Click Element",
+        "options": {
+          "selector_type": "xpath"
+        },
+        "examples": [
+          {
+            "description": "Button containing specific text",
+            "condition_type": "matches",
+            "value": "//button[contains(text(), 'Sign Up')]",
+            "options": {
+              "selector_type": "xpath"
+            }
+          },
+          {
+            "description": "Link in specific container",
+            "condition_type": "matches",
+            "value": "//div[@class='nav-menu']//a[@href='/contact']",
+            "options": {
+              "selector_type": "xpath"
+            }
+          }
+        ]
+      },
+      "click_text_matching": {
+        "description": "Track clicks based on element text content",
+        "condition_type": "equals|contains",
+        "variable_type": "Click Text",
+        "examples": [
+          {
+            "description": "Exact text match",
+            "condition_type": "equals",
+            "value": "Buy Now",
+            "variable": "Click Text"
+          },
+          {
+            "description": "Text contains pattern",
+            "condition_type": "contains",
+            "value": "Download",
+            "variable": "Click Text"
+          }
+        ]
+      },
+      "url_link_tracking": {
+        "description": "Track clicks on links to specific URLs",
+        "condition_type": "equals|contains|starts_with",
+        "variable_type": "Click URL",
+        "examples": [
+          {
+            "description": "External links",
+            "condition_type": "starts_with",
+            "value": "https://external-site.com",
+            "variable": "Click URL"
+          },
+          {
+            "description": "PDF downloads",
+            "condition_type": "ends_with",
+            "value": ".pdf",
+            "variable": "Click URL"
+          }
+        ]
+      },
+      "element_hierarchy": {
+        "description": "Track clicks on elements within specific containers",
+        "condition_type": "is_a_child_of",
+        "variable_type": "Click Element",
+        "examples": [
+          {
+            "description": "Any click within navigation",
+            "condition_type": "is_a_child_of",
+            "value": ".main-navigation",
+            "options": {
+              "selector_type": "css"
+            }
+          },
+          {
+            "description": "Buttons in sidebar",
+            "condition_type": "is_a_child_of",
+            "value": "#sidebar",
+            "options": {
+              "selector_type": "css"
+            }
+          }
+        ]
+      }
+    },
+    "complete_examples": {
+      "cta_button_tracking": {
+        "description": "Track primary CTA button clicks",
+        "use_case": "Conversion rate optimization, button performance analysis",
+        "mcp_call": {
+          "function": "create_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "name": "Primary CTA Button Click",
+            "trigger_type": "click",
+            "conditions": [
+              {
+                "condition_id": "8efa6364-8982-45c5-a288-cdabdf7a4101",
+                "variable_id": "click-element-variable-uuid",
+                "condition_type": "matches",
+                "value": "#cta-primary",
+                "options": {
+                  "selector_type": "css"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "download_link_tracking": {
+        "description": "Track all PDF download link clicks",
+        "use_case": "Content engagement tracking, resource download analytics",
+        "mcp_call": {
+          "function": "create_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "name": "PDF Download Clicks",
+            "trigger_type": "click",
+            "conditions": [
+              {
+                "condition_id": "7dfa5263-7981-44c4-b187-bcabef6a3102",
+                "variable_id": "click-url-variable-uuid",
+                "condition_type": "ends_with",
+                "value": ".pdf",
+                "options": {}
+              }
+            ]
+          }
+        }
+      },
+      "social_share_tracking": {
+        "description": "Track social media share button clicks",
+        "use_case": "Social engagement tracking, viral content analysis",
+        "mcp_call": {
+          "function": "create_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "name": "Social Share Button Clicks",
+            "trigger_type": "click",
+            "conditions": [
+              {
+                "condition_id": "6cfa4162-6870-43b3-a076-abacde5a2103",
+                "variable_id": "click-element-variable-uuid",
+                "condition_type": "matches",
+                "value": ".social-share-btn",
+                "options": {
+                  "selector_type": "css"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "navigation_menu_tracking": {
+        "description": "Track main navigation menu clicks",
+        "use_case": "User behavior analysis, navigation optimization",
+        "mcp_call": {
+          "function": "create_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "name": "Main Navigation Clicks",
+            "trigger_type": "click",
+            "conditions": [
+              {
+                "condition_id": "5bea3051-5769-42a2-9f65-9abccd4a1104",
+                "variable_id": "click-element-variable-uuid",
+                "condition_type": "is_a_child_of",
+                "value": ".main-nav",
+                "options": {
+                  "selector_type": "css"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "external_link_tracking": {
+        "description": "Track clicks on external links",
+        "use_case": "Outbound link tracking, partnership link performance",
+        "mcp_call": {
+          "function": "create_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "name": "External Link Clicks",
+            "trigger_type": "click",
+            "conditions": [
+              {
+                "condition_id": "4ad92f40-4658-41a1-8e54-8abcbc3a0105",
+                "variable_id": "click-url-variable-uuid",
+                "condition_type": "does_not_start_with",
+                "value": "https://yourdomain.com",
+                "options": {}
+              },
+              {
+                "condition_id": "3ac81e3f-3547-40b0-7d43-7abcab2a9106",
+                "variable_id": "click-url-variable-uuid",
+                "condition_type": "starts_with",
+                "value": "http",
+                "options": {}
+              }
+            ]
+          }
+        }
+      },
+      "form_submit_tracking": {
+        "description": "Track form submission button clicks",
+        "use_case": "Form conversion tracking, lead generation analysis",
+        "mcp_call": {
+          "function": "create_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "name": "Contact Form Submit",
+            "trigger_type": "click",
+            "conditions": [
+              {
+                "condition_id": "2a92e31f-2436-4fa0-6c32-6abcab1a8107",
+                "variable_id": "click-element-variable-uuid",
+                "condition_type": "matches",
+                "value": "button[type='submit']",
+                "options": {
+                  "selector_type": "css"
+                }
+              },
+              {
+                "condition_id": "1b81d20e-1325-3e9f-5b21-5abcba0a7108",
+                "variable_id": "click-element-variable-uuid",
+                "condition_type": "is_a_child_of",
+                "value": "#contact-form",
+                "options": {
+                  "selector_type": "css"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "update_trigger_name": {
+        "description": "Update only the name of an existing trigger",
+        "use_case": "Renaming triggers for better organization without changing conditions",
+        "mcp_call": {
+          "function": "update_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "trigger_id": "existing-trigger-uuid-here",
+            "attributes": {
+              "name": "Updated CTA Button Click Name"
+            }
+          }
+        },
+        "explanation": "Only the name is updated while all conditions and other settings remain unchanged"
+      },
+      "update_trigger_conditions": {
+        "description": "Update trigger conditions to track different elements",
+        "use_case": "Modifying which elements trigger the event after website changes",
+        "mcp_call": {
+          "function": "update_trigger",
+          "parameters": {
+            "app_id": "your-app-id-uuid",
+            "trigger_id": "existing-trigger-uuid-here",
+            "attributes": {
+              "name": "Updated Button Tracking",
+              "conditions": [
+                {
+                  "condition_id": "9ffa7475-9093-46d6-b399-dcabef8b5201",
+                  "variable_id": "click-element-variable-uuid",
+                  "condition_type": "matches",
+                  "value": ".new-cta-button",
+                  "options": {
+                    "selector_type": "css"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "explanation": "Both name and conditions are updated simultaneously, creating new condition IDs for the updated conditions"
+      }
+    },
+    "common_mistakes": [
+      "Using 'equals' condition type with Click Element variables (use 'matches' instead)",
+      "Using incorrect or overly complex CSS selectors that don't match elements",
+      "Forgetting to set selector_type in options when using XPath",
+      "Using selectors that match too many elements (causing excessive firing)",
+      "Not testing selectors in browser developer tools before implementing",
+      "Using fragile selectors that break when page structure changes",
+      "Tracking clicks on dynamically loaded content without proper selectors",
+      "Mixing CSS and XPath syntax in the same selector",
+      "Using invalid variable_id references for click-related variables"
+    ],
+    "troubleshooting": {
+      "condition_variable_compatibility_error": {
+        "error_message": "Given condition (type: equals) could not be related with variable (name: Click Element)",
+        "cause": "Using incompatible condition type with Click Element variable",
+        "solution": "Use 'matches' instead of 'equals' for Click Element variables",
+        "example_fix": {
+          "wrong": {
+            "condition_type": "equals",
+            "variable_id": "click-element-variable-uuid",
+            "value": "#warningButton"
+          },
+          "correct": {
+            "condition_type": "matches",
+            "variable_id": "click-element-variable-uuid",
+            "value": "#warningButton"
+          }
+        },
+        "variable_compatibility_reference": {
+          "Click Element": "Use 'matches', 'does_not_match', 'is_a_child_of', 'is_not_a_child_of'",
+          "Click Text": "Use 'equals', 'contains', 'starts_with', 'ends_with', etc.",
+          "Click URL": "Use 'equals', 'contains', 'starts_with', 'ends_with', etc."
+        }
+      },
+      "trigger_not_firing": {
+        "possible_causes": [
+          "CSS selector or XPath doesn't match the actual element",
+          "selector_type in options doesn't match the selector format used",
+          "Element is loaded dynamically after page load",
+          "Variable ID is incorrect or doesn't exist",
+          "Element exists but is not clickable (e.g., has pointer-events: none)"
+        ],
+        "debugging_steps": [
+          "Test the selector in browser developer tools console",
+          "Verify the element exists when the page loads completely",
+          "Check if selector_type in options matches your selector format",
+          "Use browser inspector to copy the exact selector",
+          "Test with simpler, more general selectors first",
+          "Verify the variable exists using list_variables() tool"
+        ]
+      },
+      "trigger_firing_too_often": {
+        "possible_causes": [
+          "Selector is too broad and matches multiple elements",
+          "Element is being clicked multiple times rapidly",
+          "Selector matches parent elements that bubble click events",
+          "Dynamic content creates multiple matching elements"
+        ],
+        "solutions": [
+          "Use more specific selectors (IDs instead of classes)",
+          "Add additional conditions to narrow the scope",
+          "Use descendant selectors to target specific instances",
+          "Add page-specific conditions to limit trigger scope",
+          "Consider click frequency and user behavior patterns"
+        ]
+      },
+      "selector_issues": {
+        "css_selector_tips": [
+          "Use # for IDs: #submit-button",
+          "Use . for classes: .cta-primary",
+          "Use attribute selectors: button[type='submit']",
+          "Use descendant selectors: .nav-menu a",
+          "Use child selectors: .container > button"
+        ],
+        "xpath_tips": [
+          "Start with //: //button[@id='submit']",
+          "Use text content: //button[contains(text(), 'Click Me')]",
+          "Use attributes: //a[@class='download-link']",
+          "Use position: //div[@class='menu']//a[1]"
+        ],
+        "testing_selectors": [
+          "Open browser developer tools (F12)",
+          "Go to Console tab",
+          "For CSS: document.querySelector('your-selector')",
+          "For XPath: $x('your-xpath')",
+          "Should return the expected element"
+        ]
+      }
+    },
+    "selector_best_practices": {
+      "prefer_stable_selectors": {
+        "good_examples": [
+          "#submit-button (ID - most stable)",
+          "button[data-action='submit'] (data attributes)",
+          ".btn-primary[aria-label='Sign Up'] (semantic attributes)"
+        ],
+        "avoid_examples": [
+          ".col-md-4 > div:nth-child(3) (position-dependent)",
+          "body > div > div > button (fragile hierarchy)",
+          ".btn123 (generated class names)"
+        ]
+      },
+      "performance_considerations": [
+        "Prefer CSS selectors over XPath for better performance",
+        "Use specific selectors to avoid unnecessary element matching",
+        "Avoid overly complex selectors with many conditions",
+        "Test selectors on pages with many elements"
+      ],
+      "maintainability": [
+        "Use semantic selectors that reflect element purpose",
+        "Document complex selectors with comments in trigger names",
+        "Coordinate with developers on stable selector strategies",
+        "Regular review and testing when page structure changes"
+      ]
+    },
+    "variable_reference_guide": {
+      "built_in_click_variables": {
+        "click_element": {
+          "description": "CSS selector or XPath of the clicked element",
+          "example": "#submit-button, .cta-primary",
+          "best_for": "Element-specific tracking, precise click targeting"
+        },
+        "click_url": {
+          "description": "href attribute of clicked links (<a> tags)",
+          "example": "https://example.com/download/file.pdf",
+          "best_for": "Link tracking, external link monitoring, download tracking"
+        },
+        "click_text": {
+          "description": "Visible text content of the clicked element",
+          "example": "Sign Up Now, Download PDF, Learn More",
+          "best_for": "Text-based tracking, A/B testing different button copy"
+        },
+        "click_id": {
+          "description": "ID attribute of the clicked element",
+          "example": "submit-button, contact-form-btn",
+          "best_for": "ID-based tracking when elements have stable IDs"
+        },
+        "click_classes": {
+          "description": "CSS class names of the clicked element",
+          "example": "btn btn-primary cta-large",
+          "best_for": "Class-based tracking, style-specific analytics"
+        }
+      },
+      "getting_variable_ids": {
+        "step_1": "Use list_variables() to see all available variables in your app",
+        "step_2": "Look for click-related variables (Click Element, Click URL, Click Text, etc.)",
+        "step_3": "Copy the 'id' field from the variable object",
+        "step_4": "Use that UUID as the variable_id in your trigger conditions"
+      }
+    },
+    "advanced_patterns": {
+      "conditional_clicking": {
+        "description": "Track clicks only on specific pages or under certain conditions",
+        "example": "Track CTA clicks only on product pages",
+        "implementation": "Combine click conditions with page URL conditions"
+      },
+      "click_sequence_tracking": {
+        "description": "Track specific click sequences or user flows",
+        "example": "Track users who click 'Add to Cart' then 'Checkout'",
+        "implementation": "Use multiple triggers with session-based variables"
+      },
+      "dynamic_content_tracking": {
+        "description": "Track clicks on dynamically loaded content",
+        "challenges": "Elements may not exist when trigger is evaluated",
+        "solutions": "Use broader selectors or event delegation patterns"
+      }
+    },
+    "related_mcp_tools": {
+      "create_trigger": {
+        "description": "Main function to create click triggers using this template",
+        "usage": "create_trigger(app_id, name, trigger_type='click', conditions=[...])"
+      },
+      "update_trigger": {
+        "description": "Update existing click trigger with new field values",
+        "usage": "update_trigger(app_id, trigger_id, attributes) - automatically filters out non-editable fields"
+      },
+      "list_triggers": {
+        "description": "View all existing triggers in your app",
+        "usage": "list_triggers(app_id) - helpful to see existing click triggers"
+      },
+      "get_trigger": {
+        "description": "Examine configuration of existing triggers",
+        "usage": "get_trigger(app_id, trigger_id) - study existing click trigger setup before updating"
+      },
+      "list_variables": {
+        "description": "Get all available variables for trigger conditions",
+        "usage": "list_variables(app_id) - find Click Element, Click URL, and other click variable IDs"
+      },
+      "create_tag": {
+        "description": "Create tags that will be triggered by click triggers",
+        "usage": "create_tag(..., triggers='trigger-uuid') - associate tags with click triggers"
+      },
+      "get_trigger_template": {
+        "description": "Get complete template information including field mutability",
+        "usage": "get_trigger_template(template_name='click') - see all editable vs immutable fields"
+      }
+    },
+    "workflow_example": {
+      "complete_setup_process": {
+        "step_1": {
+          "action": "Identify the element to track",
+          "method": "Use browser developer tools to inspect the element and get its selector",
+          "purpose": "Find the most stable and specific selector for the element"
+        },
+        "step_2": {
+          "action": "Get available variables",
+          "mcp_call": "list_variables(app_id='your-app-id')",
+          "purpose": "Find the variable IDs for Click Element, Click URL, Click Text, etc."
+        },
+        "step_3": {
+          "action": "Test the selector",
+          "method": "Use browser console to test: document.querySelector('your-selector')",
+          "purpose": "Verify the selector matches the intended element"
+        },
+        "step_4": {
+          "action": "Create click trigger",
+          "mcp_call": "create_trigger(app_id='your-app-id', name='Button Click', trigger_type='click', conditions=[...])",
+          "purpose": "Create the trigger with appropriate conditions"
+        },
+        "step_5": {
+          "action": "Create or update tag",
+          "mcp_call": "create_tag(app_id='your-app-id', attributes={...}, triggers='trigger-uuid-from-step-4')",
+          "purpose": "Associate the trigger with a tag that will execute on clicks"
+        },
+        "step_6": {
+          "action": "Test and validate",
+          "method": "Click the element on your website and verify the tag fires correctly",
+          "purpose": "Ensure trigger works correctly before going live"
+        }
+      }
+    },
+    "read_only_attributes": {
+      "created_at": {
+        "type": "datetime",
+        "description": "When the trigger was created (ISO 8601 timestamp)",
+        "mutability": "read-only",
+        "edit_note": "🚫 Auto-generated by API, cannot be modified"
+      },
+      "updated_at": {
+        "type": "datetime",
+        "description": "When the trigger was last updated (ISO 8601 timestamp)",
+        "mutability": "read-only",
+        "edit_note": "🚫 Auto-generated by API, cannot be modified"
+      },
+      "is_published": {
+        "type": "boolean",
+        "description": "Whether the trigger is published in the current version",
+        "mutability": "read-only",
+        "edit_note": "🚫 Controlled by version publishing, cannot be directly modified"
+      }
+    },
+    "field_mutability_guide": {
+      "description": "Understanding which trigger fields can be edited after creation",
+      "mutability_types": {
+        "editable": {
+          "description": "✅ Can be updated anytime after trigger creation",
+          "examples": [
+            "name",
+            "conditions"
+          ],
+          "note": "These fields can be safely modified through update_trigger"
+        },
+        "create-only": {
+          "description": "⚠️ Can only be set during trigger creation, immutable afterward",
+          "examples": [
+            "trigger_type"
+          ],
+          "edit_behavior": "These fields will be ignored in update operations",
+          "note": "Trigger type defines the fundamental behavior and cannot be changed"
+        },
+        "read-only": {
+          "description": "🚫 Auto-generated by API, never user-modifiable",
+          "examples": [
+            "created_at",
+            "updated_at",
+            "is_published"
+          ],
+          "edit_behavior": "These fields will be filtered out of update requests",
+          "note": "Timestamps and publishing status are managed by the system"
+        }
+      },
+      "update_best_practices": [
+        "Only include editable fields in update_trigger attributes",
+        "Create-only and read-only fields are automatically filtered out",
+        "Check field mutability before attempting updates",
+        "Use get_trigger_template() to see all available fields and their mutability",
+        "Test trigger conditions after updates to ensure they work as expected"
+      ]
+    }
+  }
+}

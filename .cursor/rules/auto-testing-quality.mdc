@@ -1,0 +1,18 @@
+---
+description: Testing, quality, and CI guidance (pytest, ruff, coverage)
+globs:
+  - tests/**
+  - piwik_pro_mcp/**
+  - piwik_pro_api/**
+alwaysApply: false
+---
+
+## Commands
+- Install deps: `uv sync` (and `uv sync --dev`)
+- Tests: `uv run pytest` (never call pytest directly)
+- Lint: `uv run ruff check .`; Format: `uv run ruff format .`;
+
+## Practices
+- Use markers (`slow`, `integration`) and coverage for both packages
+- Keep tests organized and type-safe; prefer parametrized tests where useful
+

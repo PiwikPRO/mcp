@@ -1,0 +1,370 @@
+{
+  "template_name": "custom_javascript",
+  "display_name": "Custom JavaScript Variable",
+  "description": "Executes custom JavaScript code to return dynamic values. Provides maximum flexibility for complex logic, calculations, API integrations, and accessing browser-specific data that other variable types cannot handle.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Complex calculations or data transformations not possible with other variables",
+      "Accessing browser APIs (localStorage, sessionStorage, cookies, geolocation)",
+      "Dynamic content generation based on multiple conditions",
+      "Integration with third-party JavaScript libraries or APIs",
+      "Custom parsing of URL parameters, DOM elements, or page content",
+      "Advanced user agent detection or device capability checking",
+      "Real-time data fetching or processing before tracking"
+    ],
+    "common_use_cases": [
+      "User authentication status from localStorage or cookies",
+      "Shopping cart contents from localStorage or session data",
+      "A/B test variant assignment from JavaScript frameworks",
+      "Custom user ID generation or hashing",
+      "Dynamic pricing calculations or discount codes",
+      "Geolocation-based content personalization",
+      "Custom date/time formatting for different timezones",
+      "Integration with customer support chat systems",
+      "Custom form validation status or error counts"
+    ],
+    "best_practices": [
+      "Keep JavaScript code simple and focused on single responsibility",
+      "Always return a value - avoid undefined returns which can break tracking",
+      "Use try-catch blocks to handle potential errors gracefully",
+      "Test JavaScript code in browser console before deployment",
+      "Avoid heavy computations that could slow down page performance",
+      "Use descriptive variable names and add comments for complex logic",
+      "Consider fallback values for when JavaScript execution fails"
+    ],
+    "security_considerations": [
+      "Never include sensitive data directly in JavaScript code",
+      "Validate and sanitize any user input before processing",
+      "Be cautious with dynamic code generation or eval() usage",
+      "Avoid exposing internal system information",
+      "Test for potential XSS vulnerabilities in dynamic content"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "function_name": "create_variable",
+      "description": "Create a new custom JavaScript variable that executes code to return dynamic values",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "name": {
+          "type": "string",
+          "description": "Descriptive name for the custom JavaScript variable"
+        },
+        "variable_type": {
+          "type": "string",
+          "value": "custom_javascript",
+          "description": "Must be 'custom_javascript' for custom JavaScript variables"
+        },
+        "value": {
+          "type": "string",
+          "description": "JavaScript code to execute - must return a value"
+        }
+      },
+      "optional_parameters": {
+        "is_active": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the variable is active"
+        }
+      }
+    },
+    "update_variable": {
+      "function_name": "update_variable",
+      "description": "Update an existing custom JavaScript variable - only editable fields will be processed",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "variable_id": {
+          "type": "string",
+          "description": "UUID of the variable to update"
+        }
+      },
+      "optional_parameters": {
+        "name": {
+          "type": "string",
+          "description": "Updated descriptive name for the variable"
+        },
+        "is_active": {
+          "type": "boolean",
+          "description": "Whether the variable is active"
+        },
+        "value": {
+          "type": "string",
+          "description": "Updated JavaScript code to execute"
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Descriptive name for the custom JavaScript variable",
+      "examples": [
+        "User Login Status",
+        "Cart Total Value",
+        "A/B Test Variant",
+        "Custom User ID"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 255
+      },
+      "recommendation": "Use clear names that describe what the JavaScript code does or returns"
+    },
+    "template": {
+      "type": "string",
+      "mutability": "create-only",
+      "description": "Variable template type",
+      "examples": [
+        "custom_javascript"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "custom_javascript"
+        ]
+      },
+      "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
+    },
+    "value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "JavaScript code to execute - must return a value for tracking",
+      "examples": [
+        "return localStorage.getItem('userId') || 'anonymous';",
+        "return document.cookie.includes('logged_in=true') ? 'authenticated' : 'guest';",
+        "return window.location.pathname.split('/')[1] || 'home';"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 10
+      },
+      "recommendation": "Always include 'return' statement and handle potential errors with try-catch blocks",
+      "security_note": "⚠️ Ensure code is safe and doesn't expose sensitive information"
+    }
+  },
+  "optional_attributes": {
+    "is_active": {
+      "type": "boolean",
+      "mutability": "editable",
+      "description": "Whether the variable is active and available for use",
+      "examples": [
+        true,
+        false
+      ],
+      "default": true,
+      "recommendation": "Keep active unless temporarily disabling for testing"
+    }
+  },
+  "read_only_attributes": {
+    "created_at": {
+      "mutability": "read-only",
+      "description": "Timestamp when the variable was created",
+      "edit_note": "🚫 Automatically set by the API, cannot be modified"
+    },
+    "updated_at": {
+      "mutability": "read-only",
+      "description": "Timestamp when the variable was last updated",
+      "edit_note": "🚫 Automatically updated by the API on changes"
+    }
+  },
+  "field_mutability_guide": {
+    "description": "Understanding field editability after variable creation",
+    "mutability_types": {
+      "editable": {
+        "description": "✅ Can be updated anytime after creation",
+        "examples": [
+          "name",
+          "is_active",
+          "value"
+        ],
+        "use_cases": [
+          "Renaming variables",
+          "Updating JavaScript logic",
+          "Fixing bugs in code",
+          "Toggling active status"
+        ]
+      },
+      "create-only": {
+        "description": "⚠️ Set during creation, immutable after creation",
+        "examples": [
+          "template"
+        ],
+        "explanation": "Template determines the variable type and behavior - cannot be changed to maintain data integrity"
+      },
+      "read-only": {
+        "description": "🚫 Auto-generated by API, never user-modifiable",
+        "examples": [
+          "created_at",
+          "updated_at"
+        ],
+        "explanation": "System timestamps managed automatically by Piwik PRO"
+      }
+    }
+  },
+  "complete_examples": {
+    "create_example": {
+      "description": "Creating a user authentication status variable",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "User Login Status",
+            "variable_type": "custom_javascript",
+            "value": "try {\n  return localStorage.getItem('isLoggedIn') === 'true' ? 'authenticated' : 'guest';\n} catch (e) {\n  return 'unknown';\n}",
+            "is_active": true
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Updating JavaScript code to improve error handling",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "Enhanced User Status",
+            "value": "try {\n  var userId = localStorage.getItem('userId');\n  var isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';\n  return isLoggedIn ? (userId || 'authenticated') : 'guest';\n} catch (e) {\n  console.warn('User status check failed:', e);\n  return 'error';\n}"
+          }
+        }
+      }
+    },
+    "shopping_cart_example": {
+      "description": "Accessing shopping cart data from localStorage",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Cart Total Value",
+            "variable_type": "custom_javascript",
+            "value": "try {\n  var cart = JSON.parse(localStorage.getItem('cart') || '{}');\n  return cart.total || '0';\n} catch (e) {\n  return '0';\n}"
+          }
+        }
+      }
+    },
+    "url_parsing_example": {
+      "description": "Custom URL parameter parsing with fallbacks",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Campaign Source",
+            "variable_type": "custom_javascript",
+            "value": "try {\n  var urlParams = new URLSearchParams(window.location.search);\n  return urlParams.get('utm_source') || urlParams.get('source') || 'direct';\n} catch (e) {\n  return 'unknown';\n}"
+          }
+        }
+      }
+    },
+    "date_formatting_example": {
+      "description": "Custom date formatting for tracking",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Current Hour",
+            "variable_type": "custom_javascript",
+            "value": "try {\n  var now = new Date();\n  return now.getHours().toString().padStart(2, '0');\n} catch (e) {\n  return '00';\n}"
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Forgetting to include 'return' statement in JavaScript code",
+    "Not handling errors with try-catch blocks leading to broken tracking",
+    "Using synchronous operations that block page performance",
+    "Assuming browser APIs are always available (localStorage, geolocation, etc.)",
+    "Not providing fallback values for failed operations",
+    "Including sensitive data directly in the JavaScript code",
+    "Using overly complex logic that's hard to debug and maintain",
+    "Not testing JavaScript code in different browsers and scenarios"
+  ],
+  "troubleshooting": {
+    "variable_returns_undefined": {
+      "problem": "Custom JavaScript variable returns undefined",
+      "solutions": [
+        "Ensure your JavaScript code always includes a 'return' statement",
+        "Add try-catch blocks to handle potential errors gracefully",
+        "Test the JavaScript code in browser console first",
+        "Check for typos in variable names or function calls",
+        "Verify that required browser APIs are available"
+      ]
+    },
+    "javascript_errors_breaking_tracking": {
+      "problem": "JavaScript errors prevent other tracking from working",
+      "solutions": [
+        "Wrap all code in try-catch blocks with meaningful fallback values",
+        "Use console.warn() instead of console.error() for non-critical issues",
+        "Test JavaScript code thoroughly before deployment",
+        "Use 'use strict'; to catch common JavaScript errors early"
+      ]
+    },
+    "performance_issues": {
+      "problem": "Custom JavaScript slows down page performance",
+      "solutions": [
+        "Avoid heavy computations or complex loops",
+        "Don't make synchronous API calls or file operations",
+        "Cache results when possible to avoid repeated calculations",
+        "Use asynchronous operations for non-critical data fetching",
+        "Profile JavaScript execution time in development"
+      ]
+    },
+    "browser_compatibility": {
+      "problem": "JavaScript works in some browsers but not others",
+      "solutions": [
+        "Use well-supported JavaScript features or include polyfills",
+        "Test in multiple browsers during development",
+        "Check for browser-specific API availability before using",
+        "Use feature detection instead of browser detection",
+        "Implement graceful degradation with fallback values"
+      ]
+    }
+  },
+  "javascript_patterns": {
+    "safe_localStorage_access": {
+      "description": "Safely access localStorage with error handling",
+      "code": "try {\n  return localStorage.getItem('key') || 'default';\n} catch (e) {\n  return 'unavailable';\n}"
+    },
+    "cookie_parsing": {
+      "description": "Parse cookies safely",
+      "code": "try {\n  var cookies = document.cookie.split(';');\n  for (var i = 0; i < cookies.length; i++) {\n    var cookie = cookies[i].trim();\n    if (cookie.startsWith('cookieName=')) {\n      return cookie.substring('cookieName='.length);\n    }\n  }\n  return 'not-set';\n} catch (e) {\n  return 'error';\n}"
+    },
+    "url_parameter_extraction": {
+      "description": "Extract URL parameters with fallbacks",
+      "code": "try {\n  var params = new URLSearchParams(window.location.search);\n  return params.get('param') || 'default';\n} catch (e) {\n  return 'unknown';\n}"
+    },
+    "dom_element_value": {
+      "description": "Get DOM element value safely",
+      "code": "try {\n  var element = document.getElementById('elementId');\n  return element ? element.value || element.textContent : 'not-found';\n} catch (e) {\n  return 'error';\n}"
+    }
+  },
+  "related_mcp_tools": {
+    "discovery": [
+      "piwik_get_available_variable_templates() - List all available variable templates",
+      "piwik_get_variable_template() - Get detailed template information"
+    ],
+    "management": [
+      "piwik_create_variable() - Create new variables with this template",
+      "piwik_update_variable() - Update existing variables (editable fields only)",
+      "piwik_list_variables() - List all variables in your app",
+      "piwik_get_variable() - Get detailed information about specific variables"
+    ],
+    "workflow": [
+      "piwik_list_tags() - Find tags that might use this variable",
+      "piwik_list_triggers() - Find triggers that might use this variable"
+    ]
+  }
+}
