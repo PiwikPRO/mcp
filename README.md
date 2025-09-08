@@ -129,7 +129,7 @@ You need to have Docker installed – check the [official installation guide](ht
         "PIWIK_PRO_CLIENT_ID": "CLIENT_ID",
         "PIWIK_PRO_CLIENT_SECRET": "CLIENT_SECRET"
       }
-    },
+    }
   }
 }
 ```
@@ -159,10 +159,10 @@ Refer to this file through `--env-file` argument:
         "-i",
         "--rm",
         "--env-file",
-        "/absolute/path/to/.piwik-pro-mcp.env"
+        "/absolute/path/to/.piwik-pro-mcp.env",
         "ghcr.io/piwikpro/mcp:latest"
-      ],
-    },
+      ]
+    }
   }
 }
 ```
