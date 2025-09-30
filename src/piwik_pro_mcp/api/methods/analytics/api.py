@@ -2,10 +2,13 @@
 Analytics API for Piwik PRO - User Annotations.
 """
 
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from piwik_pro_mcp.api.methods.analytics.models import SystemAnnotationListResponse, UserAnnotationListResponse, UserAnnotationSingleResponse
-
+from piwik_pro_mcp.api.methods.analytics.models import (
+    SystemAnnotationListResponse,
+    UserAnnotationListResponse,
+    UserAnnotationSingleResponse,
+)
 
 if TYPE_CHECKING:
     from ...client import PiwikProClient
@@ -191,5 +194,3 @@ class AnalyticsAPI:
         data = {"data": {"type": "UserAnnotation", "id": annotation_id, "attributes": attributes}}
         response = self.client.patch(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", data=data)
         return UserAnnotationSingleResponse(**(response or {}))
-
-

@@ -59,6 +59,12 @@ class TestMCPToolExistence:
         "tracker_settings_app_get",
         "tracker_settings_app_update",
         "tracker_settings_app_delete",
+        # Analytics Annotations Tools
+        "analytics_annotations_create",
+        "analytics_annotations_list",
+        "analytics_annotations_get",
+        "analytics_annotations_update",
+        "analytics_annotations_delete",
     ]
 
     @pytest.fixture(scope="class")

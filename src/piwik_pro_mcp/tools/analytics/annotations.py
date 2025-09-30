@@ -111,7 +111,16 @@ def register_analytics_tools(mcp: FastMCP) -> None:
         client = create_piwik_client()
         # Check type before attempting delete (can't delete system via user endpoint)
         details = client.analytics.get_user_annotation(annotation_id=annotation_id, app_id=app_id)
-        item_type = (details or {}).get("data", {}).get("type")
+        item_type = None
+        if details is not None:
+            # Support both Pydantic response objects and plain dicts
+            if hasattr(details, "data"):
+                try:
+                    item_type = getattr(details.data, "type", None)
+                except Exception:
+                    item_type = None
+            elif isinstance(details, dict):
+                item_type = details.get("data", {}).get("type")
         if item_type and item_type.lower() == "systemannotation":
             raise RuntimeError("System annotations cannot be deleted.")
         client.analytics.delete_user_annotation(annotation_id=annotation_id, app_id=app_id)

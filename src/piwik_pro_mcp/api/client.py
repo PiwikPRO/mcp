@@ -19,12 +19,12 @@ from .exceptions import (
     NotFoundError,
     PiwikProAPIError,
 )
+from .methods.analytics import AnalyticsAPI
 from .methods.apps import AppsAPI
 from .methods.cdp import CdpAPI
 from .methods.container_settings import ContainerSettingsAPI
 from .methods.tag_manager import TagManagerAPI
 from .methods.tracker_settings import TrackerSettingsAPI
-from .methods.analytics import AnalyticsAPI
 
 
 class PiwikProClient:

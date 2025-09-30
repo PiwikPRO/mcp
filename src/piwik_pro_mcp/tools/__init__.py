@@ -7,6 +7,7 @@ with the FastMCP server, organized by functional area.
 
 from mcp.server.fastmcp import FastMCP
 
+from .analytics import register_analytics_tools
 from .apps import register_app_tools
 from .cdp import register_cdp_tools
 from .container_settings import register_container_settings_tools
@@ -19,7 +20,6 @@ from .tag_manager import (
     register_version_tools,
 )
 from .tracker_settings import register_tracker_settings_tools
-from .analytics import register_analytics_tools
 
 
 def register_all_tools(mcp: FastMCP) -> None:
