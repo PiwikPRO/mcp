@@ -2,14 +2,17 @@
 Analytics API for Piwik PRO - User Annotations.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+from piwik_pro_mcp.api.methods.analytics.models import SystemAnnotationListResponse, UserAnnotationListResponse, UserAnnotationSingleResponse
+
 
 if TYPE_CHECKING:
     from ...client import PiwikProClient
 
 
 class AnalyticsAPI:
-    """Analytics API client for Piwik PRO (user annotations)."""
+    """Analytics API client for Piwik PRO (annotations)."""
 
     def __init__(self, client: "PiwikProClient"):
         """
@@ -22,6 +25,7 @@ class AnalyticsAPI:
 
     # Base endpoint
     _USER_ANNOTATIONS_BASE = "/api/analytics/v1/manage/annotation/user"
+    _SYSTEM_ANNOTATIONS_BASE = "/api/analytics/v1/manage/annotation/system"
 
     def create_user_annotation(
         self,
@@ -29,7 +33,7 @@ class AnalyticsAPI:
         content: str,
         date: str,
         visibility: Optional[str] = "private",
-    ) -> Union[Dict[str, Any], None]:
+    ) -> UserAnnotationSingleResponse:
         """
         Create a new user annotation.
 
@@ -51,7 +55,10 @@ class AnalyticsAPI:
             attributes["visibility"] = visibility
 
         data = {"data": {"type": "UserAnnotation", "attributes": attributes}}
-        return self.client.post(f"{self._USER_ANNOTATIONS_BASE}/", data=data)
+        response = self.client.post(f"{self._USER_ANNOTATIONS_BASE}/", data=data)
+        return UserAnnotationSingleResponse(**(response or {}))
+
+    # No generic alias for create (user-only)
 
     def list_user_annotations(
         self,
@@ -60,7 +67,7 @@ class AnalyticsAPI:
         date_to: Optional[List[str]] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> UserAnnotationListResponse:
         """
         List user annotations for a website with optional date ranges.
 
@@ -87,9 +94,39 @@ class AnalyticsAPI:
         if date_to is not None:
             params["date_to"] = date_to
 
-        return self.client.get(f"{self._USER_ANNOTATIONS_BASE}/", params=params)
+        response = self.client.get(f"{self._USER_ANNOTATIONS_BASE}/", params=params)
+        return UserAnnotationListResponse(**(response or {}))
 
-    def get_user_annotation(self, annotation_id: str, app_id: str) -> Union[Dict[str, Any], None]:
+    def list_system_annotations(
+        self,
+        date_from: Optional[List[str]] = None,
+        date_to: Optional[List[str]] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> SystemAnnotationListResponse:
+        """List system annotations.
+
+        Args:
+            date_from: Optional list of start dates (YYYY-MM-DD)
+            date_to: Optional list of end dates (YYYY-MM-DD)
+            limit: Max number of items
+            offset: Number of items to skip
+        """
+        params: Dict[str, Any] = {}
+
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if date_from is not None:
+            params["date_from"] = date_from
+        if date_to is not None:
+            params["date_to"] = date_to
+
+        response = self.client.get(f"{self._SYSTEM_ANNOTATIONS_BASE}/", params=params)
+        return SystemAnnotationListResponse(**(response or {}))
+
+    def get_user_annotation(self, annotation_id: str, app_id: str) -> UserAnnotationSingleResponse:
         """
         Get a single user annotation.
 
@@ -101,7 +138,10 @@ class AnalyticsAPI:
             Dictionary with annotation
         """
         params = {"website_id": app_id}
-        return self.client.get(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
+        response = self.client.get(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
+        return UserAnnotationSingleResponse(**(response or {}))
+
+    # No generic alias for get (user-only)
 
     def delete_user_annotation(self, annotation_id: str, app_id: str) -> None:
         """
@@ -117,6 +157,8 @@ class AnalyticsAPI:
         params = {"website_id": app_id}
         self.client.delete(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
 
+    # No generic alias for delete (user-only)
+
     def update_user_annotation(
         self,
         annotation_id: str,
@@ -124,7 +166,7 @@ class AnalyticsAPI:
         content: str,
         date: str,
         visibility: Optional[str] = "private",
-    ) -> Union[Dict[str, Any], None]:
+    ) -> UserAnnotationSingleResponse:
         """
         Update an existing user annotation.
 
@@ -147,10 +189,7 @@ class AnalyticsAPI:
             attributes["visibility"] = visibility
 
         data = {"data": {"type": "UserAnnotation", "id": annotation_id, "attributes": attributes}}
-        return self.client.patch(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", data=data)
-
-
-
-
+        response = self.client.patch(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", data=data)
+        return UserAnnotationSingleResponse(**(response or {}))
 
 
