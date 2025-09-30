@@ -25,7 +25,7 @@ class AnalyticsAPI:
 
     def create_user_annotation(
         self,
-        website_id: str,
+        app_id: str,
         content: str,
         date: str,
         visibility: Optional[str] = "private",
@@ -34,7 +34,7 @@ class AnalyticsAPI:
         Create a new user annotation.
 
         Args:
-            website_id: Website UUID
+            app_id: App UUID (sent as website_id in API payload)
             content: Annotation content (max 150 chars)
             date: Annotation date (YYYY-MM-DD)
             visibility: "private" (default) or "public"
@@ -43,7 +43,7 @@ class AnalyticsAPI:
             Dictionary with created annotation
         """
         attributes: Dict[str, Any] = {
-            "website_id": website_id,
+            "website_id": app_id,
             "content": content,
             "date": date,
         }
@@ -55,7 +55,7 @@ class AnalyticsAPI:
 
     def list_user_annotations(
         self,
-        website_id: str,
+        app_id: str,
         date_from: Optional[List[str]] = None,
         date_to: Optional[List[str]] = None,
         limit: Optional[int] = None,
@@ -65,7 +65,7 @@ class AnalyticsAPI:
         List user annotations for a website with optional date ranges.
 
         Args:
-            website_id: Website UUID (required)
+            app_id: App UUID (required; sent as website_id query param)
             date_from: Optional list of start dates (YYYY-MM-DD)
             date_to: Optional list of end dates (YYYY-MM-DD)
             limit: Max number of items
@@ -74,7 +74,7 @@ class AnalyticsAPI:
         Returns:
             Dictionary with annotations list and meta
         """
-        params: Dict[str, Any] = {"website_id": website_id}
+        params: Dict[str, Any] = {"website_id": app_id}
 
         if limit is not None:
             params["limit"] = limit
@@ -89,38 +89,38 @@ class AnalyticsAPI:
 
         return self.client.get(f"{self._USER_ANNOTATIONS_BASE}/", params=params)
 
-    def get_user_annotation(self, annotation_id: str, website_id: str) -> Union[Dict[str, Any], None]:
+    def get_user_annotation(self, annotation_id: str, app_id: str) -> Union[Dict[str, Any], None]:
         """
         Get a single user annotation.
 
         Args:
             annotation_id: Annotation UUID
-            website_id: Website UUID (required by API)
+            app_id: App UUID (required; sent as website_id query param)
 
         Returns:
             Dictionary with annotation
         """
-        params = {"website_id": website_id}
+        params = {"website_id": app_id}
         return self.client.get(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
 
-    def delete_user_annotation(self, annotation_id: str, website_id: str) -> None:
+    def delete_user_annotation(self, annotation_id: str, app_id: str) -> None:
         """
         Delete a user annotation.
 
         Args:
             annotation_id: Annotation UUID
-            website_id: Website UUID (required by API)
+            app_id: App UUID (required; sent as website_id query param)
 
         Returns:
             None (204 No Content)
         """
-        params = {"website_id": website_id}
+        params = {"website_id": app_id}
         self.client.delete(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
 
     def update_user_annotation(
         self,
         annotation_id: str,
-        website_id: str,
+        app_id: str,
         content: str,
         date: str,
         visibility: Optional[str] = "private",
@@ -130,7 +130,7 @@ class AnalyticsAPI:
 
         Args:
             annotation_id: Annotation UUID
-            website_id: Website UUID
+            app_id: App UUID (sent as website_id in API payload)
             content: Updated content (max 150 chars)
             date: Updated date (YYYY-MM-DD)
             visibility: "private" (default) or "public"
@@ -139,7 +139,7 @@ class AnalyticsAPI:
             Dictionary with updated annotation
         """
         attributes: Dict[str, Any] = {
-            "website_id": website_id,
+            "website_id": app_id,
             "content": content,
             "date": date,
         }
