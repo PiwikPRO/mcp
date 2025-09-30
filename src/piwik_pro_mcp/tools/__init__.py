@@ -19,6 +19,7 @@ from .tag_manager import (
     register_version_tools,
 )
 from .tracker_settings import register_tracker_settings_tools
+from .analytics import register_analytics_tools
 
 
 def register_all_tools(mcp: FastMCP) -> None:
@@ -43,6 +44,9 @@ def register_all_tools(mcp: FastMCP) -> None:
     # Register container settings tools
     register_container_settings_tools(mcp)
 
+    # Register analytics tools
+    register_analytics_tools(mcp)
+
 
 __all__ = [
     "register_all_tools",
@@ -56,5 +60,6 @@ __all__ = [
     "register_template_tools",
     "register_tracker_settings_tools",
     "register_container_settings_tools",
+    "register_analytics_tools",
     "register_parameter_discovery_tool",
 ]

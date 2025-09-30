@@ -24,6 +24,7 @@ from .methods.cdp import CdpAPI
 from .methods.container_settings import ContainerSettingsAPI
 from .methods.tag_manager import TagManagerAPI
 from .methods.tracker_settings import TrackerSettingsAPI
+from .methods.analytics import AnalyticsAPI
 
 
 class PiwikProClient:
@@ -71,6 +72,7 @@ class PiwikProClient:
         self.tag_manager = TagManagerAPI(self)
         self.container_settings = ContainerSettingsAPI(self)
         self.tracker_settings = TrackerSettingsAPI(self)
+        self.analytics = AnalyticsAPI(self)
 
     def _get_headers(self, extra_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         """
