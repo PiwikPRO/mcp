@@ -2,7 +2,7 @@
 Analytics user annotations tools.
 """
 
-from typing import List, Optional
+from typing import Optional
 
 from mcp.server.fastmcp import FastMCP
 
@@ -47,8 +47,8 @@ def register_analytics_tools(mcp: FastMCP) -> None:
     @mcp.tool(annotations={"title": "Piwik PRO: List Annotations", "readOnlyHint": True})
     def analytics_annotations_list(
         app_id: str,
-        date_from: Optional[List[str]] = None,
-        date_to: Optional[List[str]] = None,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
         source: str = "all",
         limit: int = 10,
         offset: int = 0,
@@ -58,8 +58,8 @@ def register_analytics_tools(mcp: FastMCP) -> None:
 
         Args:
             app_id: App UUID
-            date_from: Optional list of start dates (YYYY-MM-DD)
-            date_to: Optional list of end dates (YYYY-MM-DD)
+            date_from: Optional start date (YYYY-MM-DD)
+            date_to: Optional end date (YYYY-MM-DD)
             limit: Max number of items
             offset: Number of items to skip
 
@@ -68,9 +68,9 @@ def register_analytics_tools(mcp: FastMCP) -> None:
         """
         client = create_piwik_client()
 
-        # If both date_from and date_to provided, ensure lengths match
-        if date_from is not None and date_to is not None and len(date_from) != len(date_to):
-            raise RuntimeError("date_from and date_to must have the same number of items")
+        # API expects lists for repeated query params; wrap single dates if provided
+        date_from_list = [date_from] if date_from else None
+        date_to_list = [date_to] if date_to else None
 
         # Fetch annotations by source selection
         user_resp = None
@@ -79,14 +79,14 @@ def register_analytics_tools(mcp: FastMCP) -> None:
         src = (source or "all").lower()
         if src in ("all", "user"):
             user_resp = client.analytics.list_user_annotations(
-                app_id=app_id, date_from=date_from, date_to=date_to, limit=limit, offset=offset
+                app_id=app_id, date_from=date_from_list, date_to=date_to_list, limit=limit, offset=offset
             )
         if src in ("all", "system"):
             system_resp = client.analytics.list_system_annotations(
-                date_from=date_from, date_to=date_to, limit=limit, offset=offset
+                date_from=date_from_list, date_to=date_to_list, limit=limit, offset=offset
             )
         combined = user_resp.data + system_resp.data
-        combined.sort(key=lambda x: x.attributes.date, reverse=True)
+        combined.sort(key=lambda x: x.attributes.date)
         # Compose meta: we won't perfectly normalize counts across sources; provide total
         total = 0
         total += len(user_resp.data)
@@ -146,9 +146,3 @@ def register_analytics_tools(mcp: FastMCP) -> None:
             visibility=visibility,
         )
         return AnnotationItem(**api_resp.model_dump())
-
-
-
-
-
-
