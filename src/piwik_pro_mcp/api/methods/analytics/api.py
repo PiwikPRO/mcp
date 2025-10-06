@@ -41,7 +41,7 @@ class AnalyticsAPI:
         Create a new user annotation.
 
         Args:
-            app_id: App UUID (sent as website_id in API payload)
+            app_id: App UUID
             content: Annotation content (max 150 chars)
             date: Annotation date (YYYY-MM-DD)
             visibility: "private" (default) or "public"
@@ -60,8 +60,6 @@ class AnalyticsAPI:
         data = {"data": {"type": "UserAnnotation", "attributes": attributes}}
         response = self.client.post(f"{self._USER_ANNOTATIONS_BASE}/", data=data)
         return UserAnnotationSingleResponse(**(response or {}))
-
-    # No generic alias for create (user-only)
 
     def list_user_annotations(
         self,
@@ -91,7 +89,6 @@ class AnalyticsAPI:
         if offset is not None:
             params["offset"] = offset
 
-        # Repeated query params: requests will encode lists as repeated keys
         if date_from is not None:
             params["date_from"] = date_from
         if date_to is not None:
@@ -144,8 +141,6 @@ class AnalyticsAPI:
         response = self.client.get(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
         return UserAnnotationSingleResponse(**(response or {}))
 
-    # No generic alias for get (user-only)
-
     def delete_user_annotation(self, annotation_id: str, app_id: str) -> None:
         """
         Delete a user annotation.
@@ -159,8 +154,6 @@ class AnalyticsAPI:
         """
         params = {"website_id": app_id}
         self.client.delete(f"{self._USER_ANNOTATIONS_BASE}/{annotation_id}/", params=params)
-
-    # No generic alias for delete (user-only)
 
     def update_user_annotation(
         self,

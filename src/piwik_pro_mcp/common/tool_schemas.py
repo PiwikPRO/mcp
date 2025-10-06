@@ -36,7 +36,6 @@ TOOL_PARAMETER_MODELS: Dict[str, Type[BaseModel]] = {
     "variables_create": VariableCreateAttributes,
     "variables_update": VariableUpdateAttributes,
     "variables_list": VariableFilters,
-    # TODO add analytics annotations models
 }
 
 

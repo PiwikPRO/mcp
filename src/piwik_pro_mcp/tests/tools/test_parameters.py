@@ -213,7 +213,7 @@ class TestParameterRegistryConsistency:
             "tracker_settings_global_get",
             "tracker_settings_app_get",
             "tracker_settings_app_delete",
-            # Analytics annotations (simple scalars)
+            # Analytics annotations (annotations)
             "analytics_annotations_create",
             "analytics_annotations_list",
             "analytics_annotations_get",
