@@ -6,6 +6,9 @@ ability to control Piwik PRO Analytics resources.
 ## 🎇 Features
 
 - **App Management**: Create, read, update, and delete apps
+- **Analytics**:
+  - Annotations
+    - Create, read, update and delete notes
 - **Tracker Settings**: Global and app-specific tracker configuration management
 - **Container Settings**:
   - Get installation code for an app
@@ -200,7 +203,7 @@ Current featureset is not complete, and we're planning to add additional functio
 
 | Module    | Feature           | ETA     |
 | --------- | ----------------- | ------- |
-| Analytics | Annotations       | Q4 2025 |
+| Analytics | Annotations       | Done!   |
 |           | Goals             | Q4 2025 |
 |           | Custom Dimensions | Q4 2025 |
 |           | Query API         | Q4 2025 |
@@ -236,6 +239,14 @@ If you prefer not to send telemetry data, you can opt out at any time by adding 
 - `apps_create(attributes)` - Create a new app using JSON attributes
 - `apps_update(app_id, attributes)` - Update existing app using JSON attributes
 - `apps_delete(app_id)` - Delete an app (irreversible)
+
+### Analytics annotations
+
+- `analytics_annotations_list(app_id, date_from, date_to, source, limit, offset)` - List annotations for an app; supports user and system annotations. Use `source` to filter: "all", "user", or "system".
+- `analytics_annotations_get(annotation_id, app_id)` - Get a specific user annotation by ID
+- `analytics_annotations_create(app_id, content, date, visibility)` - Create a user annotation (default visibility is "private")
+- `analytics_annotations_update(annotation_id, app_id, content, date, visibility)` - Update an existing user annotation (default visibility is "private")
+- `analytics_annotations_delete(annotation_id, app_id)` - Delete a user annotation by ID
 
 ### Container Settings
 
@@ -377,11 +388,14 @@ The project follows a modular architecture that separates concerns and enables e
 - **`src/piwik_pro_mcp/server.py`**: Clean FastMCP server creation, configuration, and main entry point with argument parsing
 - **`src/piwik_pro_mcp/responses.py`**: MCP-specific Pydantic response models for typed tool outputs
 - **`src/piwik_pro_mcp/api/`**: Integrated API client library with OAuth2 authentication
+- **`src/piwik_pro_mcp/api/methods/`**: API endpoint modules: `apps/`, `analytics/`, `cdp/`, `container_settings/`, `tag_manager/`, `tracker_settings/`
 - **`pyproject.toml`**: Modern Python project configuration with uv dependency management
 
 #### Modular Tool Organization
 
 - **`src/piwik_pro_mcp/tools/`**: Organized by functional domains for easy contribution
+  - **`analytics/`**: Analytics operations
+    - `annotations.py`: User/System annotations tools
   - **`apps/tools.py`**: App management operations (create, read, update, delete)
   - **`cdp/`**: Customer Data Platform operations
     - `audiences.py`: Audience management operations

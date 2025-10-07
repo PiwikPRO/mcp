@@ -19,6 +19,7 @@ from .exceptions import (
     NotFoundError,
     PiwikProAPIError,
 )
+from .methods.analytics import AnalyticsAPI
 from .methods.apps import AppsAPI
 from .methods.cdp import CdpAPI
 from .methods.container_settings import ContainerSettingsAPI
@@ -71,6 +72,7 @@ class PiwikProClient:
         self.tag_manager = TagManagerAPI(self)
         self.container_settings = ContainerSettingsAPI(self)
         self.tracker_settings = TrackerSettingsAPI(self)
+        self.analytics = AnalyticsAPI(self)
 
     def _get_headers(self, extra_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         """

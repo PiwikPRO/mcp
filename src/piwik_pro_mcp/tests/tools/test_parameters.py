@@ -213,6 +213,12 @@ class TestParameterRegistryConsistency:
             "tracker_settings_global_get",
             "tracker_settings_app_get",
             "tracker_settings_app_delete",
+            # Analytics annotations (annotations)
+            "analytics_annotations_create",
+            "analytics_annotations_list",
+            "analytics_annotations_get",
+            "analytics_annotations_delete",
+            "analytics_annotations_update",
         }
 
         missing_models = [name for name in all_tool_names if name not in exemptions and name not in registry]
