@@ -87,7 +87,7 @@ class PiwikProClient:
         headers = {
             "Content-Type": "application/vnd.api+json",
             "Accept": "application/vnd.api+json",
-            "User-Agent": "piwik-pro-api-python/0.1.0",
+            "User-Agent": "piwik-pro-api-python/0.2.0",
         }
 
         # Add authentication headers
@@ -119,11 +119,7 @@ class PiwikProClient:
             error_data = {"errors": [{"title": f"HTTP {status_code}: {response_text}"}]}
 
         error_message = f"API request failed (HTTP {status_code})"
-        if "errors" in error_data and error_data["errors"]:
-            first_error = error_data["errors"][0]
-            error_message = first_error.get("title", error_message)
-            if "detail" in first_error:
-                error_message += f": {first_error['detail']}"
+        error_message += f"Response:\n{error_data}"
 
         if status_code == 400:
             raise BadRequestError(error_message, status_code, error_data)
@@ -150,7 +146,7 @@ class PiwikProClient:
         Make an authenticated API request.
 
         Args:
-            method: HTTP method (GET, POST, PATCH, DELETE)
+            method: HTTP method (GET, POST, PUT, PATCH, DELETE)
             endpoint: API endpoint path
             params: Query parameters
             data: Request body data
@@ -203,7 +199,7 @@ class PiwikProClient:
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | list | None:
         """Make a GET request."""
         return self.request("GET", endpoint, params=params, extra_headers=extra_headers)
 
@@ -216,6 +212,16 @@ class PiwikProClient:
     ) -> Union[Dict[str, Any], None]:
         """Make a POST request."""
         return self.request("POST", endpoint, params=params, data=data, extra_headers=extra_headers)
+
+    def put(
+        self,
+        endpoint: str,
+        data: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+    ) -> Union[Dict[str, Any], None]:
+        """Make a PUT request."""
+        return self.request("PUT", endpoint, params=params, data=data, extra_headers=extra_headers)
 
     def patch(
         self,

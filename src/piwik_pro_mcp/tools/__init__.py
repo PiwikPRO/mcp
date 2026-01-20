@@ -5,6 +5,8 @@ This module provides a clean interface for registering all MCP tools
 with the FastMCP server, organized by functional area.
 """
 
+import logging
+
 from mcp.server.fastmcp import FastMCP
 
 from .analytics import register_analytics_tools
@@ -20,6 +22,8 @@ from .tag_manager import (
     register_version_tools,
 )
 from .tracker_settings import register_tracker_settings_tools
+
+logger = logging.getLogger(__name__)
 
 
 def register_all_tools(mcp: FastMCP) -> None:
@@ -48,8 +52,21 @@ def register_all_tools(mcp: FastMCP) -> None:
     register_analytics_tools(mcp)
 
 
+def filter_write_tools(mcp: FastMCP) -> int:
+    tools_to_remove = [
+        name for name, tool in mcp._tool_manager._tools.items() if not getattr(tool.annotations, "readOnlyHint", False)
+    ]
+
+    for name in tools_to_remove:
+        del mcp._tool_manager._tools[name]
+        logger.debug("Safe mode: removed tool '%s'", name)
+
+    return len(tools_to_remove)
+
+
 __all__ = [
     "register_all_tools",
+    "filter_write_tools",
     # Individual registration functions (for selective registration if needed)
     "register_app_tools",
     "register_cdp_tools",

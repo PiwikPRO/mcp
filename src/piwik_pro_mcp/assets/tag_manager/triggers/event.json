@@ -103,7 +103,7 @@
         "condition_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique identifier for this condition (generate a new UUID)",
+          "description": "Unique identifier for this condition (auto-generated during trigger creation)",
           "example": "9efa6364-8982-45c5-a288-cdabdf7a4001"
         },
         "variable_id": {
@@ -219,7 +219,6 @@
           "trigger_type": "event",
           "conditions": [
             {
-              "condition_id": "9efa6364-8982-45c5-a288-cdabdf7a4001",
               "variable_id": "data-layer-event-name-variable-uuid",
               "condition_type": "equals",
               "value": "purchase_completed",
@@ -240,14 +239,12 @@
           "trigger_type": "event",
           "conditions": [
             {
-              "condition_id": "8dfa5263-7981-44c4-b187-bcabef6a3002",
               "variable_id": "data-layer-event-name-variable-uuid",
               "condition_type": "equals",
               "value": "lead_created",
               "options": {}
             },
             {
-              "condition_id": "7cfa4162-6870-43b3-a076-abacde5a2003",
               "variable_id": "data-layer-channel-variable-uuid",
               "condition_type": "equals",
               "value": "paid",
@@ -262,7 +259,7 @@
     "Using an event name variable that doesn't reflect your data layer structure",
     "Typos or inconsistent event naming",
     "Relying on properties that are not always present in the payload",
-    "Not generating unique condition_id values when editing conditions"
+    "Removing or reusing condition_id values incorrectly when editing existing conditions (creation auto-generates them)"
   ],
   "troubleshooting": {
     "trigger_not_firing": {

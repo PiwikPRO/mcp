@@ -188,3 +188,5 @@ logs/
 mcp_inspector_data/
 .mcp/
 .mcp.json
+.mcp.env
+.cursor/mcp.json

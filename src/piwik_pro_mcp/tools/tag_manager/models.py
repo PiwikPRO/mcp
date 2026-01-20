@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from ...common.settings import tag_manager_resource_check_enabled
 from ...common.templates import list_template_names
 
 
@@ -34,6 +35,8 @@ class TagManagerCreateAttributes(BaseModel):
     @field_validator("template")
     @classmethod
     def _validate_template(cls, v: str) -> str:
+        if not tag_manager_resource_check_enabled():
+            return v
         allowed = set(list_template_names("tag_manager/tags"))
         if v not in allowed:
             raise ValueError(f"Unsupported tag template '{v}'. Use templates_list() to discover options.")
@@ -89,6 +92,8 @@ class VariableCreateAttributes(BaseModel):
     @field_validator("variable_type")
     @classmethod
     def _validate_variable_type(cls, v: str) -> str:
+        if not tag_manager_resource_check_enabled():
+            return v
         allowed = set(list_template_names("tag_manager/variables"))
         if v not in allowed:
             raise ValueError(f"Unsupported variable type '{v}'. Use templates_list_variables() to discover options.")
@@ -107,6 +112,8 @@ class TriggerCreateAttributes(BaseModel):
     @field_validator("trigger_type")
     @classmethod
     def _validate_trigger_type(cls, v: str) -> str:
+        if not tag_manager_resource_check_enabled():
+            return v
         allowed = set(list_template_names("tag_manager/triggers"))
         if v not in allowed:
             raise ValueError(f"Unsupported trigger type '{v}'. Use templates_list_triggers() to discover options.")

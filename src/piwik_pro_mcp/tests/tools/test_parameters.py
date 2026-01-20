@@ -219,6 +219,23 @@ class TestParameterRegistryConsistency:
             "analytics_annotations_get",
             "analytics_annotations_delete",
             "analytics_annotations_update",
+            # Analytics goals (read-only / delete)
+            "analytics_goals_list",
+            "analytics_goals_get",
+            "analytics_goals_delete",
+            "analytics_goals_create",
+            "analytics_goals_update",
+            # Analytics query
+            "analytics_dimensions_list",
+            "analytics_metrics_list",
+            "analytics_dimensions_details_list",
+            "analytics_metrics_details_list",
+            # Analytics custom dimensions (read-only / delete)
+            "analytics_custom_dimensions_create",
+            "analytics_custom_dimensions_get",
+            "analytics_custom_dimensions_get_slots",
+            "analytics_custom_dimensions_list",
+            "analytics_custom_dimensions_update",
         }
 
         missing_models = [name for name in all_tool_names if name not in exemptions and name not in registry]

@@ -8,9 +8,32 @@ including client creation and data validation.
 import os
 from typing import Any, Dict, Optional, Type
 
+import requests
 from pydantic import BaseModel, ValidationError
 
 from piwik_pro_mcp.api.client import PiwikProClient
+
+
+def fetch_json_from_url(url: str, timeout: int = 5) -> dict | list:
+    """
+    Fetch JSON from an unauthenticated URL.
+
+    This is a simple utility for fetching public JSON resources (e.g., enum definitions).
+    """
+    headers = {"Accept": "application/json"}
+
+    try:
+        response = requests.get(url, headers=headers, timeout=timeout)
+        response.raise_for_status()
+        return response.json()
+    except requests.Timeout:
+        raise RuntimeError(f"Timeout fetching JSON from {url}")
+    except requests.HTTPError as e:
+        raise RuntimeError(f"HTTP error fetching JSON from {url}: {e.response.status_code}")
+    except requests.RequestException as e:
+        raise RuntimeError(f"Failed to fetch JSON from {url}: {str(e)}")
+    except ValueError:
+        raise RuntimeError(f"Invalid JSON response from {url}")
 
 
 def create_piwik_client() -> PiwikProClient:

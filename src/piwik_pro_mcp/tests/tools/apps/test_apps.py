@@ -274,6 +274,37 @@ class TestAppCrudFunctional:
         assert call_args[1]["search"] == "A"
 
     @pytest.mark.asyncio
+    async def test_apps_list_default_values(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.apps.list_apps.return_value = {
+            "data": [
+                {
+                    "id": "app-1",
+                    "type": "app",
+                    "attributes": {
+                        "name": "A",
+                        "addedAt": "2024-01-01T00:00:00Z",
+                        "updatedAt": "2024-01-02T00:00:00Z",
+                    },
+                }
+            ],
+            "meta": {"total": 1},
+        }
+
+        result = await mcp_server.call_tool("apps_list", {"search": "A"})
+
+        assert isinstance(result, tuple) and len(result) == 2
+        _, data = result
+        assert data["total"] == 1
+        assert data["limit"] == 100
+        assert data["offset"] == 0
+
+        mock_piwik_client.apps.list_apps.assert_called_once()
+        call_args = mock_piwik_client.apps.list_apps.call_args
+        assert call_args[1]["limit"] == 100
+        assert call_args[1]["offset"] == 0
+        assert call_args[1]["search"] == "A"
+
+    @pytest.mark.asyncio
     async def test_apps_delete_happy_path(self, mcp_server, mock_piwik_client):
         mock_piwik_client.apps.delete_app.return_value = None
 

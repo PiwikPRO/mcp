@@ -114,12 +114,12 @@
       "mutability": "editable",
       "description": "Array of condition objects that define when the trigger should fire",
       "structure": {
-        "condition_id": {
-          "type": "string",
-          "format": "uuid",
-          "description": "Unique identifier for this condition (generate a new UUID)",
-          "example": "9efa6364-8982-45c5-a288-cdabdf7a4001"
-        },
+          "condition_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this condition (auto-generated during trigger creation)",
+            "example": "9efa6364-8982-45c5-a288-cdabdf7a4001"
+          },
         "variable_id": {
           "type": "string",
           "format": "uuid",
@@ -267,7 +267,6 @@
           "trigger_type": "page_view",
           "conditions": [
             {
-              "condition_id": "9efa6364-8982-45c5-a288-cdabdf7a4001",
               "variable_id": "page-path-variable-uuid",
               "condition_type": "equals",
               "value": "/",
@@ -288,7 +287,6 @@
           "trigger_type": "page_view",
           "conditions": [
             {
-              "condition_id": "8dfa5263-7981-44c4-b187-bcabef6a3002",
               "variable_id": "page-path-variable-uuid",
               "condition_type": "contains",
               "value": "/product/",
@@ -309,7 +307,6 @@
           "trigger_type": "page_view",
           "conditions": [
             {
-              "condition_id": "7cfa4162-6870-43b3-a076-abacde5a2003",
               "variable_id": "page-title-variable-uuid",
               "condition_type": "contains",
               "value": "Thank You",
@@ -330,7 +327,6 @@
           "trigger_type": "page_view",
           "conditions": [
             {
-              "condition_id": "6bea3051-5769-42a2-9f65-9abccd4a1004",
               "variable_id": "referrer-variable-uuid",
               "condition_type": "contains",
               "value": "google.com",
@@ -351,14 +347,12 @@
           "trigger_type": "page_view",
           "conditions": [
             {
-              "condition_id": "5ad92f40-4658-41a1-8e54-8abcbc3a0005",
               "variable_id": "page-path-variable-uuid",
               "condition_type": "equals",
               "value": "/product/premium-plan",
               "options": {}
             },
             {
-              "condition_id": "4ac81e3f-3547-40b0-7d43-7abcab2a9006",
               "variable_id": "referrer-variable-uuid",
               "condition_type": "contains",
               "value": "googleadservices.com",
@@ -370,7 +364,7 @@
     }
   },
   "common_mistakes": [
-    "Forgetting to generate unique UUIDs for condition_id fields",
+    "Removing or altering condition_id values when editing existing conditions (creation auto-generates them)",
     "Using invalid variable_id references - ensure variables exist in your app",
     "Creating overly broad conditions that fire on every page view",
     "Using 'contains' when 'equals' would be more appropriate for exact matches",

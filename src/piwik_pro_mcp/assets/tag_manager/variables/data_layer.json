@@ -23,7 +23,7 @@
     "best_practices": [
       "Use consistent naming conventions across your data layer",
       "Test data layer variables in browser console before deployment",
-      "Implement fallback values for optional data layer properties",
+      "Validate that the required values are pushed for every relevant user journey",
       "Use descriptive variable names that indicate the data source",
       "Consider data layer availability timing - some values may load asynchronously",
       "Document your data layer structure for team collaboration"
@@ -47,30 +47,16 @@
           "value": "data_layer",
           "description": "Must be 'data_layer' for data layer variables"
         },
-        "data_layer_variable_name": {
+        "value": {
           "type": "string",
-          "description": "Name of the property to access in the data layer"
+          "description": "Path to the property to read from the data layer"
         }
       },
       "optional_parameters": {
-        "is_active": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether the variable is active"
-        },
-        "data_layer_version": {
-          "type": "string",
-          "default": "2",
-          "description": "Data layer version (1 or 2)"
-        },
-        "default_value": {
-          "type": "string",
-          "description": "Fallback value when data layer property is undefined"
-        },
-        "decode_uri_component": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether to decode URI components in the value"
+        "options": {
+          "type": "object",
+          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support",
+          "default": {}
         }
       }
     },
@@ -92,25 +78,13 @@
           "type": "string",
           "description": "Updated descriptive name for the variable"
         },
-        "is_active": {
-          "type": "boolean",
-          "description": "Whether the variable is active"
-        },
-        "data_layer_variable_name": {
+        "value": {
           "type": "string",
-          "description": "Updated data layer property name"
+          "description": "Updated data layer path"
         },
-        "data_layer_version": {
-          "type": "string",
-          "description": "Updated data layer version (1 or 2)"
-        },
-        "default_value": {
-          "type": "string",
-          "description": "Updated fallback value"
-        },
-        "decode_uri_component": {
-          "type": "boolean",
-          "description": "Updated URI decoding setting"
+        "options": {
+          "type": "object",
+          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support"
         }
       }
     }
@@ -148,10 +122,10 @@
       },
       "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
     },
-    "data_layer_variable_name": {
+    "value": {
       "type": "string",
       "mutability": "editable",
-      "description": "Name of the property to access in the data layer",
+      "description": "Path to the property to access in the data layer",
       "examples": [
         "orderTotal",
         "userId",
@@ -160,62 +134,22 @@
       ],
       "validation": {
         "required": true,
-        "pattern": "^[a-zA-Z_][a-zA-Z0-9_.]*(\\[[0-9]+\\])*$"
+        "min_length": 1,
+        "max_length": 65536
       },
-      "recommendation": "Use dot notation for nested properties (e.g., 'ecommerce.transaction_id') and bracket notation for arrays (e.g., 'products[0].name')"
+      "recommendation": "Use dot notation for nested objects (e.g., 'ecommerce.purchase.value') and bracket notation for arrays (e.g., 'products[0].name'). Confirm the same structure exists in your data layer implementation."
     }
   },
   "optional_attributes": {
-    "is_active": {
-      "type": "boolean",
+    "options": {
+      "type": "object",
       "mutability": "editable",
-      "description": "Whether the variable is active and available for use",
+      "description": "Optional configuration object. Leave empty unless Piwik PRO introduces additional capabilities.",
       "examples": [
-        true,
-        false
+        {}
       ],
-      "default": true,
-      "recommendation": "Keep active unless temporarily disabling for testing"
-    },
-    "data_layer_version": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Data layer version compatibility",
-      "examples": [
-        "1",
-        "2"
-      ],
-      "default": "2",
-      "validation": {
-        "allowed_values": [
-          "1",
-          "2"
-        ]
-      },
-      "recommendation": "Use version 2 for new implementations, version 1 for legacy GTM compatibility"
-    },
-    "default_value": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Fallback value when data layer property is undefined or null",
-      "examples": [
-        "0",
-        "unknown",
-        "not-set",
-        ""
-      ],
-      "recommendation": "Provide meaningful fallbacks for better error handling and reporting"
-    },
-    "decode_uri_component": {
-      "type": "boolean",
-      "mutability": "editable",
-      "description": "Whether to decode URI components in the retrieved value",
-      "examples": [
-        true,
-        false
-      ],
-      "default": false,
-      "recommendation": "Enable when data layer contains URL-encoded values that need decoding"
+      "default": {},
+      "recommendation": "Do not include custom keys—passing additional properties is rejected by the API."
     }
   },
   "read_only_attributes": {
@@ -237,17 +171,13 @@
         "description": "✅ Can be updated anytime after creation",
         "examples": [
           "name",
-          "is_active",
-          "data_layer_variable_name",
-          "data_layer_version",
-          "default_value",
-          "decode_uri_component"
+          "value",
+          "options"
         ],
         "use_cases": [
           "Renaming variables",
-          "Changing data source",
-          "Updating fallback values",
-          "Toggling active status"
+          "Changing the data layer path when the structure evolves",
+          "Clearing or adjusting the reserved options object if instructed by support"
         ]
       },
       "create-only": {
@@ -277,10 +207,7 @@
           "attributes": {
             "name": "Order Total",
             "variable_type": "data_layer",
-            "data_layer_variable_name": "ecommerce.purchase.value",
-            "data_layer_version": "2",
-            "default_value": "0",
-            "is_active": true
+            "value": "ecommerce.purchase.value"
           }
         }
       }
@@ -294,8 +221,7 @@
           "variable_id": "var-67890-1234-5678-9012-123456789def",
           "attributes": {
             "name": "Transaction Value",
-            "data_layer_variable_name": "transactionTotal",
-            "default_value": "0.00"
+            "value": "transactionTotal"
           }
         }
       }
@@ -309,8 +235,7 @@
           "attributes": {
             "name": "Transaction ID",
             "variable_type": "data_layer",
-            "data_layer_variable_name": "ecommerce.purchase.transaction_id",
-            "default_value": "unknown"
+            "value": "ecommerce.purchase.transaction_id"
           }
         }
       }
@@ -324,20 +249,18 @@
           "attributes": {
             "name": "First Product Name",
             "variable_type": "data_layer",
-            "data_layer_variable_name": "ecommerce.items[0].item_name",
-            "default_value": "No Product"
+            "value": "ecommerce.items[0].item_name"
           }
         }
       }
     }
   },
   "common_mistakes": [
-    "Not providing fallback values for optional data layer properties",
     "Using incorrect property names or paths for nested data",
+    "Leaving the data layer path empty or pointing to a property that is not pushed on every page",
     "Assuming data layer is always available immediately on page load",
     "Not testing data layer variables in different scenarios (logged in/out, different pages)",
-    "Using spaces or special characters in data_layer_variable_name",
-    "Forgetting to handle undefined or null values in the data layer",
+    "Using spaces or special characters in the value path",
     "Not documenting the expected data layer structure for the team"
   ],
   "troubleshooting": {
@@ -364,7 +287,6 @@
       "problem": "Issues migrating from Google Tag Manager data layer",
       "solutions": [
         "Ensure your GTM data layer is defined before Piwik PRO container loads",
-        "Use data_layer_version '1' for legacy GTM compatibility if needed",
         "Verify property names match between GTM and Piwik PRO implementations",
         "Test both dataLayer and _mtm data layer access methods"
       ]

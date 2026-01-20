@@ -54,6 +54,7 @@ def get_trigger(app_id: str, trigger_id: str) -> TagManagerSingleResponse:
 
 
 def create_trigger(app_id: str, attributes: dict) -> TagManagerSingleResponse:
+    """Create a trigger; conditions are evaluated with logical AND (no OR grouping)."""
     try:
         client = create_piwik_client()
 
@@ -188,6 +189,7 @@ def register_trigger_tools(mcp: FastMCP) -> None:
                        - name: Trigger name (always required)
                        - trigger_type: Trigger type (e.g., 'page_view', 'click', 'form_submission')
                        - conditions: Array of condition objects that define when trigger fires
+                         - evaluated with logical AND only, OR groupings are not supported
                        - Additional fields may be required depending on trigger type
 
         Returns:
@@ -216,7 +218,6 @@ def register_trigger_tools(mcp: FastMCP) -> None:
                 "trigger_type": "page_view",
                 "conditions": [
                     {
-                        "condition_id": "9efa6364-8982-45c5-a288-cdabdf7a4001",
                         "variable_id": "page-path-variable-uuid",
                         "condition_type": "equals",
                         "value": "/",
@@ -231,7 +232,6 @@ def register_trigger_tools(mcp: FastMCP) -> None:
                 "trigger_type": "click",
                 "conditions": [
                     {
-                        "condition_id": "8efa6364-8982-45c5-a288-cdabdf7a4002",
                         "variable_id": "click-element-variable-uuid",
                         "condition_type": "equals",
                         "value": "#cta-primary",

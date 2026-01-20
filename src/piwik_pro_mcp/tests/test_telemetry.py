@@ -11,6 +11,7 @@ import pytest
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from piwik_pro_mcp.common.settings import telemetry_enabled
 from piwik_pro_mcp.common.telemetry import (
     TelemetryEvent,
     TelemetrySender,
@@ -22,16 +23,20 @@ from piwik_pro_mcp.server import create_mcp_server
 
 def test_server_respects_env_and_disables_telemetry_when_flag_is_zero():
     with patch.dict(os.environ, {"PIWIK_PRO_TELEMETRY": "0"}, clear=False):
+        telemetry_enabled.cache_clear()
         with patch("piwik_pro_mcp.server.mcp_telemetry_wrapper", new=MagicMock()) as mock_wrapper:
             _ = create_mcp_server()
             mock_wrapper.assert_not_called()
+    telemetry_enabled.cache_clear()
 
 
 def test_server_instruments_telemetry_when_env_flag_is_one():
     with patch.dict(os.environ, {"PIWIK_PRO_TELEMETRY": "1"}, clear=False):
+        telemetry_enabled.cache_clear()
         with patch("piwik_pro_mcp.server.mcp_telemetry_wrapper", new=MagicMock()) as mock_wrapper:
             _ = create_mcp_server()
             mock_wrapper.assert_called_once()
+    telemetry_enabled.cache_clear()
 
 
 class _FakeAsyncClient:

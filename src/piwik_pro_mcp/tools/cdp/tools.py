@@ -37,7 +37,7 @@ from .models import (
 def register_cdp_tools(mcp: FastMCP) -> None:
     """Register all CDP management tools with the MCP server."""
 
-    @mcp.tool("audiences_list")
+    @mcp.tool("audiences_list", annotations={"title": "Piwik PRO: List Audiences", "readOnlyHint": True})
     def audiences_list(app_id: str) -> AudienceListMCPResponse:
         """List audiences from Piwik PRO CDP.
 
@@ -54,7 +54,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """
         return _list_audiences(app_id=app_id)
 
-    @mcp.tool("audiences_get")
+    @mcp.tool("audiences_get", annotations={"title": "Piwik PRO: Get Audience", "readOnlyHint": True})
     def audiences_get(app_id: str, audience_id: str) -> AudienceDetailsMCPResponse:
         """Get detailed information about a specific audience.
 
@@ -77,7 +77,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """
         return _get_audience_details(app_id=app_id, audience_id=audience_id)
 
-    @mcp.tool("audiences_create")
+    @mcp.tool("audiences_create", annotations={"title": "Piwik PRO: Create Audience"})
     def audiences_create(app_id: str, attributes: dict) -> AudienceCreateMCPResponse:
         """Create a new audience in Piwik PRO CDP using JSON attributes.
 
@@ -185,7 +185,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """
         return _create_audience(app_id=app_id, attributes=attributes)
 
-    @mcp.tool("audiences_update")
+    @mcp.tool("audiences_update", annotations={"title": "Piwik PRO: Update Audience"})
     def audiences_update(app_id: str, audience_id: str, attributes: dict) -> AudienceUpdateMCPResponse:
         """Update an existing audience in Piwik PRO CDP using JSON attributes.
 
@@ -248,7 +248,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """
         return _update_audience(app_id=app_id, audience_id=audience_id, attributes=attributes)
 
-    @mcp.tool("audiences_delete")
+    @mcp.tool("audiences_delete", annotations={"title": "Piwik PRO: Delete Audience"})
     def audiences_delete(app_id: str, audience_id: str) -> OperationStatusResponse:
         """Delete an existing audience in Piwik PRO CDP.
 
@@ -269,7 +269,9 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """
         return _delete_audience(app_id=app_id, audience_id=audience_id)
 
-    @mcp.tool("activations_attributes_list")
+    @mcp.tool(
+        "activations_attributes_list", annotations={"title": "Piwik PRO: List CDP Attributes", "readOnlyHint": True}
+    )
     def activations_attributes_list(app_id: str) -> AttributeListMCPResponse:
         """List all CDP attributes available for audience creation.
 

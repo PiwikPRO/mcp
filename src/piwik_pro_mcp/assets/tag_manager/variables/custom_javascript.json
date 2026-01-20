@@ -64,10 +64,10 @@
         }
       },
       "optional_parameters": {
-        "is_active": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether the variable is active"
+        "options": {
+          "type": "object",
+          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support",
+          "default": {}
         }
       }
     },
@@ -89,13 +89,13 @@
           "type": "string",
           "description": "Updated descriptive name for the variable"
         },
-        "is_active": {
-          "type": "boolean",
-          "description": "Whether the variable is active"
-        },
         "value": {
           "type": "string",
           "description": "Updated JavaScript code to execute"
+        },
+        "options": {
+          "type": "object",
+          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support"
         }
       }
     }
@@ -151,16 +151,15 @@
     }
   },
   "optional_attributes": {
-    "is_active": {
-      "type": "boolean",
+    "options": {
+      "type": "object",
       "mutability": "editable",
-      "description": "Whether the variable is active and available for use",
+      "description": "Optional configuration object. Leave empty unless Piwik PRO introduces additional capabilities.",
       "examples": [
-        true,
-        false
+        {}
       ],
-      "default": true,
-      "recommendation": "Keep active unless temporarily disabling for testing"
+      "default": {},
+      "recommendation": "Do not include custom keys—passing additional properties is rejected by the API."
     }
   },
   "read_only_attributes": {
@@ -182,14 +181,13 @@
         "description": "✅ Can be updated anytime after creation",
         "examples": [
           "name",
-          "is_active",
-          "value"
+          "value",
+          "options"
         ],
         "use_cases": [
           "Renaming variables",
           "Updating JavaScript logic",
-          "Fixing bugs in code",
-          "Toggling active status"
+          "Fixing bugs in code"
         ]
       },
       "create-only": {
@@ -219,8 +217,7 @@
           "attributes": {
             "name": "User Login Status",
             "variable_type": "custom_javascript",
-            "value": "try {\n  return localStorage.getItem('isLoggedIn') === 'true' ? 'authenticated' : 'guest';\n} catch (e) {\n  return 'unknown';\n}",
-            "is_active": true
+            "value": "try {\n  return localStorage.getItem('isLoggedIn') === 'true' ? 'authenticated' : 'guest';\n} catch (e) {\n  return 'unknown';\n}"
           }
         }
       }

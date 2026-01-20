@@ -109,9 +109,7 @@
       },
       "trigger_type": {
         "type": "string",
-        "enum": [
-          "click"
-        ],
+        "enum": ["click"],
         "description": "Trigger type constant - must be 'click'",
         "mutability": "create-only",
         "fixed_value": "click",
@@ -125,17 +123,16 @@
           "condition_id": {
             "type": "string",
             "format": "uuid",
-            "description": "Unique identifier for this condition (generate a new UUID)",
+            "description": "Unique identifier for this condition (auto-generated during trigger creation)",
             "example": "7dfa5263-7981-44c4-b187-bcabef6a3001"
           },
           "variable_id": {
             "type": "string",
             "format": "uuid",
-            "description": "UUID of the variable to check (typically Click Element, Click URL, Click Text)",
+            "description": "UUID of the variable to check (typically Click Element or Click URL)",
             "common_variables": {
               "click_element": "CSS selector or XPath of the clicked element",
               "click_url": "URL of the clicked link (for <a> tags)",
-              "click_text": "Text content of the clicked element",
               "click_id": "ID attribute of the clicked element",
               "click_classes": "CSS classes of the clicked element"
             }
@@ -166,15 +163,6 @@
                 "is_a_child_of",
                 "is_not_a_child_of"
               ],
-              "Click Text": [
-                "equals",
-                "does_not_equal",
-                "contains",
-                "does_not_contain",
-                "starts_with",
-                "ends_with",
-                "regexp"
-              ],
               "Click URL": [
                 "equals",
                 "does_not_equal",
@@ -188,7 +176,7 @@
           },
           "value": {
             "type": "string",
-            "description": "Value to compare against (CSS selector, XPath, text content, etc.)",
+            "description": "Value to compare against (CSS selector, XPath, URL, etc.)",
             "examples": [
               "#submit-button",
               ".cta-primary",
@@ -203,10 +191,7 @@
             "properties": {
               "selector_type": {
                 "type": "string",
-                "enum": [
-                  "css",
-                  "xpath"
-                ],
+                "enum": ["css", "xpath"],
                 "description": "Type of selector used in the value field",
                 "default": "css"
               }
@@ -214,7 +199,7 @@
           }
         },
         "minimum_items": 1,
-        "recommendation": "Include at least one element selector condition to specify which clicks to track"
+        "recommendation": "Include at least one element selector condition to specify which clicks to track. All conditions are evaluated with logical AND; OR groupings are not supported. Use regex in a single condition if you need OR-like matching."
       }
     },
     "condition_patterns": {
@@ -278,25 +263,6 @@
           }
         ]
       },
-      "click_text_matching": {
-        "description": "Track clicks based on element text content",
-        "condition_type": "equals|contains",
-        "variable_type": "Click Text",
-        "examples": [
-          {
-            "description": "Exact text match",
-            "condition_type": "equals",
-            "value": "Buy Now",
-            "variable": "Click Text"
-          },
-          {
-            "description": "Text contains pattern",
-            "condition_type": "contains",
-            "value": "Download",
-            "variable": "Click Text"
-          }
-        ]
-      },
       "url_link_tracking": {
         "description": "Track clicks on links to specific URLs",
         "condition_type": "equals|contains|starts_with",
@@ -352,7 +318,6 @@
             "trigger_type": "click",
             "conditions": [
               {
-                "condition_id": "8efa6364-8982-45c5-a288-cdabdf7a4101",
                 "variable_id": "click-element-variable-uuid",
                 "condition_type": "matches",
                 "value": "#cta-primary",
@@ -375,7 +340,6 @@
             "trigger_type": "click",
             "conditions": [
               {
-                "condition_id": "7dfa5263-7981-44c4-b187-bcabef6a3102",
                 "variable_id": "click-url-variable-uuid",
                 "condition_type": "ends_with",
                 "value": ".pdf",
@@ -396,7 +360,6 @@
             "trigger_type": "click",
             "conditions": [
               {
-                "condition_id": "6cfa4162-6870-43b3-a076-abacde5a2103",
                 "variable_id": "click-element-variable-uuid",
                 "condition_type": "matches",
                 "value": ".social-share-btn",
@@ -419,7 +382,6 @@
             "trigger_type": "click",
             "conditions": [
               {
-                "condition_id": "5bea3051-5769-42a2-9f65-9abccd4a1104",
                 "variable_id": "click-element-variable-uuid",
                 "condition_type": "is_a_child_of",
                 "value": ".main-nav",
@@ -442,14 +404,12 @@
             "trigger_type": "click",
             "conditions": [
               {
-                "condition_id": "4ad92f40-4658-41a1-8e54-8abcbc3a0105",
                 "variable_id": "click-url-variable-uuid",
                 "condition_type": "does_not_start_with",
                 "value": "https://yourdomain.com",
                 "options": {}
               },
               {
-                "condition_id": "3ac81e3f-3547-40b0-7d43-7abcab2a9106",
                 "variable_id": "click-url-variable-uuid",
                 "condition_type": "starts_with",
                 "value": "http",
@@ -470,7 +430,6 @@
             "trigger_type": "click",
             "conditions": [
               {
-                "condition_id": "2a92e31f-2436-4fa0-6c32-6abcab1a8107",
                 "variable_id": "click-element-variable-uuid",
                 "condition_type": "matches",
                 "value": "button[type='submit']",
@@ -479,7 +438,6 @@
                 }
               },
               {
-                "condition_id": "1b81d20e-1325-3e9f-5b21-5abcba0a7108",
                 "variable_id": "click-element-variable-uuid",
                 "condition_type": "is_a_child_of",
                 "value": "#contact-form",
@@ -563,7 +521,6 @@
         },
         "variable_compatibility_reference": {
           "Click Element": "Use 'matches', 'does_not_match', 'is_a_child_of', 'is_not_a_child_of'",
-          "Click Text": "Use 'equals', 'contains', 'starts_with', 'ends_with', etc.",
           "Click URL": "Use 'equals', 'contains', 'starts_with', 'ends_with', etc."
         }
       },
@@ -660,11 +617,6 @@
           "example": "https://example.com/download/file.pdf",
           "best_for": "Link tracking, external link monitoring, download tracking"
         },
-        "click_text": {
-          "description": "Visible text content of the clicked element",
-          "example": "Sign Up Now, Download PDF, Learn More",
-          "best_for": "Text-based tracking, A/B testing different button copy"
-        },
         "click_id": {
           "description": "ID attribute of the clicked element",
           "example": "submit-button, contact-form-btn",
@@ -678,7 +630,7 @@
       },
       "getting_variable_ids": {
         "step_1": "Use list_variables() to see all available variables in your app",
-        "step_2": "Look for click-related variables (Click Element, Click URL, Click Text, etc.)",
+        "step_2": "Look for click-related variables (Click Element, Click URL, etc.)",
         "step_3": "Copy the 'id' field from the variable object",
         "step_4": "Use that UUID as the variable_id in your trigger conditions"
       }
@@ -740,7 +692,7 @@
         "step_2": {
           "action": "Get available variables",
           "mcp_call": "list_variables(app_id='your-app-id')",
-          "purpose": "Find the variable IDs for Click Element, Click URL, Click Text, etc."
+          "purpose": "Find the variable IDs for Click Element, Click URL, etc."
         },
         "step_3": {
           "action": "Test the selector",
@@ -789,27 +741,18 @@
       "mutability_types": {
         "editable": {
           "description": "✅ Can be updated anytime after trigger creation",
-          "examples": [
-            "name",
-            "conditions"
-          ],
+          "examples": ["name", "conditions"],
           "note": "These fields can be safely modified through update_trigger"
         },
         "create-only": {
           "description": "⚠️ Can only be set during trigger creation, immutable afterward",
-          "examples": [
-            "trigger_type"
-          ],
+          "examples": ["trigger_type"],
           "edit_behavior": "These fields will be ignored in update operations",
           "note": "Trigger type defines the fundamental behavior and cannot be changed"
         },
         "read-only": {
           "description": "🚫 Auto-generated by API, never user-modifiable",
-          "examples": [
-            "created_at",
-            "updated_at",
-            "is_published"
-          ],
+          "examples": ["created_at", "updated_at", "is_published"],
           "edit_behavior": "These fields will be filtered out of update requests",
           "note": "Timestamps and publishing status are managed by the system"
         }

@@ -1,5 +1,5 @@
 """
-Analytics (Annotations) API for Piwik PRO.
+Analytics (Annotations and Goals) API for Piwik PRO.
 """
 
 from .api import AnalyticsAPI

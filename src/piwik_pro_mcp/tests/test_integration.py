@@ -65,6 +65,24 @@ class TestMCPToolExistence:
         "analytics_annotations_get",
         "analytics_annotations_update",
         "analytics_annotations_delete",
+        # Analytics Goals Tools
+        "analytics_goals_create",
+        "analytics_goals_list",
+        "analytics_goals_get",
+        "analytics_goals_update",
+        "analytics_goals_delete",
+        # Analytics Query Tools
+        "analytics_query_execute",
+        "analytics_dimensions_list",
+        "analytics_metrics_list",
+        "analytics_dimensions_details_list",
+        "analytics_metrics_details_list",
+        # Analytics Custom Dimensions Tools
+        "analytics_custom_dimensions_create",
+        "analytics_custom_dimensions_get",
+        "analytics_custom_dimensions_get_slots",
+        "analytics_custom_dimensions_list",
+        "analytics_custom_dimensions_update",
     ]
 
     @pytest.fixture(scope="class")

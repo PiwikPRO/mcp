@@ -25,7 +25,7 @@ from .models import (
 )
 
 
-def list_apps(limit: int = 10, offset: int = 0, search: Optional[str] = None) -> AppListMCPResponse:
+def list_apps(limit: int = 100, offset: int = 0, search: Optional[str] = None) -> AppListMCPResponse:
     try:
         client = create_piwik_client()
         response = client.apps.list_apps(limit=limit, offset=offset, search=search)
@@ -164,14 +164,14 @@ def register_app_tools(mcp: FastMCP) -> None:
     """Register all app management tools with the MCP server."""
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Apps", "readOnlyHint": True})
-    def apps_list(limit: int = 10, offset: int = 0, search: Optional[str] = None) -> AppListMCPResponse:
+    def apps_list(limit: int = 100, offset: int = 0, search: Optional[str] = None) -> AppListMCPResponse:
         """List apps from Piwik PRO analytics.
 
         Retrieves a list of applications (websites/apps) that are being tracked
         in the Piwik PRO analytics platform.
 
         Args:
-            limit: Maximum number of apps to return (default: 10, max: 1000)
+            limit: Maximum number of apps to return (default: 100, max: 1000)
             offset: Number of apps to skip (default: 0)
             search: Search query to filter apps by name
 

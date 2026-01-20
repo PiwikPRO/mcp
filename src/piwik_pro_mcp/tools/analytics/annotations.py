@@ -7,13 +7,14 @@ from typing import Optional
 from mcp.server.fastmcp import FastMCP
 
 from ...common import create_piwik_client
+from ...responses import OperationStatusResponse
 from .models import (
     AnnotationItem,
     AnnotationsList,
 )
 
 
-def register_analytics_tools(mcp: FastMCP) -> None:
+def register_annotations_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
     """Register Analytics user annotation tools with the MCP server."""
 
     @mcp.tool(annotations={"title": "Piwik PRO: Create Annotation"})
@@ -104,26 +105,42 @@ def register_analytics_tools(mcp: FastMCP) -> None:
         return AnnotationItem(**api_resp.model_dump())
 
     @mcp.tool(annotations={"title": "Piwik PRO: Delete Annotation"})
-    def analytics_annotations_delete(annotation_id: str, app_id: str) -> None:
+    def analytics_annotations_delete(annotation_id: str, app_id: str) -> OperationStatusResponse:
         """
         Delete a user annotation by ID.
+
+        Args:
+            annotation_id: Annotation UUID
+            app_id: App UUID
+
+        Returns:
+            Operation status with success message
         """
-        client = create_piwik_client()
-        # Check type before attempting delete (can't delete system via user endpoint)
-        details = client.analytics.get_user_annotation(annotation_id=annotation_id, app_id=app_id)
-        item_type = None
-        if details is not None:
-            # Support both Pydantic response objects and plain dicts
-            if hasattr(details, "data"):
-                try:
-                    item_type = getattr(details.data, "type", None)
-                except Exception:
-                    item_type = None
-            elif isinstance(details, dict):
-                item_type = details.get("data", {}).get("type")
-        if item_type and item_type.lower() == "systemannotation":
-            raise RuntimeError("System annotations cannot be deleted.")
-        client.analytics.delete_user_annotation(annotation_id=annotation_id, app_id=app_id)
+        try:
+            client = create_piwik_client()
+            # Check type before attempting delete (can't delete system via user endpoint)
+            details = client.analytics.get_user_annotation(annotation_id=annotation_id, app_id=app_id)
+            item_type = None
+            if details is not None:
+                # Support both Pydantic response objects and plain dicts
+                if hasattr(details, "data"):
+                    try:
+                        item_type = getattr(details.data, "type", None)
+                    except Exception:
+                        item_type = None
+                elif isinstance(details, dict):
+                    item_type = details.get("data", {}).get("type")
+            if item_type and item_type.lower() == "systemannotation":
+                raise RuntimeError("System annotations cannot be deleted.")
+            client.analytics.delete_user_annotation(annotation_id=annotation_id, app_id=app_id)
+            return OperationStatusResponse(
+                status="success",
+                message=f"Annotation {annotation_id} deleted successfully",
+            )
+        except RuntimeError:
+            raise
+        except Exception as e:
+            raise RuntimeError(f"Failed to delete annotation: {str(e)}")
 
     @mcp.tool(annotations={"title": "Piwik PRO: Update Annotation"})
     def analytics_annotations_update(

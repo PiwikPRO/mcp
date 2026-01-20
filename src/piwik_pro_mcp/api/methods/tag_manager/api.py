@@ -3,6 +3,7 @@ Tag Manager API for Piwik PRO.
 """
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from uuid import uuid4
 
 if TYPE_CHECKING:
     from ...client import PiwikProClient
@@ -12,6 +13,7 @@ from .models import (
     TagFilters,
     TagManagerSortOrder,
     TriggerAttributes,
+    TriggerCondition,
     TriggerFilters,
     VariableAttributes,
     VariableFilters,
@@ -403,6 +405,24 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
+        # Generate unique condition_id for each condition while creating the trigger
+        conditions = kwargs.get("conditions")
+        if conditions:
+            normalized_conditions = []
+            for condition in conditions:
+                if isinstance(condition, TriggerCondition):
+                    condition_data = condition.model_dump()
+                elif isinstance(condition, dict):
+                    condition_data = condition.copy()
+                else:
+                    condition_data = dict(condition)
+
+                if not condition_data.get("condition_id"):
+                    condition_data["condition_id"] = str(uuid4())
+                normalized_conditions.append(condition_data)
+
+            kwargs["conditions"] = normalized_conditions
+
         attributes = TriggerAttributes(name=name, trigger_type=trigger_type, **kwargs)
 
         data = {

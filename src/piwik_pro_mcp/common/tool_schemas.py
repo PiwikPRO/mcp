@@ -9,6 +9,7 @@ from typing import Any, Dict, Type
 
 from pydantic import BaseModel
 
+from piwik_pro_mcp.api.methods.analytics.models import QueryRequest
 from piwik_pro_mcp.api.methods.apps.models import AppEditableAttributes, NewAppAttributes
 from piwik_pro_mcp.api.methods.cdp.models import EditableAudienceAttributes, NewAudienceAttributes
 from piwik_pro_mcp.api.methods.tag_manager.models import TagFilters, TriggerAttributes, TriggerFilters, VariableFilters
@@ -36,6 +37,7 @@ TOOL_PARAMETER_MODELS: Dict[str, Type[BaseModel]] = {
     "variables_create": VariableCreateAttributes,
     "variables_update": VariableUpdateAttributes,
     "variables_list": VariableFilters,
+    "analytics_query_execute": QueryRequest,
 }
 
 

@@ -148,7 +148,7 @@ class TestAnnotationsCrudFunctional:
 
     @pytest.mark.asyncio
     async def test_annotations_delete_functional(self, mcp_server, mock_piwik_client):
-        # Ensure delete path is exercised and returns tuple from MCP
+        # Ensure delete path is exercised and returns OperationStatusResponse
         result = await mcp_server.call_tool(
             "analytics_annotations_delete",
             {"annotation_id": "ann-2", "app_id": "app-1"},
@@ -156,8 +156,9 @@ class TestAnnotationsCrudFunctional:
 
         assert isinstance(result, tuple) and len(result) == 2
         _, data = result
-        # FastMCP returns {'result': None} for tools with None return
-        assert data == {"result": None}
+        # Verify OperationStatusResponse structure
+        assert data["status"] == "success"
+        assert data["message"] == "Annotation ann-2 deleted successfully"
         mock_piwik_client.analytics.delete_user_annotation.assert_called_once_with(
             annotation_id="ann-2", app_id="app-1"
         )

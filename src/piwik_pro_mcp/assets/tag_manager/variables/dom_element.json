@@ -24,7 +24,7 @@
     "best_practices": [
       "Use specific CSS selectors that uniquely identify the target element",
       "Test selectors in browser developer tools before deployment",
-      "Provide meaningful fallback values for when elements are not found",
+      "Confirm the element exists at the time the variable executes to avoid empty results",
       "Consider timing - some elements may load asynchronously",
       "Use stable selectors that won't break with design changes",
       "Validate that the element exists before attempting to read from it"
@@ -55,29 +55,28 @@
           "value": "dom_element",
           "description": "Must be 'dom_element' for DOM element variables"
         },
-        "element_selector": {
+        "value": {
           "type": "string",
-          "description": "CSS selector or XPath to identify the target element"
-        }
-      },
-      "optional_parameters": {
-        "is_active": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether the variable is active"
+          "description": "Selector value used to find the DOM element (interpretation depends on selector_type)"
         },
-        "selection_method": {
-          "type": "string",
-          "default": "css",
-          "description": "Method to select element: 'css' or 'xpath'"
-        },
-        "attribute_name": {
-          "type": "string",
-          "description": "Specific attribute to extract (if not specified, gets text content)"
-        },
-        "default_value": {
-          "type": "string",
-          "description": "Fallback value when element is not found or empty"
+        "options": {
+          "type": "object",
+          "description": "Selection settings for the DOM lookup",
+          "properties": {
+            "selector_type": {
+              "type": "string",
+              "description": "Selector strategy to use",
+              "allowed_values": [
+                "element_id",
+                "css",
+                "xpath"
+              ]
+            },
+            "extract_text_content": {
+              "type": "boolean",
+              "description": "Whether to return text content (true) or the raw element HTML (false)"
+            }
+          }
         }
       }
     },
@@ -99,25 +98,28 @@
           "type": "string",
           "description": "Updated descriptive name for the variable"
         },
-        "is_active": {
-          "type": "boolean",
-          "description": "Whether the variable is active"
-        },
-        "element_selector": {
+        "value": {
           "type": "string",
-          "description": "Updated CSS selector or XPath"
+          "description": "Updated selector value"
         },
-        "selection_method": {
-          "type": "string",
-          "description": "Updated selection method: 'css' or 'xpath'"
-        },
-        "attribute_name": {
-          "type": "string",
-          "description": "Updated attribute to extract"
-        },
-        "default_value": {
-          "type": "string",
-          "description": "Updated fallback value"
+        "options": {
+          "type": "object",
+          "description": "Updated selection settings",
+          "properties": {
+            "selector_type": {
+              "type": "string",
+              "description": "Selector strategy to use",
+              "allowed_values": [
+                "element_id",
+                "css",
+                "xpath"
+              ]
+            },
+            "extract_text_content": {
+              "type": "boolean",
+              "description": "Whether to return text content (true) or raw element HTML (false)"
+            }
+          }
         }
       }
     }
@@ -156,82 +158,70 @@
       },
       "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
     },
-    "element_selector": {
+    "value": {
       "type": "string",
       "mutability": "editable",
-      "description": "CSS selector or XPath to identify the target DOM element",
+      "description": "Selector value used to locate the DOM element",
       "examples": [
-        "#product-name",
+        "#product-title",
         ".price-current",
         "input[name='email']",
-        "[data-track='search-query']",
-        "//h1[@class='product-title']"
+        "data-track-id",
+        "//article//span[@class='category'][1]"
       ],
       "validation": {
         "required": true,
         "min_length": 1,
         "max_length": 500
       },
-      "recommendation": "Use specific, stable selectors that uniquely identify the target element"
-    }
-  },
-  "optional_attributes": {
-    "is_active": {
-      "type": "boolean",
-      "mutability": "editable",
-      "description": "Whether the variable is active and available for use",
-      "examples": [
-        true,
-        false
-      ],
-      "default": true,
-      "recommendation": "Keep active unless temporarily disabling for testing"
+      "recommendation": "Provide a selector value that matches the chosen selector_type. For example, supply only the ID token when using 'element_id', or a full CSS/XPath expression for the other types."
     },
-    "selection_method": {
-      "type": "string",
+    "options": {
+      "type": "object",
       "mutability": "editable",
-      "description": "Method used to select the DOM element",
-      "examples": [
-        "css",
-        "xpath"
-      ],
-      "default": "css",
+      "description": "Selection settings controlling how the DOM element value is extracted",
       "validation": {
-        "allowed_values": [
-          "css",
-          "xpath"
-        ]
+        "required_fields": [
+          "selector_type",
+          "extract_text_content"
+        ],
+        "allow_additional_properties": false
       },
-      "recommendation": "Use 'css' for standard CSS selectors, 'xpath' for complex element navigation"
-    },
-    "attribute_name": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Specific HTML attribute to extract from the element",
-      "examples": [
-        "value",
-        "href",
-        "src",
-        "data-product-id",
-        "title",
-        "alt"
-      ],
-      "recommendation": "Leave empty to get text content, specify attribute name to get attribute value"
-    },
-    "default_value": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Fallback value when element is not found or has no value",
-      "examples": [
-        "not-found",
-        "unknown",
-        "",
-        "0",
-        "default"
-      ],
-      "recommendation": "Provide meaningful fallbacks for better error handling and data consistency"
+      "fields": {
+        "selector_type": {
+          "type": "string",
+          "description": "Selector interpretation mode",
+          "examples": [
+            "element_id",
+            "css",
+            "xpath"
+          ],
+          "validation": {
+            "required": true,
+            "allowed_values": [
+              "element_id",
+              "css",
+              "xpath"
+            ]
+          },
+          "recommendation": "Choose 'element_id' when you have a stable ID token, 'css' for CSS selectors, or 'xpath' for advanced DOM traversal."
+        },
+        "extract_text_content": {
+          "type": "boolean",
+          "description": "When true, returns the element's textContent; when false, returns the serialized element",
+          "examples": [
+            true,
+            false
+          ],
+          "validation": {
+            "required": true
+          },
+          "recommendation": "Use true for most text/attribute capture scenarios. Set to false only if you need the entire element markup."
+        }
+      }
     }
   },
+  "optional_attributes": {},
   "read_only_attributes": {
     "created_at": {
       "mutability": "read-only",
@@ -251,17 +241,15 @@
         "description": "✅ Can be updated anytime after creation",
         "examples": [
           "name",
-          "is_active",
-          "element_selector",
-          "selection_method",
-          "attribute_name",
-          "default_value"
+          "value",
+          "options.selector_type",
+          "options.extract_text_content"
         ],
         "use_cases": [
-          "Updating selectors",
-          "Changing target attributes",
-          "Modifying fallback values",
-          "Renaming variables"
+          "Renaming variables",
+          "Updating selectors when page structure changes",
+          "Switching between CSS, XPath, or element-id selection",
+          "Toggling between textContent extraction and raw element output"
         ]
       },
       "create-only": {
@@ -291,10 +279,11 @@
           "attributes": {
             "name": "Product Name",
             "variable_type": "dom_element",
-            "element_selector": "#product-title",
-            "selection_method": "css",
-            "default_value": "Unknown Product",
-            "is_active": true
+            "value": "#product-title",
+            "options": {
+              "selector_type": "css",
+              "extract_text_content": true
+            }
           }
         }
       }
@@ -308,30 +297,35 @@
           "variable_id": "var-67890-1234-5678-9012-123456789def",
           "attributes": {
             "name": "Enhanced Product Name",
-            "element_selector": ".product-name h1",
-            "default_value": "Product Not Found"
+            "value": ".product-details h1",
+            "options": {
+              "selector_type": "css",
+              "extract_text_content": true
+            }
           }
         }
       }
     },
     "form_field_example": {
-      "description": "Capturing email field value from a form",
+      "description": "Using element ID selection and returning serialized markup",
       "mcp_call": {
         "function": "create_variable",
         "parameters": {
           "app_id": "abc12345-1234-5678-9012-123456789abc",
           "attributes": {
-            "name": "User Email",
+            "name": "Hero Banner",
             "variable_type": "dom_element",
-            "element_selector": "input[name='email']",
-            "attribute_name": "value",
-            "default_value": "not-provided"
+            "value": "hero-banner",
+            "options": {
+              "selector_type": "element_id",
+              "extract_text_content": false
+            }
           }
         }
       }
     },
     "data_attribute_example": {
-      "description": "Reading a custom data attribute value",
+      "description": "Capturing text from a data attribute wrapper using CSS selector",
       "mcp_call": {
         "function": "create_variable",
         "parameters": {
@@ -339,9 +333,11 @@
           "attributes": {
             "name": "Product SKU",
             "variable_type": "dom_element",
-            "element_selector": "[data-product-sku]",
-            "attribute_name": "data-product-sku",
-            "default_value": "unknown-sku"
+            "value": "[data-product-sku]",
+            "options": {
+              "selector_type": "css",
+              "extract_text_content": true
+            }
           }
         }
       }
@@ -355,9 +351,11 @@
           "attributes": {
             "name": "Article Category",
             "variable_type": "dom_element",
-            "element_selector": "//article//span[@class='category'][1]",
-            "selection_method": "xpath",
-            "default_value": "uncategorized"
+            "value": "//article//span[@class='category'][1]",
+            "options": {
+              "selector_type": "xpath",
+              "extract_text_content": true
+            }
           }
         }
       }
@@ -365,12 +363,12 @@
   },
   "common_mistakes": [
     "Using fragile selectors that break when page design changes",
-    "Not providing default values, leading to empty or undefined tracking data",
+    "Mixing CSS syntax with selector_type 'element_id', causing the selector to fail",
+    "Forgetting to include required options fields (selector_type and extract_text_content)",
     "Selecting elements that load asynchronously without proper timing considerations",
     "Using overly complex selectors that are hard to maintain",
     "Not testing selectors across different page states and user interactions",
-    "Forgetting to handle cases where multiple elements match the selector",
-    "Using selectors based on generated IDs or classes that might change"
+    "Leaving extract_text_content set incorrectly, resulting in unexpected output"
   ],
   "troubleshooting": {
     "element_not_found": {
@@ -380,17 +378,18 @@
         "Check if the element loads asynchronously and adjust timing",
         "Ensure the selector is specific enough to target the right element",
         "Test the selector on the actual page where the variable will be used",
-        "Confirm the element exists when the variable is being evaluated"
+        "Confirm the element exists when the variable is being evaluated",
+        "Double-check that selector_type matches the provided value format"
       ]
     },
-    "wrong_attribute_value": {
-      "problem": "Getting unexpected values from the DOM element",
+    "unexpected_output": {
+      "problem": "Captured value format does not match expectations",
       "solutions": [
-        "Verify the attribute_name is correct and exists on the element",
-        "Check if you want text content (leave attribute_name empty) vs attribute value",
-        "Inspect the element to see all available attributes",
-        "Test different attribute names to find the right data",
-        "Consider if the element value changes based on user interactions"
+        "Review extract_text_content: set to true to return textContent, false for raw HTML",
+        "Inspect the element in browser dev tools to confirm the available content",
+        "Ensure the selector targets the correct node (e.g., the wrapper span rather than a parent container)",
+        "Consider whether dynamic scripts modify the element after the variable runs",
+        "Test the variable directly in preview mode to see the resolved value"
       ]
     },
     "selector_too_broad": {
