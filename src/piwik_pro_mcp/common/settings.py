@@ -67,3 +67,35 @@ def safe_mode_enabled() -> bool:
     """
 
     return _get_bool("PIWIK_PRO_SAFE_MODE", default=True)
+
+
+# Default allowed hosts for DNS rebinding protection (localhost variants)
+_DEFAULT_HTTP_ALLOWED_HOSTS: list[str] = [
+    "localhost:*",
+    "127.0.0.1:*",
+    "::1:*",
+    "[::1]:*",
+]
+
+
+@lru_cache(maxsize=None)
+def http_allowed_hosts() -> list[str]:
+    """Return the list of allowed hosts for HTTP transport DNS rebinding protection.
+
+    Always includes localhost variants (localhost, 127.0.0.1, ::1, [::1]).
+    Use PIWIK_PRO_HTTP_ALLOWED_HOSTS to specify additional allowed hosts
+    as a comma-separated list.
+
+    Example:
+        PIWIK_PRO_HTTP_ALLOWED_HOSTS=mcp.example.com:*,internal.local:8080
+    """
+    env_value = _get_env("PIWIK_PRO_HTTP_ALLOWED_HOSTS")
+
+    if env_value is None:
+        return _DEFAULT_HTTP_ALLOWED_HOSTS.copy()
+
+    # Parse comma-separated list and strip whitespace
+    custom_hosts = [host.strip() for host in env_value.split(",") if host.strip()]
+
+    # Combine defaults with custom hosts
+    return _DEFAULT_HTTP_ALLOWED_HOSTS.copy() + custom_hosts

@@ -25,8 +25,9 @@ from typing import Literal, Optional
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
-from piwik_pro_mcp.common.settings import safe_mode_enabled, telemetry_enabled
+from piwik_pro_mcp.common.settings import http_allowed_hosts, safe_mode_enabled, telemetry_enabled
 from piwik_pro_mcp.common.telemetry import TelemetrySender
 
 from .common import mcp_telemetry_wrapper
@@ -35,7 +36,13 @@ from .tools import filter_write_tools, register_all_tools
 
 def create_mcp_server() -> FastMCP:
     """Create and configure the FastMCP server with all Piwik PRO tools."""
-    mcp = FastMCP("Piwik PRO Analytics Server 📊")
+    mcp = FastMCP(
+        "Piwik PRO Analytics Server 📊",
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=True,
+            allowed_hosts=http_allowed_hosts(),
+        ),
+    )
 
     # Instrument MCP with telemetry before registering any tools
     if telemetry_enabled():
@@ -93,6 +100,7 @@ def load_env_file(env_file_path):
         # Clear cached settings so they re-read from updated environment
         safe_mode_enabled.cache_clear()
         telemetry_enabled.cache_clear()
+        http_allowed_hosts.cache_clear()
     except ImportError:
         logger.error("python-dotenv not installed. Install with: pip install python-dotenv")
         sys.exit(1)
