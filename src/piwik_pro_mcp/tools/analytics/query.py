@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any
+from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
@@ -161,7 +161,7 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         metric_filters: dict[str, Any] | None = None,
         offset: int = 0,
         limit: int = 100,
-        order_by: list[list[Any]] | None = None,
+        order_by: list[list[int | Literal["asc", "desc"]]] | None = None,
     ) -> QueryExecuteResponse:
         """
         Execute an analytics query against Piwik PRO.

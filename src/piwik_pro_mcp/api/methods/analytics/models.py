@@ -322,7 +322,9 @@ class QueryRequest(BaseModel):
     metric_filters: FilterGroup | None = Field(None, description="Metric filtering conditions")
     offset: int | None = Field(0, ge=0, description="Number of rows to skip")
     limit: int | None = Field(100, ge=1, le=100000, description="Maximum rows to return")
-    order_by: list[list[Any]] | None = Field(None, description="Order by column index and direction")
+    order_by: list[list[int | Literal["asc", "desc"]]] | None = Field(
+        None, description="Order by column index and direction"
+    )
 
     @model_validator(mode="after")
     def validate_date_fields(self):

@@ -2,7 +2,7 @@
 Analytics API for Piwik PRO - User Annotations, Goals, and Custom Dimensions.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 from piwik_pro_mcp.api.methods.analytics.models import (
     CustomDimensionListResponse,
@@ -386,7 +386,7 @@ class AnalyticsAPI:
         metric_filters: dict[str, Any] | None = None,
         offset: int = 0,
         limit: int = 100,
-        order_by: list[list[Any]] | None = None,
+        order_by: list[list[int | Literal["asc", "desc"]]] | None = None,
     ) -> QueryResponse:
         """
         Execute an analytics query.
