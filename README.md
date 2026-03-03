@@ -1,5 +1,9 @@
 # 🤖 Piwik PRO MCP Server (beta)
 
+> [!IMPORTANT]
+> This is a mirror of public [mcp](https://github.com/PiwikPRO/mcp) repository used for internal research & development.
+> README install methods refer to the public version.
+
 A Model Context Protocol (MCP) server built with the official MCP Python SDK that provides
 ability to control Piwik PRO Analytics resources.
 

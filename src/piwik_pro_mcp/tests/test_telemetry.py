@@ -1,6 +1,8 @@
 """Unit tests for telemetry utilities and server telemetry toggling."""
 
 import asyncio
+import base64
+import json
 import os
 from typing import Any, Dict, Optional
 from unittest.mock import MagicMock, patch
@@ -11,6 +13,7 @@ import pytest
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from piwik_pro_mcp.api.auth import OAuth2Handler
 from piwik_pro_mcp.common.settings import telemetry_enabled
 from piwik_pro_mcp.common.telemetry import (
     TelemetryEvent,
@@ -19,6 +22,8 @@ from piwik_pro_mcp.common.telemetry import (
     mcp_telemetry_wrapper,
 )
 from piwik_pro_mcp.server import create_mcp_server
+
+_TELEMETRY_SINK_URL = "https://telemetry.endpoint.sink"
 
 
 def test_server_respects_env_and_disables_telemetry_when_flag_is_zero():
@@ -65,7 +70,7 @@ async def test_telemetry_sender_encodes_expected_query(monkeypatch):
 
     monkeypatch.setattr(httpx, "AsyncClient", _factory)
 
-    sender = TelemetrySender(endpoint_url="https://success.piwik.pro/ppms.php", timeout_seconds=1.5, enabled=True)
+    sender = TelemetrySender(endpoint_url=_TELEMETRY_SINK_URL, timeout_seconds=1.5, enabled=True)
     event = TelemetryEvent(
         tool_name="test_tool",
         status=TelemetryStatus.SUCCESS,
@@ -93,7 +98,7 @@ async def test_telemetry_sender_encodes_expected_query(monkeypatch):
     await sender.send_event(event)
 
     # Assert
-    assert captured["url"] == "https://success.piwik.pro/ppms.php"
+    assert captured["url"] == _TELEMETRY_SINK_URL
     assert captured["headers"]["Content-Type"] == "application/json"
     assert isinstance(captured["json"], dict)
     assert "requests" in captured["json"]
@@ -156,7 +161,7 @@ async def test_mcp_wrapper_populates_event_fields_for_tool_success(monkeypatch):
 
     # Create a minimal FastMCP and instrument telemetry
     mcp = FastMCP("test")
-    sender = TelemetrySender(endpoint_url="https://success.piwik.pro/ppms.php")
+    sender = TelemetrySender(endpoint_url=_TELEMETRY_SINK_URL)
     mcp_telemetry_wrapper(mcp, sender)
 
     # Register a simple tool
@@ -205,7 +210,7 @@ async def test_mcp_wrapper_populates_event_fields_for_tool_error(monkeypatch):
 
     # Create a minimal FastMCP and instrument telemetry
     mcp = FastMCP("test")
-    sender = TelemetrySender(endpoint_url="https://success.piwik.pro/ppms.php")
+    sender = TelemetrySender(endpoint_url=_TELEMETRY_SINK_URL)
     mcp_telemetry_wrapper(mcp, sender)
 
     # Register a tool that fails
@@ -239,3 +244,116 @@ async def test_mcp_wrapper_populates_event_fields_for_tool_error(monkeypatch):
     assert parsed["dimension4"] == ["boom"]
     assert parsed["dimension5"] == ["unknown"]
     assert parsed["dimension6"] == ["unknown"]
+
+
+def _make_jwt(payload: dict) -> str:
+    """Build a minimal unsigned JWT (header.payload.signature) for testing."""
+    header = base64.urlsafe_b64encode(json.dumps({"alg": "none"}).encode()).rstrip(b"=").decode()
+    body = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
+    return f"{header}.{body}.sig"
+
+
+def test_extract_org_from_jwt_valid():
+    token = _make_jwt({"org": "acme-corp", "sub": "user1"})
+    assert OAuth2Handler._extract_org_from_jwt(token) == "acme-corp"
+
+
+def test_extract_org_from_jwt_missing_org_field():
+    token = _make_jwt({"sub": "user1"})
+    assert OAuth2Handler._extract_org_from_jwt(token) is None
+
+
+def test_extract_org_from_jwt_malformed_token():
+    assert OAuth2Handler._extract_org_from_jwt("not-a-jwt") is None
+
+
+def test_extract_org_from_jwt_invalid_base64():
+    assert OAuth2Handler._extract_org_from_jwt("header.!!!invalid!!!.sig") is None
+
+
+@pytest.mark.asyncio
+async def test_telemetry_event_includes_dimension7_when_org_set(monkeypatch):
+    captured: Dict[str, Any] = {}
+
+    class _CaptureClient(_FakeAsyncClient):
+        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+            nonlocal captured
+            captured = {"url": url, "json": json, "headers": headers}
+
+    monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: _CaptureClient(timeout=kwargs.get("timeout")))
+
+    sender = TelemetrySender(endpoint_url=_TELEMETRY_SINK_URL, enabled=True)
+    event = TelemetryEvent(
+        tool_name="t",
+        status=TelemetryStatus.SUCCESS,
+        duration_ms=1,
+        error_message=None,
+        client_name="c",
+        client_version="v",
+        org_name="acme-corp",
+        event_name="t",
+        visitor_id="0123456789abcdef",
+    )
+    await sender.send_event(event)
+
+    parsed = parse_qs(captured["json"]["requests"][0][1:])
+    assert parsed["dimension7"] == ["acme-corp"]
+
+
+@pytest.mark.asyncio
+async def test_telemetry_event_excludes_dimension7_when_org_none(monkeypatch):
+    captured: Dict[str, Any] = {}
+
+    class _CaptureClient(_FakeAsyncClient):
+        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+            nonlocal captured
+            captured = {"url": url, "json": json, "headers": headers}
+
+    monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: _CaptureClient(timeout=kwargs.get("timeout")))
+
+    sender = TelemetrySender(endpoint_url=_TELEMETRY_SINK_URL, enabled=True)
+    event = TelemetryEvent(
+        tool_name="t",
+        status=TelemetryStatus.SUCCESS,
+        duration_ms=1,
+        error_message=None,
+        client_name="c",
+        client_version="v",
+        org_name=None,
+        event_name="t",
+        visitor_id="0123456789abcdef",
+    )
+    await sender.send_event(event)
+
+    parsed = parse_qs(captured["json"]["requests"][0][1:])
+    assert "dimension7" not in parsed
+
+
+@pytest.mark.asyncio
+async def test_mcp_wrapper_includes_org_name_from_cache(monkeypatch):
+    captured: Dict[str, Any] = {}
+
+    class _CaptureClient(_FakeAsyncClient):
+        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+            nonlocal captured
+            captured = {"url": url, "json": json, "headers": headers}
+
+    monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: _CaptureClient(timeout=kwargs.get("timeout")))
+
+    # Patch cached org name on OAuth2Handler class
+    monkeypatch.setattr("piwik_pro_mcp.api.auth.OAuth2Handler._cached_org_name", "test-org")
+
+    mcp = FastMCP("test")
+    sender = TelemetrySender(endpoint_url=_TELEMETRY_SINK_URL)
+    mcp_telemetry_wrapper(mcp, sender)
+
+    @mcp.tool()
+    def org_tool(x: int) -> int:
+        """Simple tool."""
+        return x
+
+    await mcp.call_tool("org_tool", {"x": 1})
+    await asyncio.sleep(0.10)
+
+    parsed = parse_qs(captured["json"]["requests"][0][1:])
+    assert parsed["dimension7"] == ["test-org"]

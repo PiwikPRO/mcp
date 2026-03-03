@@ -5,6 +5,7 @@ OAuth2 authentication for Piwik PRO API client.
 import time
 from typing import Dict, Optional
 
+import jwt
 import requests
 
 from .config import Config
@@ -13,6 +14,8 @@ from .exceptions import AuthenticationError
 
 class OAuth2Handler:
     """Handles OAuth2 client credentials authentication."""
+
+    _cached_org_name: Optional[str] = None
 
     def __init__(self, config: Config):
         """
@@ -25,6 +28,7 @@ class OAuth2Handler:
         self._access_token: Optional[str] = None
         self._token_expires_at: float = 0
         self._token_buffer = 60  # Refresh token 60 seconds before expiry
+        self._org_name: Optional[str] = None
 
     def get_access_token(self) -> str:
         """
@@ -90,6 +94,8 @@ class OAuth2Handler:
             self._access_token = token_data["access_token"]
             expires_in = token_data.get("expires_in", 1800)
             self._token_expires_at = time.time() + expires_in
+            self._org_name = self._extract_org_from_jwt(self._access_token)
+            OAuth2Handler._cached_org_name = self._org_name
 
             assert self._access_token is not None, "Token should be set"
             return self._access_token
@@ -98,6 +104,22 @@ class OAuth2Handler:
             raise AuthenticationError(f"Network error during authentication: {str(e)}")
         except KeyError as e:
             raise AuthenticationError(f"Invalid token response format: missing {str(e)}")
+
+    @property
+    def org_name(self) -> Optional[str]:
+        return self._org_name
+
+    @classmethod
+    def get_cached_org_name(cls) -> Optional[str]:
+        return cls._cached_org_name
+
+    @staticmethod
+    def _extract_org_from_jwt(token: str) -> Optional[str]:
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False})
+            return payload.get("org")
+        except Exception:
+            return None
 
     def get_auth_headers(self) -> Dict[str, str]:
         """

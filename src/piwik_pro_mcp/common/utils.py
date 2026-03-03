@@ -54,9 +54,11 @@ def create_piwik_client() -> PiwikProClient:
         )
 
     try:
-        return PiwikProClient(client_id=client_id, client_secret=client_secret, host=piwik_host)
+        client = PiwikProClient(client_id=client_id, client_secret=client_secret, host=piwik_host)
     except Exception as e:
         raise RuntimeError(f"Failed to create Piwik PRO client: {str(e)}")
+
+    return client
 
 
 def validate_data_against_model(

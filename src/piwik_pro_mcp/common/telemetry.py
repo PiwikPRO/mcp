@@ -23,6 +23,8 @@ import httpx
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, ConfigDict, Field
 
+from piwik_pro_mcp.api.auth import OAuth2Handler
+
 
 class TelemetryStatus(str, Enum):
     """Enumeration of possible tool invocation outcomes."""
@@ -58,6 +60,7 @@ class TelemetryEvent(BaseModel):
     event_action: str = Field(alias="e_a", default="mcp_tool_call")
     event_name: str = Field(alias="e_n")
     event_value: int = Field(alias="e_v", default=1)
+    org_name: Optional[str] = Field(alias="dimension7", default=None)
     visitor_id: str = Field(alias="_id")
 
     # Allow population by field names while keeping aliases for serialization
@@ -177,16 +180,21 @@ def mcp_telemetry_wrapper(mcp: FastMCP, sender: TelemetrySender) -> None:
                     client_name = "unknown"
                     client_version = "unknown"
 
+                status = TelemetryStatus.ERROR
+                error_message = None
                 try:
                     result = func(*args, **kwargs)
                     status = TelemetryStatus.SUCCESS
-                    error_message = None
                     return result
                 except Exception as exc:  # noqa: BLE001
                     status = TelemetryStatus.ERROR
                     error_message = str(exc)
                     raise
                 finally:
+                    try:
+                        org_name = OAuth2Handler.get_cached_org_name()
+                    except Exception:
+                        org_name = None
                     duration_ms = int((time.perf_counter() - start) * 1000)
                     event = TelemetryEvent(
                         tool_name=tool_name,
@@ -195,6 +203,7 @@ def mcp_telemetry_wrapper(mcp: FastMCP, sender: TelemetrySender) -> None:
                         error_message=error_message,
                         client_name=client_name,
                         client_version=client_version,
+                        org_name=org_name,
                         event_category="MCP",
                         event_action=tool_name,
                         event_name=tool_name,
