@@ -14,9 +14,14 @@ Our Tag Manager template system follows a **"pregenerated, AI-optimized document
 
 ```
 piwik_mcp/assets/tag_manager/
+├── _common/
+│   ├── tag_base.json           # Base for all the tags templates assets
+│   ├── tag_base_ecommerce.json # Base for all the ecommerce tags templates assets 
+│   ├── trigger_base.json       # Base for all the triggers types assets
+│   └── variable_base.json     # Base for all the variables types assets
 ├── tags/
-│   ├── custom_tag.json          # Complete create/edit template
-│   ├── google_analytics.json    # (future template)  
+│   ├── custom_tag.json         # Complete create/edit template
+│   ├── google_analytics.json   # (future template)  
 │   ├── piwik.json              # (future template)
 │   └── ...                     # (other templates)
 ├── triggers/
@@ -37,6 +42,22 @@ piwik_mcp/assets/tag_manager/
 - **Single Template, Dual Purpose**: Each template serves both create and update operations
 - **Directory Registry**: Directory acts as template registry, no central index needed
 - **Component Separation**: Tags, triggers, and variables in separate directories
+
+### **Shared base (extends)**
+
+To avoid repeating the same sections across many tag templates, shared content lives in **`tag_manager/_common/`**. A tag JSON can set `"extends": "tag_base"` so that at load time the loader deep-merges `_common/tag_base.json` with the template (template keys win). That way you only define template-specific parts in each file.
+
+- **Base file**: `tag_manager/_common/tag_base.json` — contains `mcp_usage`, `required_attributes` (generic `name`, `template`), `optional_attributes` (e.g. `is_active`, `priority`, `consent_type`, `scheduler`), `read_only_attributes`, `trigger_management`, `field_mutability_guide`, `related_mcp_tools`, `triggers_troubleshooting`.
+- **In a template**: Add `"extends": "tag_base"`, then only add `template_name`, `name_aliases`, `description`, `ai_usage_guide`, template-specific `required_attributes` (e.g. `code`, `template_options`) and any overrides, template-specific `optional_attributes`, `complete_examples`, `common_mistakes`, `troubleshooting`, and optional overrides to `field_mutability_guide` or `related_mcp_tools`.
+- **Loader**: `get_tag_template()` uses `load_tag_template_with_extends()` so that extended templates are resolved before being returned; the `extends` key is removed from the result.
+
+The same pattern is used for **triggers** and **variables**:
+
+- **Trigger base**: `_common/trigger_base.json` — shared `mcp_usage`, `required_attributes` (name, trigger_type, conditions), `read_only_attributes`, `field_mutability_guide`, `variable_reference_guide.getting_variable_ids`, `related_mcp_tools`, `workflow_example`. Trigger JSONs set `"extends": "trigger_base"` and add template-specific content. `get_trigger_template()` uses `load_trigger_template_with_extends()`.
+
+- **Variable base**: `_common/variable_base.json` — shared `mcp_usage`, `required_attributes` (name, template), `optional_attributes` (options), `read_only_attributes`, `field_mutability_guide`, `related_mcp_tools`. Variable JSONs set `"extends": "variable_base"` and add template-specific required attributes (e.g. value, or value + options for dom_element). `get_variable_template()` uses `load_variable_template_with_extends()`.
+
+The same pattern is used for **triggers**: shared content lives in `tag_manager/_common/trigger_base.json`. A trigger JSON can set `"extends": "trigger_base"` and will be deep-merged at load time. `get_trigger_template()` uses `load_trigger_template_with_extends()` to resolve it.
 
 ## **🔧 MCP Tool Architecture**
 
@@ -60,7 +81,7 @@ get_tag_template(template_name) → {
 
 ```python
 # Tier 1: List available templates by component (structured responses)
-get_available_templates() → {
+get_available_tag_templates() → {
     "available_templates": ["custom_tag"],
     "total_count": 1,
     "usage_guide": {...}
@@ -86,7 +107,7 @@ get_variable_template(template_name) → {comprehensive_template_with_mutability
 
 ```python
 # In piwik_mcp/tools/tag_manager/templates.py - core functions AND MCP-exposed wrappers
-def get_available_templates() -> Dict[str, Any]: ...
+def get_available_tag_templates() -> Dict[str, Any]: ...
 def get_tag_template(template_name: str) -> Dict[str, Any]: ...
 def get_available_trigger_templates() -> Dict[str, Any]: ...
 def get_trigger_template(template_name: str) -> Dict[str, Any]: ...
@@ -95,17 +116,17 @@ def get_variable_template(template_name: str) -> Dict[str, Any]: ...
 
 def register_template_tools(mcp: FastMCP) -> None:
     @mcp.tool()
-    def piwik_get_available_templates() -> dict: ...
+    def templates_list_tags() -> dict: ...
     @mcp.tool()
-    def piwik_get_tag_template(template_name: str) -> dict: ...
+    def templates_get_tag(template_name: str) -> dict: ...
     @mcp.tool()
-    def piwik_get_available_trigger_templates() -> dict: ...
+    def templates_list_triggers() -> dict: ...
     @mcp.tool()
-    def piwik_get_trigger_template(template_name: str) -> dict: ...
+    def templates_get_trigger(template_name: str) -> dict: ...
     @mcp.tool()
-    def piwik_get_available_variable_templates() -> dict: ...
+    def templates_list_variables() -> dict: ...
     @mcp.tool()
-    def piwik_get_variable_template(template_name: str) -> dict: ...
+    def templates_get_variable(template_name: str) -> dict: ...
 ```
 
 ## **📄 Enhanced JSON Template Structure**
@@ -115,7 +136,9 @@ def register_template_tools(mcp: FastMCP) -> None:
 ```json
 {
   "template_name": "custom_tag",
-  "display_name": "Human-Readable Name", 
+  "name_aliases": [
+     "Human-Readable Name"
+  ], 
   "description": "What this template does",
   
   "ai_usage_guide": {
@@ -125,13 +148,13 @@ def register_template_tools(mcp: FastMCP) -> None:
   
   "mcp_usage": {
     "create_tag": {
-      "function_name": "create_tag",
+      "tool_name": "tags_create",
       "description": "Create new resource using this template",
       "required_parameters": {...},
       "optional_parameters": {...}
     },
     "update_tag": {
-      "function_name": "update_tag", 
+      "tool_name": "tags_update", 
       "description": "Update existing resource - only editable fields processed",
       "required_parameters": {...},
       "optional_parameters": {...}
@@ -201,20 +224,16 @@ def register_template_tools(mcp: FastMCP) -> None:
   },
   
   "common_mistakes": [...],
-  "troubleshooting": {...},
-  "related_mcp_tools": {...}
+  "troubleshooting": {...}
 }
 ```
-
-Note: Template JSON uses generic operation names like "create_tag" and "update_tag" to describe behavior. The actual
-MCP tools are prefixed (for example, `piwik_create_tag`, `piwik_update_tag`).
 
 ## **🔄 Core Implementation Logic**
 
 ### **Template Discovery Function**
 
 ```python
-def get_available_templates() -> Dict[str, Any]:
+def get_available_tag_templates() -> Dict[str, Any]:
     # 1. Scan assets directory for .json files
     # 2. Extract template names from filenames  
     # 3. Return sorted list + usage guidance
@@ -239,7 +258,7 @@ def get_tag_template(template_name: str) -> Dict[str, Any]:
 1. **Centralized registration**: all Tag Manager template tools are registered in `register_template_tools(mcp)`
 2. **Server setup**: `server.py` creates the MCP server and calls `register_all_tools(mcp)` which invokes
    `register_template_tools(mcp)` (and other Tag Manager tools)
-3. **Docstrings** reference discovery tools from their respective modules (e.g., in `piwik_create_tag`)
+3. **Docstrings** reference discovery tools from their respective modules (e.g., in `tags_create`)
 
 Example:
 
@@ -254,16 +273,16 @@ register_all_tools(mcp)
 ### **Cross-Tool References**
 
 ```python
-# In create_tag tool docstring:
+# In tags_create tool docstring:
 """
 💡 TIP: Use these tools to discover available templates:
-- piwik_get_available_templates() - List all available templates  
-- piwik_get_tag_template(template_name='custom_tag') - Get complete create/update template info
+- templates_list_tags() - List all available templates  
+- templates_get_tag(template_name='custom_tag') - Get complete create/update template info
 """
 
-# In update_tag tool docstring:
+# In tags_update tool docstring:
 """
-💡 TIP: Use piwik_get_tag_template(template_name='custom_tag') to see all available
+💡 TIP: Use templates_get_tag(template_name='custom_tag') to see all available
 fields and their mutability for any tag template.
 
 Field Mutability:
@@ -289,8 +308,8 @@ def get_available_trigger_templates() -> Dict[str, Any]
 def get_trigger_template(template_name: str) -> Dict[str, Any]  # Returns mutability info
 
 # Server exposure (via register_template_tools)
-piwik_get_available_trigger_templates()
-piwik_get_trigger_template(template_name: str)  # Includes mcp_usage.update_trigger in template docs
+templates_list_triggers()
+templates_get_trigger(template_name: str)  # Includes mcp_usage.update_trigger in template docs
 
 # Template JSON structure includes:
 {
@@ -321,8 +340,8 @@ def get_available_variable_templates() -> Dict[str, Any]
 def get_variable_template(template_name: str) -> Dict[str, Any]  # Returns mutability info
 
 # Server exposure (via register_template_tools)
-piwik_get_available_variable_templates()
-piwik_get_variable_template(template_name: str)  # Includes mcp_usage.update_variable
+templates_list_variables()
+templates_get_variable(template_name: str)  # Includes mcp_usage.update_variable
 
 # Template JSON structure includes:
 {
@@ -428,28 +447,7 @@ editable_only = attributes.model_dump(
 
 This enhanced architecture provides **scalable, maintainable, AI-friendly documentation with complete create/update lifecycle support** that can be replicated across all Tag Manager components! 🚀
 
-### **📚 Available Template Overview**
-
-#### **Tag Templates**
-
-- **`custom_tag.json`**: Flexible asynchronous tag for custom HTML/JavaScript/CSS code injection
-
-#### **Trigger Templates**
-
-- **`click.json`**: Click event triggers with element targeting and condition filtering
-- **`page_view.json`**: Page load triggers with URL pattern matching and user characteristics
-
-#### **Variable Templates**
-
-- **`constant.json`**: Static value variables for reusable constants across tags
-- **`custom_javascript.json`**: Dynamic variables using custom JavaScript code execution
-- **`dom_element.json`**: Extract values from DOM elements using CSS selectors or XPath
-- **`data_layer.json`**: Read values from data layer objects for enhanced tracking data
-
 ### **🎯 Next Implementation Targets**
 
-1. **Additional tag templates**: Google Analytics, Piwik PRO, conversion tracking templates
-2. **More trigger types**: Form submission, scroll depth, timer-based triggers
-3. **Enhanced variable types**: URL parsing, cookie reading, local storage variables
-4. **Cross-component workflows**: Templates that reference multiple component types
-5. **Advanced examples**: Complex scenarios showing component interactions
+1. **Cross-component workflows**: Templates that reference multiple component types
+2. **Advanced examples**: Complex scenarios showing component interactions

@@ -159,20 +159,3 @@ class AppsAPI:
         }
 
         self.client.patch(f"/api/apps/v2/{app_id}", data=data)
-
-    def delete_app(self, app_id: str) -> None:
-        """
-        Delete an app by ID.
-
-        Args:
-            app_id: App UUID
-
-        Returns:
-            None (204 No Content)
-
-        Raises:
-            NotFoundError: If app is not found
-            BadRequestError: If deletion is not allowed
-            PiwikProAPIError: If the request fails
-        """
-        self.client.delete(f"/api/apps/v2/{app_id}")

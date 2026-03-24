@@ -1,0 +1,149 @@
+{
+  "extends": "variable_base",
+  "template_name": "document",
+  "name_aliases": [
+    "Document Variable"
+  ],
+  "description": "Returns a property of the document object, such as document.title or document.location.href. Use for page URL, title, referrer, protocol, pathname, search, hash, or domain. The variable always has a value; type depends on the property (the common properties listed are strings).",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Get page URL, path, or query string for tracking or conditions",
+      "Read document title for page-type or content categorization",
+      "Use referrer for attribution or entry-point logic",
+      "Check protocol (http/https), host, or domain",
+      "Trigger tags based on which element has focus (activeElement)"
+    ],
+    "common_use_cases": [
+      "Page URL: location.href, URL, documentURI for full or partial URL",
+      "Page title: title for content or section identification",
+      "Referrer: referrer for traffic source or campaign logic",
+      "URL parts: location.pathname, location.search, location.hash, location.protocol, location.host",
+      "Focus: activeElement to trigger tags based on focused element"
+    ],
+    "best_practices": [
+      "Use the exact document property names (e.g. title, location.href, referrer)",
+      "Common properties are strings; document always provides a value",
+      "Use activeElement when you need to react to which element has focus",
+      "Prefer standard names (title, location.pathname) over aliases where both exist"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "description": "Create a document variable that returns the specified document property",
+      "required_parameters": {
+        "variable_type": {
+          "value": "document",
+          "description": "Must be 'document' for document variables"
+        },
+        "value": {
+          "description": "Document property to read (API: value). E.g. title, location.href, location.pathname, referrer."
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "examples": [
+        "Page Title",
+        "Page URL",
+        "Referrer",
+        "Pathname",
+        "Protocol"
+      ]
+    },
+    "template": {
+      "examples": [
+        "document"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "document"
+        ]
+      }
+    },
+    "value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Document property to read (API: value). The variable returns that property's value at runtime.",
+      "examples": [
+        "title",
+        "location.protocol",
+        "location.host",
+        "location.href",
+        "location.hash",
+        "location.pathname",
+        "location.search",
+        "domain",
+        "URL",
+        "documentURI",
+        "referrer",
+        "activeElement"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "recommendation": "Use standard document property names. Common ones: title, location.protocol, location.host, location.href, location.pathname, location.search, location.hash, domain, URL, documentURI, referrer. Use activeElement for the element that currently has focus."
+    }
+  },
+  "complete_examples": {
+    "create_example": {
+      "description": "Create a document variable for page title",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Page Title",
+            "variable_type": "document",
+            "value": "title"
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update the document property for an existing document variable",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "Page URL",
+            "value": "location.href"
+          }
+        }
+      }
+    },
+    "referrer_example": {
+      "description": "Document variable for referrer URL",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Referrer",
+            "variable_type": "document",
+            "value": "referrer"
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using a non-existent document property – stick to supported names (title, location.*, referrer, etc.)",
+    "Expecting a different type – common document properties return strings",
+    "Confusing location.hash with URL fragment only – value is the fragment including # or empty"
+  ],
+  "troubleshooting": {
+    "variable_empty_or_unexpected": {
+      "problem": "Document variable returns empty or unexpected value",
+      "solutions": [
+        "Confirm the property name is correct (e.g. location.href not location.hrefs)",
+        "Check that the page has loaded when the variable is evaluated",
+        "For activeElement, ensure focus is on a document element when the variable runs"
+      ]
+    }
+  }
+}

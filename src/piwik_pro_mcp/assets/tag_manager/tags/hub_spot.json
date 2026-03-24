@@ -1,0 +1,183 @@
+{
+  "extends": "tag_base",
+  "template_name": "hub_spot",
+  "name_aliases": [
+    "HubSpot Tracking Code Tag"
+  ],
+  "description": "Loads the HubSpot tracking script to collect website data and send it to HubSpot for contact and customer analysis. Copy your HubSpot ID from HubSpot > account name (upper right) > under your account name. If using Piwik PRO Consent Manager with HubSpot, turn off the HubSpot cookie banner in HubSpot > Settings > Privacy & Consent. Respect opt-out and DNT is on by default for HubSpot.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting website data for HubSpot",
+      "Contact and customer analytics in HubSpot",
+      "Marketing automation and CRM tracking"
+    ],
+    "common_use_cases": [
+      "Visitor tracking for HubSpot CRM",
+      "Form submissions and page views in HubSpot",
+      "Marketing attribution and lead tracking"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "marketing_automation",
+      "examples": [
+        "marketing_automation",
+        "analytics",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'hub_spot' for this template",
+      "value": "hub_spot",
+      "validation": {
+        "required": true,
+        "fixed_value": "hub_spot"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "HubSpot configuration. Must include id.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "template_options.id": {
+      "type": "string",
+      "description": "HubSpot ID. Find in HubSpot > account name (upper right) > under your account name.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "12345678"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. On by default for HubSpot.",
+      "mutability": "editable",
+      "default": true,
+      "recommendation": "Leave on to respect Do-Not-Track and opt-out preferences"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.id",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "HubSpot tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "HubSpot Tracking",
+            "template": "hub_spot",
+            "template_options": {
+              "id": "12345678"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get HubSpot ID from HubSpot > account name (upper right) > under account name. Use page_view trigger."
+    },
+    "with_consent": {
+      "description": "HubSpot with consent form - turn off HubSpot cookie banner first",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "HubSpot - With Consent",
+            "template": "hub_spot",
+            "template_options": {
+              "id": "12345678"
+            },
+            "consent_type": "marketing_automation",
+            "respect_visitors_privacy": true
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Turn off HubSpot cookie banner in HubSpot > Settings > Privacy & Consent if using Piwik PRO Consent Manager."
+    },
+    "update_example": {
+      "description": "Update HubSpot ID or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "id": "12345678"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using wrong HubSpot ID - copy from account name dropdown",
+    "Omitting template_options or id",
+    "Forgetting to turn off HubSpot cookie banner when using Piwik PRO Consent Manager",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "data_not_in_hubspot": [
+      "Verify id is correct (check HubSpot account settings)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

@@ -4,8 +4,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from piwik_pro_mcp.api.exceptions import NotFoundError
-
 
 class TestAudienceCreateFunctional:
     """Functional tests for audience creation tools through MCP."""
@@ -200,65 +198,6 @@ class TestAudienceListGetFunctional:
             assert data["membership_duration_days"] == 30
 
             mock_instance.cdp.get_audience.assert_called_once_with(app_id="app-123", audience_id="audience-1")
-
-
-class TestAudienceDeleteFunctional:
-    """Functional tests for audience deletion tools through MCP."""
-
-    @pytest.fixture
-    def mock_piwik_client(self):
-        """Mock the Piwik client for testing."""
-        with patch("piwik_pro_mcp.tools.cdp.audiences.create_piwik_client") as mock_client:
-            mock_instance = Mock()
-            mock_client.return_value = mock_instance
-            # Mock successful audience deletion
-            mock_instance.cdp.delete_audience.return_value = None  # DELETE returns 204
-            yield mock_instance
-
-    @pytest.mark.asyncio
-    async def test_audience_delete_success(self, mcp_server, mock_piwik_client):
-        """Test audiences_delete with successful deletion through MCP."""
-        result = await mcp_server.call_tool("audiences_delete", {"app_id": "app-123", "audience_id": "audience-123"})
-
-        # Verify result is a tuple with content and structured data
-        assert isinstance(result, tuple)
-        assert len(result) == 2
-        content_list, structured_data = result
-        assert isinstance(content_list, list)
-        assert len(content_list) == 1
-        assert hasattr(content_list[0], "text")
-
-        # Extract the response from the structured data
-        response = structured_data
-
-        # Verify the result structure
-        assert "status" in response
-        assert response["status"] == "success"
-        assert "successfully deleted" in response["message"].lower()
-        assert "audience-123" in response["message"]
-
-        # Verify the client was called correctly
-        mock_piwik_client.cdp.delete_audience.assert_called_once_with(app_id="app-123", audience_id="audience-123")
-
-    @pytest.mark.asyncio
-    async def test_audience_delete_not_found_error(self, mcp_server):
-        """Test audience deletion when audience doesn't exist."""
-        with patch("piwik_pro_mcp.tools.cdp.audiences.create_piwik_client") as mock_client:
-            mock_instance = Mock()
-            mock_client.return_value = mock_instance
-
-            def _raise(*args, **kwargs):
-                raise NotFoundError("audience not found")
-
-            mock_instance.cdp.delete_audience.side_effect = _raise
-
-            with pytest.raises(Exception) as exc_info:
-                await mcp_server.call_tool(
-                    "audiences_delete",
-                    {"app_id": "app-1", "audience_id": "nonexistent"},
-                )
-            error_msg = str(exc_info.value).lower()
-            assert "audience" in error_msg and "not found" in error_msg
 
 
 class TestAudienceEdgeCases:

@@ -1,0 +1,195 @@
+{
+  "extends": "tag_base",
+  "template_name": "custom_content",
+  "name_aliases": [
+    "Custom Content Tag"
+  ],
+  "description": "Adds contextual content (banners, info boxes, ads) to a specific place on your page. The content is injected into an HTML element by ID. Less distracting than popups. Enable 'Interactions with popups and content' in the Piwik PRO tag to track impressions. Default consent: A/B testing and personalization.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Contextual ads or banners within page content",
+      "Info boxes or callout content",
+      "Inline promotional content",
+      "Content that fits into a specific page section"
+    ],
+    "common_use_cases": [
+      "Banner ads in sidebar or content area",
+      "Promotional info boxes",
+      "Contextual recommendations",
+      "Inline CTAs or announcements"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "ab_testing_and_personalization",
+      "examples": [
+        "ab_testing_and_personalization",
+        "analytics",
+        "marketing_automation"
+      ]
+    },
+    "template": {
+      "description": "Must be 'custom_content' for this template",
+      "value": "custom_content",
+      "validation": {
+        "required": true,
+        "fixed_value": "custom_content"
+      }
+    },
+    "code": {
+      "type": "string",
+      "description": "HTML code for your ad or content (banner, info box, etc.)",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 65536
+      },
+      "example": "<div class='banner'>Special offer!</div>"
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Content placement. Must include target_element_id.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "target_element_id"
+      ]
+    },
+    "template_options.target_element_id": {
+      "type": "string",
+      "description": "ID of the HTML element where content will be injected (e.g. div ID, section ID, block ID). String or variable reference.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "example": "ad-slot-sidebar"
+    }
+  },
+  "optional_attributes": {
+    "document_write": {
+      "type": "boolean",
+      "description": "Enable if your tag uses document.write(). Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "code",
+          "template_options.*",
+          "consent_type",
+          "document_write",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "banner_ad": {
+      "description": "Contextual banner in sidebar",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Sidebar Banner",
+            "template": "custom_content",
+            "code": "<div class='promo-banner' style='padding:16px;background:#f0f0f0;border-radius:8px;'><h3>Special Offer</h3><p>20% off today!</p></div>",
+            "template_options": {
+              "target_element_id": "sidebar-ad-slot"
+            },
+            "consent_type": "ab_testing_and_personalization"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Add element with id='sidebar-ad-slot' to your page. Trigger multiple times so content persists on refresh."
+    },
+    "info_box": {
+      "description": "Info box in content area",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Article CTA Box",
+            "template": "custom_content",
+            "code": "<aside class='info-box'><strong>Tip:</strong> Sign up for our newsletter!</aside>",
+            "template_options": {
+              "target_element_id": "content-cta-slot"
+            },
+            "consent_type": "ab_testing_and_personalization"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update content or placement",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "code": "<div class='updated-banner'>New offer!</div>",
+            "template_options": {
+              "target_element_id": "new-slot-id"
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Target element ID doesn't exist on the page",
+    "Forgetting to add the target element to your HTML",
+    "Using a single trigger - recommend triggering multiple times so content persists on refresh",
+    "Omitting template_options.target_element_id (required)"
+  ],
+  "troubleshooting": {
+    "content_not_appearing": [
+      "Verify target element exists on page (check div/section ID)",
+      "Ensure trigger fires (use page view or DOM ready)",
+      "Trigger multiple times - content may disappear on refresh otherwise"
+    ],
+    "track_content_impressions": [
+      "Enable 'Interactions with popups and content' in Piwik PRO tag",
+      "View stats in Analytics > Reports > Content performance"
+    ]
+  }
+}

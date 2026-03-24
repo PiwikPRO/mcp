@@ -12,7 +12,7 @@ from mcp.server.fastmcp import FastMCP
 from piwik_pro_mcp.api.exceptions import BadRequestError, NotFoundError
 from piwik_pro_mcp.api.methods.tag_manager.models import TagFilters, TagManagerListResponse, TagManagerSingleResponse
 
-from ...common.templates import list_template_names
+from ...common.templates import list_available_assets
 from ...common.utils import create_piwik_client, validate_data_against_model
 from ...responses import CopyResourceResponse, OperationStatusResponse
 from .models import TagManagerCreateAttributes, TagManagerUpdateAttributes
@@ -75,54 +75,6 @@ def get_tag_triggers(
         raise RuntimeError(f"Failed to get tag triggers: {str(e)}")
 
 
-def get_trigger_tags(
-    app_id: str,
-    trigger_id: str,
-    limit: Optional[int] = None,
-    offset: Optional[int] = None,
-    sort: Optional[str] = None,
-    name: Optional[str] = None,
-    is_active: Optional[bool] = None,
-    template: Optional[str] = None,
-    consent_type: Optional[str] = None,
-    is_prioritized: Optional[bool] = None,
-) -> TagManagerListResponse:
-    try:
-        client = create_piwik_client()
-        tag_manager = client.tag_manager
-
-        # Build filters dictionary
-        filters = {}
-        if name is not None:
-            filters["name"] = name
-        if is_active is not None:
-            filters["is_active"] = is_active
-        if template is not None:
-            filters["template"] = template
-        if consent_type is not None:
-            filters["consent_type"] = consent_type
-        if is_prioritized is not None:
-            filters["is_prioritized"] = is_prioritized
-
-        # Get tags for the trigger
-        result = tag_manager.get_trigger_tags(
-            app_id=app_id, trigger_id=trigger_id, limit=limit, offset=offset, sort=sort, **filters
-        )
-
-        if result is None:
-            return TagManagerListResponse(data=[], meta={"total": 0})
-
-        return TagManagerListResponse(**result)
-
-    except Exception as e:
-        error_msg = f"Failed to get tags for trigger: {str(e)}"
-        if "not found" in str(e).lower():
-            error_msg = f"Trigger with ID '{trigger_id}' not found in app '{app_id}'"
-        elif "bad request" in str(e).lower():
-            error_msg = f"Invalid parameters provided: {str(e)}"
-        raise RuntimeError(error_msg) from e
-
-
 def create_tag(app_id: str, attributes: dict, triggers: str = "") -> TagManagerSingleResponse:
     try:
         client = create_piwik_client()
@@ -138,9 +90,9 @@ def create_tag(app_id: str, attributes: dict, triggers: str = "") -> TagManagerS
         template = create_kwargs.pop("template")
 
         # Enforce assets-driven allowlist for tag templates via model validation (retained as a safety check)
-        allowed_templates = set(list_template_names("tag_manager/tags"))
+        allowed_templates = set(list_available_assets("tag_manager/tags").keys())
         if template not in allowed_templates:
-            raise RuntimeError(f"Unsupported tag template '{template}'. Use templates_list() to discover options.")
+            raise RuntimeError(f"Unsupported tag template '{template}'. Use templates_list_tags() to discover options.")
 
         # Process triggers parameter
         trigger_ids = None
@@ -349,68 +301,14 @@ def register_tag_tools(mcp: FastMCP) -> None:
         """
         return get_tag_triggers(app_id, tag_id, limit, offset, sort, name, trigger_type)
 
-    @mcp.tool(annotations={"title": "Piwik PRO: List Tags for Trigger", "readOnlyHint": True})
-    def triggers_list_tags(
-        app_id: str,
-        trigger_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[str] = None,
-        name: Optional[str] = None,
-        is_active: Optional[bool] = None,
-        template: Optional[str] = None,
-        consent_type: Optional[str] = None,
-        is_prioritized: Optional[bool] = None,
-    ) -> dict:
-        """Get list of tags assigned to a specific trigger.
-
-        This tool helps you understand what tags will be fired when a specific trigger condition is met,
-        which is essential for debugging and managing trigger behavior.
-
-        Args:
-            app_id: UUID of the app
-            trigger_id: UUID of the trigger to get tags for
-            limit: Maximum number of tags to return (optional)
-            offset: Number of tags to skip for pagination (optional)
-            sort: Sort order. Options: 'name', '-name', 'created_at', '-created_at', 'updated_at', '-updated_at'
-            name: Filter by tag name (partial match)
-            is_active: Filter by active status (true/false)
-            template: Filter by tag template (e.g. 'piwik', 'custom_tag', 'google_analytics')
-            consent_type: Filter by consent type ('not_require_consent', 'require_consent',
-                'require_consent_for_cookie')
-            is_prioritized: Filter by prioritized status (true/false)
-
-        Returns:
-            Dictionary containing:
-            - data: List of tag objects assigned to the trigger
-            - meta: Pagination and total count information
-            - Each tag includes: id, name, template, is_active, and other attributes
-
-        Examples:
-            # Get all tags for a trigger
-            triggers_list_tags(app_id="123", trigger_id="456")
-
-            # Get only active custom tags with pagination
-            piwik_get_trigger_tags(
-                app_id="123",
-                trigger_id="456",
-                limit=10,
-                is_active=True,
-                template="custom_tag"
-            )
-        """
-        return get_trigger_tags(
-            app_id, trigger_id, limit, offset, sort, name, is_active, template, consent_type, is_prioritized
-        )
-
     @mcp.tool(annotations={"title": "Piwik PRO: Create Tag"})
     def tags_create(app_id: str, attributes: dict, triggers: str = "") -> TagManagerSingleResponse:
         """Create a new tag in Piwik PRO Tag Manager using JSON attributes.
 
-        Only templates listed by `templates_list()` are supported. Any other template will be refused.
+        Only templates listed by `templates_list_tags()` are supported. Any other template will be refused.
 
         💡 TIP: Use these tools to discover available templates and their requirements:
-        - templates_list() - List all available templates
+        - templates_list_tags() - List all available tag templates
         - templates_get_tag(template_name='custom_tag') - Get detailed requirements
 
         This tool uses a simplified interface with 3 parameters: app_id, attributes, and triggers.
@@ -421,7 +319,7 @@ def register_tag_tools(mcp: FastMCP) -> None:
             app_id: UUID of the app
             attributes: Dictionary containing tag attributes for creation. Required fields vary by template:
                        - name: Tag name (always required)
-                       - template: Template type (use piwik_get_tag_template() to see options)
+                       - template: Template type (use templates_get_tag() to see options)
                        - consent_type: Consent type (e.g., 'not_require_consent', 'analytics')
                        - Additional required fields depend on the template
             triggers: Comma-separated list of trigger UUIDs to attach to this tag (optional)
@@ -433,8 +331,8 @@ def register_tag_tools(mcp: FastMCP) -> None:
             - Tag configuration details
 
         Template Discovery:
-            Use piwik_get_available_templates() to see all available templates, or
-            piwik_get_tag_template(template_name='TEMPLATE') for specific requirements.
+            Use templates_list_tags() to see all available templates, or
+            templates_get_tag(template_name='TEMPLATE') for specific requirements.
 
         Trigger Management:
             - Use triggers_list() to discover available triggers
@@ -447,7 +345,7 @@ def register_tag_tools(mcp: FastMCP) -> None:
 
         Examples:
             # Get available templates first
-            templates = templates_list()
+            templates = templates_list_tags()
 
             # Get specific template requirements
             piwik_info = templates_get_tag(template_name='piwik')

@@ -172,24 +172,3 @@ class CdpAPI:
         return self.client.request(
             "PUT", f"/api/cdp/settings/v1/app/{app_id}/audience/{audience_id}", data=attributes_dict
         )
-
-    def delete_audience(
-        self,
-        app_id: str,
-        audience_id: str,
-    ) -> Union[Dict[str, Any], None]:
-        """
-        Delete an existing audience.
-
-        Args:
-            app_id: App UUID
-            audience_id: Audience UUID to delete
-
-        Returns:
-            Dictionary containing deletion confirmation or None for 204 responses
-
-        Raises:
-            NotFoundError: If audience is not found
-            PiwikProAPIError: If the request fails
-        """
-        return self.client.delete(f"/api/cdp/settings/v1/app/{app_id}/audience/{audience_id}")

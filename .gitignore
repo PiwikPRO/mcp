@@ -190,4 +190,3 @@ mcp_inspector_data/
 .mcp.json
 .mcp.env
 .cursor/mcp.json
-internal/

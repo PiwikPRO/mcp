@@ -42,6 +42,54 @@ def list_triggers(
         raise RuntimeError(f"Failed to list triggers: {str(e)}")
 
 
+def get_trigger_tags(
+    app_id: str,
+    trigger_id: str,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+    sort: Optional[str] = None,
+    name: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    template: Optional[str] = None,
+    consent_type: Optional[str] = None,
+    is_prioritized: Optional[bool] = None,
+) -> TagManagerListResponse:
+    try:
+        client = create_piwik_client()
+        tag_manager = client.tag_manager
+
+        # Build filters dictionary
+        filters = {}
+        if name is not None:
+            filters["name"] = name
+        if is_active is not None:
+            filters["is_active"] = is_active
+        if template is not None:
+            filters["template"] = template
+        if consent_type is not None:
+            filters["consent_type"] = consent_type
+        if is_prioritized is not None:
+            filters["is_prioritized"] = is_prioritized
+
+        # Get tags for the trigger
+        result = tag_manager.get_trigger_tags(
+            app_id=app_id, trigger_id=trigger_id, limit=limit, offset=offset, sort=sort, **filters
+        )
+
+        if result is None:
+            return TagManagerListResponse(data=[], meta={"total": 0})
+
+        return TagManagerListResponse(**result)
+
+    except Exception as e:
+        error_msg = f"Failed to get tags for trigger: {str(e)}"
+        if "not found" in str(e).lower():
+            error_msg = f"Trigger with ID '{trigger_id}' not found in app '{app_id}'"
+        elif "bad request" in str(e).lower():
+            error_msg = f"Invalid parameters provided: {str(e)}"
+        raise RuntimeError(error_msg) from e
+
+
 def get_trigger(app_id: str, trigger_id: str) -> TagManagerSingleResponse:
     try:
         client = create_piwik_client()
@@ -165,7 +213,7 @@ def register_trigger_tools(mcp: FastMCP) -> None:
             - Trigger conditions and configuration
 
         Related Tools:
-            - piwik_get_trigger_tags() - See what tags are assigned to this trigger
+            - triggers_list_tags() - See what tags are assigned to this trigger
         """
         return get_trigger(app_id, trigger_id)
 
@@ -261,3 +309,57 @@ def register_trigger_tools(mcp: FastMCP) -> None:
             Normalized copy response including new resource id and operation id.
         """
         return copy_trigger(app_id, trigger_id, target_app_id, name)
+
+    @mcp.tool(annotations={"title": "Piwik PRO: List Tags for Trigger", "readOnlyHint": True})
+    def triggers_list_tags(
+        app_id: str,
+        trigger_id: str,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        sort: Optional[str] = None,
+        name: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        template: Optional[str] = None,
+        consent_type: Optional[str] = None,
+        is_prioritized: Optional[bool] = None,
+    ) -> dict:
+        """Get list of tags assigned to a specific trigger.
+
+        This tool helps you understand what tags will be fired when a specific trigger condition is met,
+        which is essential for debugging and managing trigger behavior.
+
+        Args:
+            app_id: UUID of the app
+            trigger_id: UUID of the trigger to get tags for
+            limit: Maximum number of tags to return (optional)
+            offset: Number of tags to skip for pagination (optional)
+            sort: Sort order. Options: 'name', '-name', 'created_at', '-created_at', 'updated_at', '-updated_at'
+            name: Filter by tag name (partial match)
+            is_active: Filter by active status (true/false)
+            template: Filter by tag template (e.g. 'piwik', 'custom_tag', 'google_analytics')
+            consent_type: Filter by consent type ('not_require_consent', 'require_consent',
+                'require_consent_for_cookie')
+            is_prioritized: Filter by prioritized status (true/false)
+
+        Returns:
+            Dictionary containing:
+            - data: List of tag objects assigned to the trigger
+            - meta: Pagination and total count information
+            - Each tag includes: id, name, template, is_active, and other attributes
+
+        Examples:
+            # Get all tags for a trigger
+            triggers_list_tags(app_id="123", trigger_id="456")
+
+            # Get only active custom tags with pagination
+            triggers_list_tags(
+                app_id="123",
+                trigger_id="456",
+                limit=10,
+                is_active=True,
+                template="custom_tag"
+            )
+        """
+        return get_trigger_tags(
+            app_id, trigger_id, limit, offset, sort, name, is_active, template, consent_type, is_prioritized
+        )

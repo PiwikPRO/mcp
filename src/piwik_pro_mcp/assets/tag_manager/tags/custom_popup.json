@@ -1,0 +1,168 @@
+{
+  "extends": "tag_base",
+  "template_name": "custom_popup",
+  "name_aliases": [
+    "Custom Popup Tag",
+    "Popup"
+  ],
+  "description": "Displays popups on your website for marketing campaigns, newsletters, or promotions. Design your popup in HTML/CSS. The close button must use class ppms-popup-close-button. Enable 'Interactions with popups and content' in the Piwik PRO tag to track impressions. Default consent: A/B testing and personalization.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Marketing campaign popups",
+      "Newsletter signup prompts",
+      "Promotional offers or announcements",
+      "Engagement and conversion popups"
+    ],
+    "common_use_cases": [
+      "Exit-intent or scroll-triggered popups",
+      "Newsletter subscription modal",
+      "Promotional discount offer",
+      "Lead capture forms"
+    ]
+  },
+  "initial_code": "<div class=\"ppms-popup-overlay\">\n  <div class=\"ppms-popup-box\">\n      <div class=\"ppms-popup-close-button\">x</div> <!-- classname must stay as it is, otherwise close button will not work -->\n      <div class=\"ppms-popup-content\">\n          <!-- Your popup content goes here -->\n      </div>\n  </div>\n</div>\n<style type=\"text/css\">\n.ppms-popup-overlay {\n    z-index: 10000;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    left: 0;\n    position: fixed;\n    background-color: rgba(0, 0, 0, 0.8);\n}\n.ppms-popup-box {\n    width: 660px;\n    height: 360px;\n    top: 50%;\n    left: 50%;\n    box-sizing: border-box;\n    position: relative;\n    margin: -180px 0 0 -330px;\n    background-color: #fff;\n    border-radius: 2px;\n    border: 1px solid rgb(204, 204, 204);\n}\n.ppms-popup-close-button {\n    height: 24px;\n    width: 24px;\n    padding: 4px;\n    z-index: 1000;\n    right: 10px;\n    top: 10px;\n    position: absolute;\n    cursor: pointer;\n    margin: 0;\n    box-sizing: content-box;\n    font-family: sans-serif;\n    font-weight: bold;\n    border-radius: 100%;\n    border: 2px solid #acacac;\n    transition: background .3s;\n    color: #acacac;\n    text-align: center;\n    line-height: 22px;\n    font-size: 24px;\n}\n.ppms-popup-close-button:hover {\n    background-color: #ccc;\n    border-color: #ccc;\n    color: #fff;\n}\n.ppms-popup-content {\n    padding: 60px 10px;\n    font-family: sans-serif;\n}\n/* These styles affect your popup tracking. Modify with caution. */\n[id^=\"ppms-popup-wrapper-\"] {\n    position: fixed;\n    width: 100vw;\n    height: 100vh;\n    top: 0;\n    left: 0;\n}\n</style>",
+  "required_attributes": {
+    "consent_type": {
+      "default": "ab_testing_and_personalization",
+      "examples": [
+        "ab_testing_and_personalization",
+        "analytics",
+        "marketing_automation"
+      ]
+    },
+    "template": {
+      "description": "Must be 'custom_popup' for this template",
+      "value": "custom_popup",
+      "validation": {
+        "required": true,
+        "fixed_value": "custom_popup"
+      }
+    },
+    "code": {
+      "type": "string",
+      "description": "HTML/CSS code for your popup. Use initial_code as starting scaffold. Close button must have class ppms-popup-close-button.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1,
+        "max_length": 65536
+      },
+      "example": "See initial_code for default scaffold; replace <!-- Your popup content goes here --> with your content."
+    }
+  },
+  "optional_attributes": {
+    "document_write": {
+      "type": "boolean",
+      "description": "Enable if your tag uses document.write(). Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "code",
+          "consent_type",
+          "document_write",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "newsletter_popup": {
+      "description": "Newsletter signup popup",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Newsletter Signup Popup",
+            "template": "custom_popup",
+            "code": "<div class='popup-overlay' style='position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;'><div class='popup' style='background:white;padding:24px;border-radius:8px;max-width:400px;'><button class='ppms-popup-close-button' style='float:right;'>×</button><h2>Join our newsletter</h2><p>Get 10% off your first order!</p><form><input type='email' placeholder='Email'/><button type='submit'>Sign up</button></form></div></div>",
+            "consent_type": "ab_testing_and_personalization"
+          },
+          "triggers": "scroll-trigger-uuid"
+        }
+      },
+      "prerequisite": "Use page scroll or timer trigger. Consider showing once per session."
+    },
+    "promo_popup": {
+      "description": "Promotional offer popup",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "20% Off Popup",
+            "template": "custom_popup",
+            "code": "<div class='promo-popup'><button class='ppms-popup-close-button'>×</button><h2>Special Offer</h2><p>20% off your first purchase! Use code: WELCOME20</p></div>",
+            "consent_type": "ab_testing_and_personalization"
+          },
+          "triggers": "timer-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update popup content",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "code": "<div class='popup'><button class='ppms-popup-close-button'>×</button><h2>Updated offer!</h2></div>"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Forgetting ppms-popup-close-button class on close button (required for close to work)",
+    "Showing popup too often - use once per session",
+    "Omitting triggers - popup won't display"
+  ],
+  "troubleshooting": {
+    "close_button_not_working": [
+      "Ensure close button has class ppms-popup-close-button"
+    ],
+    "popup_not_appearing": [
+      "Verify trigger fires (page scroll, timer, etc.)",
+      "Check consent_type is met"
+    ],
+    "track_popup_impressions": [
+      "Enable 'Interactions with popups and content' in Piwik PRO tag",
+      "View stats in Analytics > Reports > Content performance"
+    ]
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "extends": "trigger_base",
+  "template_name": "capturing_click",
+  "name_aliases": [
+    "Capturing Click Trigger"
+  ],
+  "description": "Fires when a visitor clicks, using the capturing phase so the trigger can run before the click propagates or before navigation. Use when you need tags to execute before a link opens or before the next page loads (e.g. outbound link tracking, conversion pixels that must fire before redirect). Same event conditions as the Click trigger (Click ID, Click URL, Click Classes, Click Element, Page URL, referrer, etc.). Optional in Administration: 'Wait for tags before loading the next page' gives tags extra time to fire before links open. See Piwik PRO help: Click trigger.",
+  "relationship_to_click_trigger": {
+    "note": "Two click trigger types exist in the API: 'click' and 'capturing_click'. Use 'click' for standard click tracking. Use 'capturing_click' when you need the click to be handled in the capturing phase so tags can run before navigation or before the event bubbles.",
+    "same_conditions": "Condition types and structure are the same as for the Click trigger (trigger_type 'click')."
+  },
+  "event_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/click-trigger/",
+    "condition_types": [
+      {
+        "type": "Click ID",
+        "description": "Fires when the visitor clicks an element with the selected ID"
+      },
+      {
+        "type": "Click URL",
+        "description": "Fires when the visitor clicks a link with the selected URL"
+      },
+      {
+        "type": "Click Classes",
+        "description": "Fires when the visitor clicks an element with the selected CSS class"
+      },
+      {
+        "type": "Click Element",
+        "description": "Fires when the visitor clicks an element matching the selected CSS or XPath selector"
+      },
+      {
+        "type": "Page URL",
+        "description": "Fires when the click happens on a page with the selected URL"
+      },
+      {
+        "type": "Page path",
+        "description": "Fires when the click happens on a page whose path contains the selected path"
+      },
+      {
+        "type": "Page hostname",
+        "description": "Fires when the click happens on a page on the selected domain"
+      },
+      {
+        "type": "Referrer",
+        "description": "Fires when the visitor came from the selected internal referrer"
+      },
+      {
+        "type": "External referrer",
+        "description": "Fires when the visitor came from the selected external referrer"
+      },
+      {
+        "type": "Campaign",
+        "description": "Fires when the visitor came from the selected campaign (utm_campaign)"
+      },
+      {
+        "type": "Traffic source",
+        "description": "Fires when traffic source matches (campaign, organic search, social, referral, direct)"
+      },
+      {
+        "type": "Returning visitor",
+        "description": "Fires when the visitor is a returning visitor"
+      },
+      {
+        "type": "Variable-based conditions",
+        "description": "Any variable can be used to define trigger conditions"
+      }
+    ]
+  },
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Track outbound or download links and ensure tags fire before the user leaves the page",
+      "Run conversion or tracking pixels before redirect or form submission",
+      "Capture click events that would otherwise be lost to immediate navigation",
+      "When 'Wait for tags before loading the next page' behaviour is required"
+    ],
+    "common_use_cases": [
+      "Outbound link clicks (fire tag before navigation away)",
+      "Download link clicks (e.g. PDF) where tag must run before download starts",
+      "CTA clicks that redirect – ensure tracking fires before redirect",
+      "Form submit button clicks when submission navigates immediately"
+    ],
+    "best_practices": [
+      "Use capturing_click when you need tags to run before navigation; use 'click' for standard in-page click tracking",
+      "Same condition types as click (Click Element, Click URL, etc.); use variable_id and condition_type as for click",
+      "For Click Element conditions use options.selector_type (css or xpath) as with the click trigger"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "description": "Create a capturing click trigger. Use when tags must run before the click navigates or propagates.",
+      "required_parameters": {
+        "trigger_type": {
+          "value": "capturing_click",
+          "description": "Must be 'capturing_click' for capturing click triggers"
+        },
+        "conditions": {
+          "description": "Array of condition objects; same structure as for click trigger (variable_id, condition_type, value, options)."
+        }
+      }
+    },
+    "update_trigger": {
+      "description": "Update an existing capturing click trigger - only editable fields can be modified"
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "description": "Human-readable trigger name",
+      "examples": [
+        "Outbound Link Capturing Click",
+        "PDF Download Capturing Click",
+        "CTA Redirect Capturing Click"
+      ]
+    },
+    "trigger_type": {
+      "enum": [
+        "capturing_click"
+      ],
+      "description": "Trigger type constant - must be 'capturing_click'",
+      "fixed_value": "capturing_click",
+      "validation": {
+        "required": true
+      }
+    },
+    "conditions": {
+      "description": "Array of condition objects; same structure as click trigger (variable_id, condition_type, value, options). Use Click Element with options.selector_type (css|xpath), Click URL, Click ID, Click Classes, Page URL, etc.",
+      "recommendation": "See the Click trigger template for full condition types and examples. Include at least one condition to specify which clicks to track."
+    }
+  },
+  "complete_examples": {
+    "outbound_link_example": {
+      "description": "Capturing click for outbound link tracking (tag fires before navigation)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Outbound Link Capturing Click",
+          "trigger_type": "capturing_click",
+          "conditions": [
+            {
+              "variable_id": "click-url-variable-uuid",
+              "condition_type": "contains",
+              "value": "https://external.com",
+              "options": {}
+            }
+          ]
+        }
+      }
+    },
+    "cta_button_capturing_example": {
+      "description": "Capturing click for CTA button (tag fires before redirect)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "CTA Capturing Click",
+          "trigger_type": "capturing_click",
+          "conditions": [
+            {
+              "variable_id": "click-element-variable-uuid",
+              "condition_type": "matches",
+              "value": "#cta-primary",
+              "options": {
+                "selector_type": "css"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using capturing_click when standard click is enough (adds capturing-phase overhead)",
+    "Same as click: wrong selector_type for Click Element, or invalid variable_id"
+  ],
+  "troubleshooting": {
+    "trigger_not_firing": {
+      "possible_causes": [
+        "Selector or condition does not match the element",
+        "variable_id does not reference a valid click-related variable"
+      ],
+      "debugging_steps": [
+        "Verify conditions match the click trigger documentation",
+        "Test with a simple condition first (e.g. Click URL contains a known value)"
+      ]
+    }
+  }
+}

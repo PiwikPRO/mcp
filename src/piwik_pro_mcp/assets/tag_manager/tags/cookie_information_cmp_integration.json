@@ -1,0 +1,333 @@
+{
+  "extends": "tag_base",
+  "template_name": "cookie_information_cmp_integration",
+  "name_aliases": [
+    "Cookie Information Tag",
+    "Cookie Information Integration"
+  ],
+  "description": "Integrates Cookie Information consent popup with Piwik PRO. Maps Cookie Information cookie categories (functional, statistic, marketing, unclassified) to Piwik PRO consent types. Enables consent-based tag triggering and consent statistics in reports. Requires Cookie Information popup installed and Piwik PRO consent settings enabled. Available from 18.12.0.",
+  "default_mapping": {
+    "consents_mapping": {
+      "cookie_cat_functional": [
+        "ab_testing_and_personalization",
+        "user_feedback"
+      ],
+      "cookie_cat_statistic": [
+        "analytics",
+        "conversion_tracking"
+      ],
+      "cookie_cat_marketing": [
+        "marketing_automation",
+        "remarketing"
+      ],
+      "cookie_cat_unclassified": []
+    }
+  },
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Using Cookie Information as consent provider with Piwik PRO",
+      "Syncing consent choices from Cookie Information banner to Piwik PRO",
+      "Triggering tags based on consents collected via Cookie Information",
+      "Building consent-based audiences in Customer Data Platform"
+    ],
+    "common_use_cases": [
+      "Replace Piwik PRO Consent Manager with Cookie Information",
+      "Unified consent across Cookie Information and Piwik PRO",
+      "Consent statistics in Piwik PRO reports",
+      "GDPR-compliant consent flow with third-party CMP"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "description": "Must be 'not_require_consent'. This tag only maps consents; it must fire regardless of consent.",
+      "mutability": "editable",
+      "default": "not_require_consent",
+      "validation": {
+        "recommended": "not_require_consent"
+      },
+      "recommendation": "Always use not_require_consent - tag syncs consent data, does not track"
+    },
+    "template": {
+      "description": "Must be 'cookie_information_cmp_integration' for this template",
+      "value": "cookie_information_cmp_integration",
+      "validation": {
+        "required": true,
+        "fixed_value": "cookie_information_cmp_integration"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Consent mapping configuration. Must include consents_mapping.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "consents_mapping"
+      ]
+    },
+    "template_options.consents_mapping": {
+      "type": "object",
+      "description": "Map Cookie Information cookie categories to Piwik PRO consent types. Each category maps to an array of Piwik PRO consent types. Necessary cookies are fixed to 'No consent required'.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "cookie_cat_functional",
+        "cookie_cat_statistic",
+        "cookie_cat_marketing",
+        "cookie_cat_unclassified"
+      ]
+    },
+    "template_options.consents_mapping.cookie_cat_functional": {
+      "type": "array",
+      "description": "Piwik PRO consent types for Cookie Information 'Functional' category. Necessary cookies are fixed to no-consent-required internally.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "analytics",
+          "ab_testing_and_personalization",
+          "conversion_tracking",
+          "marketing_automation",
+          "remarketing",
+          "user_feedback",
+          "custom_consent"
+        ]
+      },
+      "example": [
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template_options.consents_mapping.cookie_cat_statistic": {
+      "type": "array",
+      "description": "Piwik PRO consent types for Cookie Information 'Statistical' category. Map to analytics for Piwik PRO tag.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "analytics",
+          "ab_testing_and_personalization",
+          "conversion_tracking",
+          "marketing_automation",
+          "remarketing",
+          "user_feedback",
+          "custom_consent"
+        ]
+      },
+      "example": [
+        "analytics"
+      ]
+    },
+    "template_options.consents_mapping.cookie_cat_marketing": {
+      "type": "array",
+      "description": "Piwik PRO consent types for Cookie Information 'Marketing' category.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "analytics",
+          "ab_testing_and_personalization",
+          "conversion_tracking",
+          "marketing_automation",
+          "remarketing",
+          "user_feedback",
+          "custom_consent"
+        ]
+      },
+      "example": [
+        "remarketing",
+        "marketing_automation"
+      ]
+    },
+    "template_options.consents_mapping.cookie_cat_unclassified": {
+      "type": "array",
+      "description": "Piwik PRO consent types for Cookie Information 'Unclassified' category.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "analytics",
+          "ab_testing_and_personalization",
+          "conversion_tracking",
+          "marketing_automation",
+          "remarketing",
+          "user_feedback",
+          "custom_consent"
+        ]
+      },
+      "example": []
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT and opt-out. Should be off - tag is not tracking.",
+      "mutability": "editable",
+      "default": false,
+      "recommendation": "Keep false so consent sync works regardless of DNT/opt-out"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates - when the tag should fire"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.consents_mapping.*",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority",
+          "scheduler"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "default_mapping": {
+      "description": "Cookie Information integration with default mapping (Set defaults in UI)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Cookie Information Integration",
+            "template": "cookie_information_cmp_integration",
+            "template_options": {
+              "consents_mapping": {
+                "cookie_cat_functional": [
+                  "ab_testing_and_personalization",
+                  "user_feedback"
+                ],
+                "cookie_cat_statistic": [
+                  "analytics",
+                  "conversion_tracking"
+                ],
+                "cookie_cat_marketing": [
+                  "marketing_automation",
+                  "remarketing"
+                ],
+                "cookie_cat_unclassified": []
+              }
+            },
+            "consent_type": "not_require_consent",
+            "respect_visitors_privacy": false
+          },
+          "triggers": "all-page-views-trigger-uuid"
+        }
+      },
+      "prerequisite": "Install Cookie Information popup. Enable custom consent form and 'Ask visitors for consent' in Piwik PRO Administration. Turn off Shared consent in Cookie Information. Use 'All page views' trigger."
+    },
+    "analytics_focused": {
+      "description": "Map Statistical to analytics for Piwik PRO tracking",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Cookie Information - Analytics Mapping",
+            "template": "cookie_information_cmp_integration",
+            "template_options": {
+              "consents_mapping": {
+                "cookie_cat_functional": [
+                  "ab_testing_and_personalization"
+                ],
+                "cookie_cat_statistic": [
+                  "analytics"
+                ],
+                "cookie_cat_marketing": [
+                  "remarketing"
+                ],
+                "cookie_cat_unclassified": [
+                  "analytics"
+                ]
+              }
+            },
+            "consent_type": "not_require_consent"
+          },
+          "triggers": "all-page-views-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update consent mapping (requires Reset consent in Cookie Information after change)",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "consents_mapping": {
+                "cookie_cat_functional": [
+                  "ab_testing_and_personalization"
+                ],
+                "cookie_cat_statistic": [
+                  "analytics",
+                  "ab_testing_and_personalization"
+                ],
+                "cookie_cat_marketing": [
+                  "remarketing",
+                  "marketing_automation",
+                  "conversion_tracking"
+                ],
+                "cookie_cat_unclassified": [
+                  "analytics"
+                ]
+              }
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      },
+      "prerequisite": "After changing mapping, click Reset consent in Cookie Information > Consent solutions > Settings > Ask visitors for consent"
+    }
+  },
+  "common_mistakes": [
+    "Using consent_type other than not_require_consent - tag must fire to sync consents",
+    "Enabling respect_visitors_privacy - prevents consent sync for DNT users",
+    "Forgetting to map cookie_cat_statistic to analytics - Piwik PRO tag needs analytics consent",
+    "Not resetting consent in Cookie Information after changing mapping",
+    "Enabling Shared consent in Cookie Information (use first-party only)",
+    "Using wrong trigger - must use All page views"
+  ],
+  "troubleshooting": {
+    "consents_not_syncing": [
+      "Verify Cookie Information popup is installed",
+      "Turn off Shared consent in Cookie Information",
+      "Enable custom consent form in Piwik PRO Administration",
+      "Ensure consent_type is not_require_consent and respect_visitors_privacy is false"
+    ],
+    "tags_not_firing_after_consent": [
+      "Map Cookie Information categories to correct Piwik PRO consent types",
+      "Piwik PRO tag needs analytics - map Statistical to analytics",
+      "Reset consent in Cookie Information after mapping changes"
+    ],
+    "consent_stats_delayed": [
+      "Reports: allow ~2 hours for consent statistics",
+      "Tracker debugger: view consent state instantly"
+    ]
+  }
+}

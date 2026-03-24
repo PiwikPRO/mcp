@@ -1,0 +1,207 @@
+{
+  "extends": "tag_base",
+  "template_name": "google_analytics",
+  "name_aliases": [
+    "Google Analytics Tracking Tag"
+  ],
+  "description": "Installs Google Analytics (GA3/Universal Analytics) tracking code. Paste your tracking ID from Google Analytics > Admin > Tracking info > Tracking code (format UA-XXXXXXXXX-X). Optional: Google Optimize setup for A/B testing. Note: This tag is for GA3; GA4 version planned for future release.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Installing Google Analytics (GA3) on a site",
+      "Collecting GA3 page views and events",
+      "Using Google Optimize with GA3"
+    ],
+    "common_use_cases": [
+      "Standard GA3 tracking on all pages",
+      "Analytics alongside Piwik PRO",
+      "A/B testing with Google Optimize"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'google_analytics' for this template",
+      "value": "google_analytics",
+      "validation": {
+        "required": true,
+        "fixed_value": "google_analytics"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Google Analytics configuration. Must include id (tracking ID).",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "template_options.id": {
+      "type": "string",
+      "description": "Google Analytics tracking ID. Find in GA3 > Admin > Tracking info > Tracking code (format UA-XXXXXXXXX-X).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "UA-123456789-1"
+    }
+  },
+  "optional_attributes": {
+    "template_options.optimize_setup": {
+      "type": "object",
+      "description": "Google Optimize setup for A/B testing. When set, optimize_id and flash_of_original_content are required.",
+      "mutability": "editable",
+      "structure": {
+        "optimize_id": "string - Optimize container ID (e.g. OPT-XXXXXXX)",
+        "flash_of_original_content": "boolean - Minimize flash of original content (true) or not (false)"
+      },
+      "example": {
+        "optimize_id": "OPT-XXXXXXX",
+        "flash_of_original_content": true
+      }
+    },
+    "template_options.optimize_setup.optimize_id": {
+      "type": "string",
+      "description": "Google Optimize container ID.",
+      "mutability": "editable",
+      "validation": {
+        "min_length": 1
+      }
+    },
+    "template_options.optimize_setup.flash_of_original_content": {
+      "type": "boolean",
+      "description": "Minimize flash of original content when using Optimize.",
+      "mutability": "editable"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.*",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "Google Analytics (GA3) tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Google Analytics",
+            "template": "google_analytics",
+            "template_options": {
+              "id": "UA-123456789-1"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get tracking ID from GA3 > Admin > Tracking info > Tracking code. Use page_view trigger."
+    },
+    "with_optimize": {
+      "description": "Google Analytics with Google Optimize",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Google Analytics + Optimize",
+            "template": "google_analytics",
+            "template_options": {
+              "id": "UA-123456789-1",
+              "optimize_setup": {
+                "optimize_id": "OPT-XXXXXXX",
+                "flash_of_original_content": true
+              }
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update tracking ID or Optimize setup",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "id": "UA-123456789-1"
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using GA4 measurement ID (G-XXXXXXX) - this tag is for GA3 (UA-XXXXXXX-X)",
+    "Omitting template_options.id",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "tag_not_firing": [
+      "Verify tracking ID format (UA-XXXXXXXXX-X)",
+      "Ensure page_view trigger is attached",
+      "Check consent_type is met"
+    ],
+    "data_not_in_ga": [
+      "Confirm tracking ID matches GA3 property",
+      "Allow time for data to appear in GA reports",
+      "Check browser console for errors"
+    ]
+  }
+}

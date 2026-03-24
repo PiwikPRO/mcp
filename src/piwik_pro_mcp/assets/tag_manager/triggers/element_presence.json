@@ -1,0 +1,234 @@
+{
+  "extends": "trigger_base",
+  "template_name": "element_presence",
+  "name_aliases": [
+    "Element Presence Trigger"
+  ],
+  "description": "Fires when a specific element (e.g. button, form, banner) is present on a page. The trigger runs after the page has fully loaded (DOM is ready). Even if the element is added to the page after initial load (e.g. via JavaScript), the trigger will still detect it and fire. By default the tag fires whenever the selected element is present on any page; add conditions to fire only on specific pages or under specific criteria. See Piwik PRO help: Element presence trigger.",
+  "css_selector_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/element-presence-trigger/",
+    "condition_types": [
+      {
+        "type": "CSS selector",
+        "description": "Fires the tag when the selected element is present on a page",
+        "example": ".promo_banner"
+      }
+    ],
+    "builtin_variable_for_selector": {
+      "variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
+      "name": "Found Elements",
+      "description": "A variable used in the element presence trigger. It contains the class name of the elements the trigger is set to detect.",
+      "usage": "Use this variable_id in the condition that defines which element to watch. The condition's value is the CSS selector (e.g. .promo_banner or a class name)."
+    },
+    "note": "The CSS selector condition must use the built-in variable 'Found Elements' (id 7dead2a9-5804-4cdd-8d73-b04d338952e9). The condition's value is the selector (e.g. .promo_banner). The trigger then fires when that element is present, optionally combined with event conditions below."
+  },
+  "event_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/element-presence-trigger/",
+    "condition_types": [
+      {
+        "type": "Page URL",
+        "description": "Fires when the visitor is on a page with the selected page URL and the selected element is present",
+        "example": "Page URL equals https://example.com/product-tour/"
+      },
+      {
+        "type": "Page path",
+        "description": "Fires when the visitor is on a page with the selected page path and the selected element is present",
+        "example": "Page Path contains /product-tour"
+      },
+      {
+        "type": "Page hostname",
+        "description": "Fires when the visitor is on a page on the selected domain and the selected element is present",
+        "example": "Page Hostname equals example.com"
+      },
+      {
+        "type": "History source",
+        "description": "Fires when a specific history event (pushState, replaceState, popState or hashchange) occurs and the selected element is present",
+        "example": "History source equals pushState"
+      },
+      {
+        "type": "History fragment",
+        "description": "Fires when the URL hash matches the selected condition and the selected element is present",
+        "example": "History fragment equals pricing"
+      },
+      {
+        "type": "Old history fragment",
+        "description": "Fires when the previous URL hash matches the selected condition and the selected element is present",
+        "example": "Old history fragment equals about-us"
+      },
+      {
+        "type": "History state",
+        "description": "Fires when the history state matches the selected condition and the selected element is present",
+        "example": "History state is set or History state equals my-state"
+      },
+      {
+        "type": "Old history state",
+        "description": "Fires when the previous history state matches the selected condition and the selected element is present",
+        "example": "Old history state equals my-state"
+      },
+      {
+        "type": "Referrer",
+        "description": "Fires when the visitor was directed by the selected internal referrer and the selected element is present",
+        "example": "Referrer equals https://example.com/blog"
+      },
+      {
+        "type": "External referrer",
+        "description": "Fires when the visitor was directed by the selected external referrer and the selected element is present",
+        "example": "External referrer equals https://google.com"
+      },
+      {
+        "type": "Campaign",
+        "description": "Fires when the visitor was directed by the selected campaign (utm_campaign) and the selected element is present",
+        "example": "Campaign equals winter-promo"
+      },
+      {
+        "type": "Traffic source",
+        "description": "Fires when traffic source matches and the selected element is present. Values: campaign, organic search, social, referral, direct",
+        "example": "Traffic source equals direct"
+      },
+      {
+        "type": "Returning visitor",
+        "description": "Fires when the visitor is a returning visitor and the selected element is present",
+        "example": "Returning visitor is true"
+      },
+      {
+        "type": "Variable-based conditions",
+        "description": "Any variable can be used to define trigger conditions"
+      }
+    ],
+    "multiplicity": [
+      "Each time new elements are found",
+      "Once for each page view",
+      "Once in a session"
+    ]
+  },
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Run a tag when a specific element (banner, form, CTA) appears on the page",
+      "Track or act on dynamically injected content that may appear after load",
+      "Fire tags only when a given selector is present, with optional page/referrer filters"
+    ],
+    "common_use_cases": [
+      "Promo banner presence tracking",
+      "Form or modal visibility tracking",
+      "Tracking when a specific widget or component is on the page",
+      "Conditional tag firing based on element presence plus URL or referrer"
+    ],
+    "best_practices": [
+      "Use a precise CSS selector (e.g. .promo_banner, #signup-form) to target the element",
+      "Add Page URL or Page path conditions to avoid firing on every page",
+      "Test that the element is present in the DOM when you expect (including after JS injection)"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "description": "Create an element presence trigger. Requires conditions that define the element using the built-in variable 'Found Elements' (variable_id 7dead2a9-5804-4cdd-8d73-b04d338952e9) with value = CSS selector; optionally add page/event conditions.",
+      "required_parameters": {
+        "trigger_type": {
+          "value": "element_presence",
+          "description": "Must be 'element_presence' for element presence triggers"
+        },
+        "conditions": {
+          "description": "Array of condition objects. Include at least one condition using the built-in variable 'Found Elements' (variable_id 7dead2a9-5804-4cdd-8d73-b04d338952e9) with value = CSS selector (e.g. .promo_banner); optional event conditions for Page URL, Page path, Referrer, History, etc."
+        }
+      }
+    },
+    "update_trigger": {
+      "description": "Update an existing element presence trigger – only editable fields will be processed"
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "description": "Human-readable trigger name",
+      "examples": [
+        "Promo Banner Present",
+        "Element Presence – Signup Form",
+        "Element Presence – Product CTA"
+      ]
+    },
+    "trigger_type": {
+      "enum": [
+        "element_presence"
+      ],
+      "description": "Trigger type – must be 'element_presence'",
+      "fixed_value": "element_presence",
+      "validation": {
+        "required": true
+      }
+    },
+    "conditions": {
+      "description": "Array of condition objects. Must include at least one condition that defines which element to watch using the built-in variable 'Found Elements' (variable_id 7dead2a9-5804-4cdd-8d73-b04d338952e9) with value = CSS selector (e.g. .promo_banner). May include event conditions: Page URL, Page path, Page hostname, History source/fragment/state, Referrer, Campaign, Traffic source, Returning visitor, or variable-based.",
+      "structure": {
+        "variable_id": "For element definition use 7dead2a9-5804-4cdd-8d73-b04d338952e9 (Found Elements); for event conditions use the appropriate variable UUID",
+        "condition_type": "equals, contains, is_set, etc.",
+        "value": "CSS selector or class name (e.g. .promo_banner) when using Found Elements variable",
+        "options": {}
+      },
+      "recommendation": "Include one condition with variable_id 7dead2a9-5804-4cdd-8d73-b04d338952e9 (Found Elements) and value = your selector; add Page path or Page URL conditions to limit where the trigger fires."
+    }
+  },
+  "complete_examples": {
+    "element_presence_promo_banner": {
+      "description": "Fire when element matching .promo_banner is present (selector provided via variable)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Promo Banner Present",
+          "trigger_type": "element_presence",
+          "conditions": [
+            {
+              "variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
+              "condition_type": "each_time",
+              "value": ".promo_banner",
+              "options": {}
+            }
+          ]
+        }
+      }
+    },
+    "element_presence_with_page_path": {
+      "description": "Fire when element is present and only on product pages",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Element Presence – Product CTA",
+          "trigger_type": "element_presence",
+          "conditions": [
+            {
+              "variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
+              "condition_type": "once_per_page_view",
+              "value": ".product-cta",
+              "options": {}
+            },
+            {
+              "variable_id": "page-path-variable-uuid",
+              "condition_type": "contains",
+              "value": "/product/",
+              "options": {}
+            }
+          ]
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using a selector that never appears in the DOM (e.g. typo or wrong class)",
+    "Expecting the trigger to fire before DOM ready (it runs after DOM is ready)",
+    "Omitting the element-defining condition so the trigger does not know which element to watch"
+  ],
+  "troubleshooting": {
+    "trigger_not_firing": {
+      "possible_causes": [
+        "CSS selector does not match any element",
+        "Element appears before DOM ready in a way the trigger does not observe",
+        "Event conditions too restrictive"
+      ],
+      "debugging_steps": [
+        "Verify the selector in browser dev tools (e.g. document.querySelector('.promo_banner'))",
+        "Test with fewer or no event conditions",
+        "Ensure the element is present after DOM is ready"
+      ]
+    }
+  }
+}

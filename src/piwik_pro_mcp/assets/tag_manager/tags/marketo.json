@@ -1,0 +1,162 @@
+{
+  "extends": "tag_base",
+  "template_name": "marketo",
+  "name_aliases": [
+    "Marketo Munchkin Tag",
+    "Marketo Munchkin JavaScript"
+  ],
+  "description": "Loads the Marketo Munchkin JavaScript to collect website data and send it to Marketo. Copy your account ID from Marketo > Admin > Munchkin (select Asynchronous for Tracking Code Type). Used for marketing automation, lead tracking, and campaign attribution.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting website data for Marketo",
+      "Marketing automation and lead tracking",
+      "Campaign attribution in Marketo"
+    ],
+    "common_use_cases": [
+      "Visitor and lead tracking for Marketo",
+      "Form submissions and page views in Marketo",
+      "Marketing automation workflows"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "marketing_automation",
+      "examples": [
+        "marketing_automation",
+        "analytics",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'marketo' for this template",
+      "value": "marketo",
+      "validation": {
+        "required": true,
+        "fixed_value": "marketo"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Marketo Munchkin configuration. Must include account_id.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "account_id"
+      ]
+    },
+    "template_options.account_id": {
+      "type": "string",
+      "description": "Marketo Munchkin account ID. Find in Marketo > Admin > Munchkin (select Asynchronous for Tracking Code Type).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "XXX-XXX-XXX"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.account_id",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "Marketo Munchkin tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Marketo Munchkin",
+            "template": "marketo",
+            "template_options": {
+              "account_id": "XXX-XXX-XXX"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get account_id from Marketo > Admin > Munchkin (Asynchronous tracking code). Use page_view trigger."
+    },
+    "update_example": {
+      "description": "Update account ID or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "account_id": "XXX-XXX-XXX"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using wrong account ID - copy from Admin > Munchkin (Asynchronous)",
+    "Omitting template_options or account_id",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "data_not_in_marketo": [
+      "Verify account_id is correct (Marketo Admin > Munchkin)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

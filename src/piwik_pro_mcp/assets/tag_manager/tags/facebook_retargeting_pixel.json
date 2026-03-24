@@ -1,0 +1,284 @@
+{
+  "extends": "tag_base",
+  "template_name": "facebook_retargeting_pixel",
+  "name_aliases": [
+    "Meta Pixel Tag",
+    "Facebook Pixel Tag"
+  ],
+  "description": "Meta Pixel (formerly Facebook Retargeting Pixel) for remarketing and conversion tracking. Paste your Pixel ID from Meta Events Manager. Select an event type (ViewContent, Purchase, Lead, etc.) and optionally add event properties. Use page view trigger for base pixel; use form/custom triggers for conversion events. Note: Rebranded from Facebook Retargeting Pixel.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Meta/Facebook remarketing campaigns",
+      "Tracking conversions for Meta Ads",
+      "Audience building for retargeting",
+      "Purchase, lead, and custom event tracking"
+    ],
+    "common_use_cases": [
+      "ViewContent on product pages",
+      "AddToCart and Purchase for ecommerce",
+      "Lead and CompleteRegistration for forms",
+      "Custom events with event properties"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "remarketing",
+      "examples": [
+        "remarketing",
+        "marketing_automation"
+      ]
+    },
+    "template": {
+      "description": "Must be 'facebook_retargeting_pixel' for this template",
+      "value": "facebook_retargeting_pixel",
+      "validation": {
+        "required": true,
+        "fixed_value": "facebook_retargeting_pixel"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Meta Pixel configuration. Must include pixel_id, event, event_properties.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "pixel_id",
+        "event",
+        "event_properties"
+      ]
+    },
+    "template_options.pixel_id": {
+      "type": "string",
+      "description": "Meta Pixel ID. Find it in Meta Business Suite > Events Manager > Connect Data Sources > Meta Pixel.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "1234567890123456"
+    },
+    "template_options.event": {
+      "type": "string",
+      "description": "Meta Pixel event type.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "prompt_user_if_missing": true,
+      "prompt_message": "Which Meta Pixel event type? (e.g. ViewContent, Purchase, Lead, AddToCart)",
+      "enum": [
+        "ViewContent",
+        "Search",
+        "AddToCart",
+        "AddToWishlist",
+        "InitiateCheckout",
+        "AddPaymentInfo",
+        "Lead",
+        "CompleteRegistration",
+        "SubmitApplication",
+        "Schedule",
+        "FindLocation",
+        "Donate",
+        "CustomizeProduct",
+        "Contact",
+        "Purchase",
+        "Subscribe",
+        "StartTrial"
+      ]
+    },
+    "template_options.event_properties": {
+      "type": "array",
+      "description": "Additional event parameters passed as third argument to Meta Pixel. Can be empty array [].",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "items": {
+        "type": "object",
+        "properties": {
+          "property_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "property_value": {
+            "type": "string"
+          }
+        }
+      },
+      "example": [
+        {
+          "property_name": "content_name",
+          "property_value": "{{ Product Name }}"
+        }
+      ]
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.*",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "view_content": {
+      "description": "Meta Pixel ViewContent on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Meta Pixel - View Content",
+            "template": "facebook_retargeting_pixel",
+            "template_options": {
+              "pixel_id": "1234567890123456",
+              "event": "ViewContent",
+              "event_properties": []
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get Pixel ID from Meta Events Manager. Use page_view trigger for base pixel."
+    },
+    "purchase": {
+      "description": "Meta Pixel Purchase event on thank-you page",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Meta Pixel - Purchase",
+            "template": "facebook_retargeting_pixel",
+            "template_options": {
+              "pixel_id": "1234567890123456",
+              "event": "Purchase",
+              "event_properties": [
+                {
+                  "property_name": "value",
+                  "property_value": "{{ Order Total }}"
+                },
+                {
+                  "property_name": "currency",
+                  "property_value": "USD"
+                }
+              ]
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "purchase-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create variables for Order Total. Use form submission or custom event trigger on thank-you page."
+    },
+    "add_to_cart": {
+      "description": "Meta Pixel AddToCart event",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Meta Pixel - Add to Cart",
+            "template": "facebook_retargeting_pixel",
+            "template_options": {
+              "pixel_id": "1234567890123456",
+              "event": "AddToCart",
+              "event_properties": [
+                {
+                  "property_name": "content_name",
+                  "property_value": "{{ Product Name }}"
+                },
+                {
+                  "property_name": "value",
+                  "property_value": "{{ Product Price }}"
+                }
+              ]
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "add-to-cart-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update pixel ID or event",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "pixel_id": "1234567890123456",
+              "event": "Lead",
+              "event_properties": []
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting event_properties - use [] if no extra params",
+    "Using wrong Pixel ID - copy from Meta Events Manager",
+    "Not specifying the event type",
+    "Using page_view trigger for Purchase/Lead - use conversion trigger",
+    "Forgetting to add pixel to every page (ViewContent + page_view)"
+  ],
+  "troubleshooting": {
+    "pixel_not_firing": [
+      "Verify pixel_id is correct (Meta Events Manager)",
+      "Ensure trigger is attached and fires",
+      "Check consent_type is met"
+    ],
+    "events_not_in_meta": [
+      "Verify event type matches Meta's standard events",
+      "Use event_properties for value, currency, content_name etc.",
+      "Allow time for Meta to process"
+    ]
+  }
+}

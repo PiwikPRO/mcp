@@ -7,14 +7,9 @@ including creation, listing, and retrieval of audiences.
 
 from mcp.server.fastmcp import FastMCP
 
-from piwik_pro_mcp.responses import OperationStatusResponse
-
 from .attributes import list_cdp_attributes as _list_cdp_attributes
 from .audiences import (
     create_audience as _create_audience,
-)
-from .audiences import (
-    delete_audience as _delete_audience,
 )
 from .audiences import (
     get_audience_details as _get_audience_details,
@@ -82,7 +77,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """Create a new audience in Piwik PRO CDP using JSON attributes.
 
         ⚠️  IMPORTANT: Before creating audiences
-        * First discover available parameters using list_available_parameters("audiences_create") tool.
+        * First discover available parameters using tools_parameters_get("audiences_create") tool.
         * Only then use activations_attributes_list() to get the correct column_id, value_selectors, and value_format.
 
         Args:
@@ -176,7 +171,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
                 "membership_duration_days": 30
             }
 
-        TIP: Always use list_available_parameters("audiences_create") first to discover available parameters.
+        TIP: Always use tools_parameters_get("audiences_create") first to discover available parameters.
         TIP: Always use activations_attributes_list() first to discover available attributes and their formats.
         TIP: Use the supported_operators field from attribute discovery to know which operators work.
         TIP: Use the value_format.example from each attribute for correct value formatting.
@@ -190,7 +185,7 @@ def register_cdp_tools(mcp: FastMCP) -> None:
         """Update an existing audience in Piwik PRO CDP using JSON attributes.
 
         ⚠️  IMPORTANT: Before updating audiences
-        * First discover available parameters using list_available_parameters("audiences_update") tool.
+        * First discover available parameters using tools_parameters_get("audiences_update") tool.
         * Only then use activations_attributes_list() to get the correct column_id, value_selectors,
             and value_format for new conditions.
 
@@ -241,33 +236,12 @@ def register_cdp_tools(mcp: FastMCP) -> None:
                 "membership_duration_days": 120  # Changed from previous value
             }
 
-        TIP: Always use list_available_parameters("audiences_update") first to discover available parameters.
+        TIP: Always use tools_parameters_get("audiences_update") first to discover available parameters.
         TIP: For definition updates, use activations_attributes_list() to get correct attribute formats.
         TIP: Use the supported_operators field from attribute discovery to know which operators work.
         TIP: Profile attributes with value_selectors require a value_selector field in conditions.
         """
         return _update_audience(app_id=app_id, audience_id=audience_id, attributes=attributes)
-
-    @mcp.tool("audiences_delete", annotations={"title": "Piwik PRO: Delete Audience"})
-    def audiences_delete(app_id: str, audience_id: str) -> OperationStatusResponse:
-        """Delete an existing audience in Piwik PRO CDP.
-
-        ⚠️  WARNING: This operation is irreversible! The audience and all its data will be permanently deleted.
-
-        Args:
-            app_id: UUID of the app containing the audience
-            audience_id: UUID of the audience to delete
-
-        Returns:
-            Dictionary containing deletion status and information including:
-            - status: Deletion status ("success" or "error")
-            - message: Descriptive message about the deletion
-
-        Examples:
-            # Delete an audience
-            result = audiences_delete("07b417fb-1d68-4ea5-9f89-44aece1423ea", "audience-123")
-        """
-        return _delete_audience(app_id=app_id, audience_id=audience_id)
 
     @mcp.tool(
         "activations_attributes_list", annotations={"title": "Piwik PRO: List CDP Attributes", "readOnlyHint": True}

@@ -1,0 +1,236 @@
+{
+  "extends": "tag_base",
+  "template_name": "piwik_goal_conversion",
+  "name_aliases": [
+    "Goal Conversion Tag",
+    "Piwik Goal Conversion Tag"
+  ],
+  "description": "Tracks goal conversions manually when standard methods (e.g. URL match) won't work. Create a goal in Analytics > Goals with manual tracking, copy its ID, then configure this tag. Optionally set revenue and currency. Can include custom dimensions for the conversion.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking conversions that can't be detected by URL or page view",
+      "Form submissions, button clicks, or custom success events",
+      "E-commerce or lead conversions with revenue",
+      "Goals requiring dynamic goal ID or revenue from variables"
+    ],
+    "common_use_cases": [
+      "Thank-you page after form submission",
+      "Purchase confirmation",
+      "Newsletter signup",
+      "Lead qualification",
+      "Download completed"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "not_require_consent",
+        "conversion_tracking"
+      ]
+    },
+    "template": {
+      "description": "Must be 'piwik_goal_conversion' for this template",
+      "value": "piwik_goal_conversion",
+      "validation": {
+        "required": true,
+        "fixed_value": "piwik_goal_conversion"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Goal conversion configuration. Must include id (goal ID).",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "template_options.id": {
+      "type": "string",
+      "description": "Goal ID from Analytics > Goals (manual tracking goal). String or variable reference like {{ Goal ID }}.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "recommendation": "Create goal in Analytics > Goals, select manual tracking, then copy the goal ID"
+    }
+  },
+  "optional_attributes": {
+    "template_options.revenue": {
+      "type": "number",
+      "description": "Goal revenue. Number (>= 0) or variable reference.",
+      "mutability": "editable",
+      "validation": {
+        "minimum": 0
+      },
+      "recommendation": "Use for conversion value; supports variables for dynamic revenue"
+    },
+    "template_options.currency": {
+      "type": "string",
+      "description": "Currency code (e.g. USD, EUR). String or variable reference.",
+      "mutability": "editable",
+      "recommendation": "Set when using revenue for correct currency conversion"
+    },
+    "template_options.custom_dimensions": {
+      "type": "array",
+      "description": "Custom dimensions to attach to the conversion. Each has id (dimension slot 1-400) and value.",
+      "mutability": "editable",
+      "structure": {
+        "id": "integer (1-400) - Custom dimension slot ID",
+        "value": "string|number|boolean or variable reference"
+      },
+      "example": [
+        {
+          "id": 1,
+          "value": "{{ Order ID }}"
+        }
+      ]
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_conversion": {
+      "description": "Track conversion for a manual goal",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Lead Form Conversion",
+            "template": "piwik_goal_conversion",
+            "template_options": {
+              "id": "goal-uuid-from-analytics"
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "form-submit-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create goal in Analytics > Goals with manual tracking, copy its ID."
+    },
+    "with_revenue": {
+      "description": "Conversion with revenue and currency",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Purchase Conversion",
+            "template": "piwik_goal_conversion",
+            "template_options": {
+              "id": "purchase-goal-uuid",
+              "revenue": "{{ Order Total }}",
+              "currency": "{{ Order Currency }}"
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "thank-you-page-trigger-uuid"
+        }
+      }
+    },
+    "with_custom_dimensions": {
+      "description": "Conversion with custom dimensions",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Conversion + Order ID",
+            "template": "piwik_goal_conversion",
+            "template_options": {
+              "id": "order-goal-uuid",
+              "revenue": 99.99,
+              "currency": "USD",
+              "custom_dimensions": [
+                {
+                  "id": 1,
+                  "value": "{{ Order ID }}"
+                }
+              ]
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "order-confirmation-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update goal options",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "id": "{{ Goal ID }}",
+              "revenue": "{{ Revenue }}"
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options.id (required)",
+    "Using goal ID from a non-manual goal (must be manual tracking)",
+    "Forgetting to create the goal in Analytics > Goals first",
+    "Forgetting to attach a trigger",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "conversion_not_recorded": [
+      "Verify goal exists in Analytics > Goals and uses manual tracking",
+      "Check goal ID matches exactly",
+      "Ensure triggers are attached and firing",
+      "Confirm consent_type is met"
+    ],
+    "revenue_not_showing": [
+      "Set currency when using revenue",
+      "Ensure revenue is numeric or variable resolves to number"
+    ]
+  }
+}

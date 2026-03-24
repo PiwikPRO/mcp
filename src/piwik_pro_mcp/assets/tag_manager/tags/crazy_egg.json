@@ -1,0 +1,185 @@
+{
+  "extends": "tag_base",
+  "template_name": "crazy_egg",
+  "name_aliases": [
+    "Crazy Egg Tracking Script Tag"
+  ],
+  "description": "Loads the Crazy Egg tracking script to collect heatmap data from your site. Copy the account number from your Crazy Egg JavaScript tracking code. Data is displayed as heatmaps in Crazy Egg.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting heatmap data for Crazy Egg",
+      "Visualizing where users click and scroll",
+      "UX analysis with Crazy Egg heatmaps",
+      "A/B testing with Crazy Egg snapshots"
+    ],
+    "common_use_cases": [
+      "Heatmaps on landing pages",
+      "Click and scroll behavior analysis",
+      "Form and CTA engagement insights",
+      "Conversion funnel visualization"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "user_feedback",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'crazy_egg' for this template",
+      "value": "crazy_egg",
+      "validation": {
+        "required": true,
+        "fixed_value": "crazy_egg"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Crazy Egg configuration. Must include account_number.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "account_number"
+      ]
+    },
+    "template_options.account_number": {
+      "type": "string",
+      "description": "Crazy Egg account number. Find it in Crazy Egg > tracking code > Copy numbers from the JavaScript file (e.g. 00000000).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "00000000"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false,
+      "recommendation": "Turn on to respect Do-Not-Track and opt-out preferences"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates - when the tag should fire"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.account_number",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority",
+          "scheduler"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_heatmap": {
+      "description": "Crazy Egg heatmap tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Crazy Egg Heatmaps",
+            "template": "crazy_egg",
+            "template_options": {
+              "account_number": "00000000"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get account_number from Crazy Egg > tracking code > Copy numbers from the JavaScript file. Use a page_view trigger."
+    },
+    "with_consent": {
+      "description": "Crazy Egg with user feedback consent",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Crazy Egg - UX Feedback",
+            "template": "crazy_egg",
+            "template_options": {
+              "account_number": "12345678"
+            },
+            "consent_type": "user_feedback"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update account number or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "account_number": "00000000"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using wrong account number - copy from Crazy Egg JavaScript file (numbers only)",
+    "Omitting template_options or account_number",
+    "Forgetting to attach a page_view trigger",
+    "Expecting scrollmaps without proper Crazy Egg setup"
+  ],
+  "troubleshooting": {
+    "heatmaps_not_appearing": [
+      "Verify account_number is correct (check Crazy Egg dashboard)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form",
+      "Allow time for Crazy Egg to process data"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

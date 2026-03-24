@@ -1,7 +1,82 @@
 {
+  "extends": "trigger_base",
   "template_name": "event",
-  "display_name": "Data Layer Event Trigger",
-  "description": "Fires when a specific custom event occurs, typically pushed via data layer (window.dataLayer/window._mtm) or emitted by your app. Use it to react to business events like form submission, purchase, signup, etc.",
+  "name_aliases": [
+    "Data Layer Event Trigger"
+  ],
+  "description": "Fires a tag on a selected data layer event on all pages. By default it fires for the selected event on any page; you can add conditions so the tag fires only for a specific page or under specific conditions. Use it to react to business events like form submission, purchase, signup, add to cart, etc.",
+  "event_trigger_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/event-trigger/",
+    "data_layer_event_condition": {
+      "type": "Data layer event name",
+      "description": "Fires the tag when the selected event occurs in the data layer (e.g. when a visitor adds a product to their cart). This condition is always required.",
+      "example": "Event equals addToCart"
+    },
+    "builtin_variable": {
+      "variable_id": "977a1f9d-4fdb-43bf-9549-bdf68a7b69a6",
+      "name": "Event",
+      "description": "A variable used in the data layer event trigger. It reads the event name from the data layer.",
+      "usage": "Use this variable_id in the condition that defines when the trigger fires. Set the condition value to the data layer event name specified by the user (e.g. purchase_completed, lead_created, signup_completed).",
+      "value_description": "Data layer event name specified by the user. E.g. addToCart, purchase_completed, lead_created, signup_completed.",
+      "condition_example": {
+        "variable_id": "977a1f9d-4fdb-43bf-9549-bdf68a7b69a6",
+        "condition_type": "equals",
+        "value": "addToCart",
+        "options": {}
+      }
+    },
+    "note": "The Event condition is always required: use the built-in variable 'Event' (id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6) and set value to the data layer event name (e.g. addToCart, purchase_completed). You can add other conditions (page, referrer, campaign, etc.) to fire only on specific pages or under specific conditions."
+  },
+  "event_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/event-trigger/",
+    "description": "Optional conditions to fire the tag only when the selected event occurs on a specific page or under specific conditions.",
+    "condition_types": [
+      {
+        "type": "Page URL",
+        "description": "Fires when the visitor is on a page with the selected page URL and the selected event occurs in the data layer.",
+        "example": "Page Url equals https://example.com/product-tour/"
+      },
+      {
+        "type": "Page path",
+        "description": "Fires when the visitor is on a page with the selected path and the selected event occurs in the data layer.",
+        "example": "Page Path contains /product-tour"
+      },
+      {
+        "type": "Page hostname",
+        "description": "Fires when the visitor is on a page hosted on the selected domain and the selected event occurs in the data layer.",
+        "example": "Page Hostname equals example.com"
+      },
+      {
+        "type": "Referrer",
+        "description": "Fires when the visitor was directed by the selected internal referrer and the selected event occurs in the data layer.",
+        "example": "Referrer equals https://example.com/blog"
+      },
+      {
+        "type": "External referrer",
+        "description": "Fires when the visitor was directed by the selected external referrer and the selected event occurs in the data layer.",
+        "example": "External referrer equals https://google.com"
+      },
+      {
+        "type": "Campaign",
+        "description": "Fires when the visitor was directed by the selected campaign (utm_campaign) and the selected event occurs in the data layer.",
+        "example": "Campaign equals winter-promo"
+      },
+      {
+        "type": "Traffic source",
+        "description": "Fires when the visitor was directed by the selected traffic source and the selected event occurs. Values: campaign, organic search, social, referral, direct.",
+        "example": "Traffic source equals direct"
+      },
+      {
+        "type": "Returning visitor",
+        "description": "Fires when the visitor is a returning visitor (stg_returning_visitor cookie) and the selected event occurs in the data layer.",
+        "example": "Returning visitor is true"
+      },
+      {
+        "type": "Variable-based conditions",
+        "description": "Any variable you add can be used to define trigger conditions."
+      }
+    ]
+  },
   "ai_usage_guide": {
     "when_to_use": [
       "You push application events into the data layer and want to trigger tags on those events",
@@ -22,63 +97,23 @@
   },
   "mcp_usage": {
     "create_trigger": {
-      "function_name": "create_trigger",
       "description": "Create a new event trigger using this template.",
       "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "UUID of your Piwik PRO app"
-        },
-        "name": {
-          "type": "string",
-          "description": "Descriptive name for the event trigger"
-        },
         "trigger_type": {
-          "type": "string",
           "value": "event",
           "description": "Must be 'event' for event triggers"
         },
         "conditions": {
-          "type": "array",
-          "description": "Array of condition objects that determine when the event trigger fires"
-        }
-      },
-      "optional_parameters": {
-        "relationships": {
-          "type": "object",
-          "description": "Can include tags to associate with this trigger"
+          "description": "Array of condition objects. Must include at least one condition with variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6 (Event), value = data layer event name (e.g. purchase_completed). May include conditions on event payload or page."
         }
       }
     },
     "update_trigger": {
-      "function_name": "update_trigger",
-      "description": "Update existing event trigger - only editable fields will be processed",
-      "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "UUID of your Piwik PRO app"
-        },
-        "trigger_id": {
-          "type": "string",
-          "description": "UUID of the trigger to update"
-        },
-        "attributes": {
-          "type": "object",
-          "description": "Trigger attributes to update (non-editable fields are filtered out)"
-        }
-      }
+      "description": "Update existing event trigger - only editable fields will be processed"
     }
   },
   "required_attributes": {
     "name": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Human-readable trigger name",
-      "validation": {
-        "required": true,
-        "min_length": 1,
-        "max_length": 255
-      },
       "examples": [
         "Purchase Completed Event",
         "Lead Created Event",
@@ -86,37 +121,26 @@
       ]
     },
     "trigger_type": {
-      "type": "string",
-      "mutability": "create-only",
       "enum": [
         "event"
       ],
       "description": "Trigger type constant - must be 'event'",
       "fixed_value": "event",
-      "edit_note": "⚠️ Cannot be changed after trigger creation"
+      "validation": {
+        "required": true
+      }
     },
     "conditions": {
-      "type": "array",
-      "mutability": "editable",
-      "description": "Array of condition objects that define when the event trigger should fire",
+      "description": "Array of condition objects. Must include at least one condition using the built-in Event variable (variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6) with value set to the data layer event name (e.g. purchase_completed, lead_created). May include additional conditions on event payload or page context.",
       "structure": {
-        "condition_id": {
-          "type": "string",
-          "format": "uuid",
-          "description": "Unique identifier for this condition (auto-generated during trigger creation)",
-          "example": "9efa6364-8982-45c5-a288-cdabdf7a4001"
-        },
         "variable_id": {
-          "type": "string",
-          "format": "uuid",
-          "description": "UUID of the variable to check (e.g., Data Layer variable exposing 'event' name or payload field)",
+          "for_event_name": "Use built-in Event variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6; value = data layer event name specified by user",
           "common_variables": {
-            "event_name": "Data layer variable pointing to event name (e.g., 'event')",
-            "event_property": "Data layer variable pointing to a payload field (e.g., 'ecommerce.action')"
+            "event_name": "Data layer variable pointing to event name (built-in Event 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6)",
+            "event_property": "Data layer variable pointing to a payload field (e.g. ecommerce.action)"
           }
         },
         "condition_type": {
-          "type": "string",
           "enum": [
             "equals",
             "does_not_equal",
@@ -132,26 +156,21 @@
             "is_not_set",
             "is_empty",
             "is_not_empty"
-          ],
-          "description": "Type of comparison to perform"
+          ]
         },
         "value": {
-          "type": "string",
-          "description": "Value to compare against; can be empty for is_set/is_not_set",
           "examples": [
+            "addToCart",
             "purchase_completed",
             "lead_created",
             "signup_completed"
           ]
         },
         "options": {
-          "type": "object",
-          "description": "Additional options for the condition",
           "default": {}
         }
       },
-      "minimum_items": 1,
-      "recommendation": "Include at least one condition that matches your event name or a required payload property"
+      "recommendation": "Include one condition with variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6 (Event), condition_type e.g. equals, value = the data layer event name; add conditions on payload or page as needed."
     }
   },
   "condition_patterns": {
@@ -210,7 +229,6 @@
   "complete_examples": {
     "purchase_completed_event": {
       "description": "Trigger on 'purchase_completed' data layer event",
-      "use_case": "Fire conversion tags when a purchase completes",
       "mcp_call": {
         "function": "create_trigger",
         "parameters": {
@@ -219,7 +237,7 @@
           "trigger_type": "event",
           "conditions": [
             {
-              "variable_id": "data-layer-event-name-variable-uuid",
+              "variable_id": "977a1f9d-4fdb-43bf-9549-bdf68a7b69a6",
               "condition_type": "equals",
               "value": "purchase_completed",
               "options": {}
@@ -230,7 +248,6 @@
     },
     "lead_created_event_with_property": {
       "description": "Trigger on lead_created with channel property set to 'paid'",
-      "use_case": "Attribution for paid lead generation",
       "mcp_call": {
         "function": "create_trigger",
         "parameters": {
@@ -239,7 +256,7 @@
           "trigger_type": "event",
           "conditions": [
             {
-              "variable_id": "data-layer-event-name-variable-uuid",
+              "variable_id": "977a1f9d-4fdb-43bf-9549-bdf68a7b69a6",
               "condition_type": "equals",
               "value": "lead_created",
               "options": {}
@@ -253,23 +270,45 @@
           ]
         }
       }
+    },
+    "add_to_cart_event": {
+      "description": "Trigger on 'addToCart' data layer event (per help example)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "your-app-id-uuid",
+          "name": "Add to Cart Event",
+          "trigger_type": "event",
+          "conditions": [
+            {
+              "variable_id": "977a1f9d-4fdb-43bf-9549-bdf68a7b69a6",
+              "condition_type": "equals",
+              "value": "addToCart",
+              "options": {}
+            }
+          ]
+        }
+      }
     }
   },
   "common_mistakes": [
+    "Omitting the Event condition (variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6 with value = data layer event name)",
     "Using an event name variable that doesn't reflect your data layer structure",
     "Typos or inconsistent event naming",
     "Relying on properties that are not always present in the payload",
-    "Removing or reusing condition_id values incorrectly when editing existing conditions (creation auto-generates them)"
+    "Removing or reusing condition_id values incorrectly when editing existing conditions"
   ],
   "troubleshooting": {
     "trigger_not_firing": {
       "possible_causes": [
+        "Missing or wrong Event condition (use variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6, value = data layer event name)",
         "Data layer push occurs after trigger evaluation or not on the expected page",
         "Variable IDs point to the wrong data layer paths",
         "Event name mismatch (case sensitivity/typos)",
         "Conditions too restrictive"
       ],
       "debugging_steps": [
+        "Ensure one condition uses variable_id 977a1f9d-4fdb-43bf-9549-bdf68a7b69a6 (Event), value = the data layer event name (e.g. purchase_completed)",
         "Verify data layer pushes in browser console (window.dataLayer or window._mtm)",
         "Log pushed events and payload structure to confirm fields",
         "Test conditions with simpler 'equals' or 'contains' first",
@@ -277,88 +316,16 @@
       ]
     }
   },
-  "read_only_attributes": {
-    "created_at": {
-      "mutability": "read-only",
-      "description": "Creation timestamp"
-    },
-    "updated_at": {
-      "mutability": "read-only",
-      "description": "Last update timestamp"
-    },
-    "is_published": {
-      "mutability": "read-only",
-      "description": "Whether the trigger is published"
-    }
-  },
-  "field_mutability_guide": {
-    "description": "Understanding field editability after event trigger creation",
-    "mutability_types": {
-      "editable": {
-        "description": "✅ Can be updated anytime after creation",
-        "examples": [
-          "name",
-          "conditions"
-        ],
-        "note": "Modify conditions to adjust when the trigger fires"
-      },
-      "create-only": {
-        "description": "⚠️ Set during creation, immutable after",
-        "examples": [
-          "trigger_type"
-        ],
-        "note": "Trigger type defines behavior and cannot be changed"
-      },
-      "read-only": {
-        "description": "🚫 Auto-generated, never user-modifiable",
-        "examples": [
-          "created_at",
-          "updated_at",
-          "is_published"
-        ]
-      }
-    }
-  },
   "variable_reference_guide": {
     "data_layer_variables": {
       "event_name_variable": {
         "description": "Variable that reads the event name (e.g., path 'event') from the data layer",
-        "example": "event",
         "best_for": "Matching on specific event names"
       },
       "event_property_variable": {
         "description": "Variable that reads a payload property (e.g., 'ecommerce.action')",
-        "example": "ecommerce.action",
         "best_for": "Refining event triggers by payload attributes"
       }
-    },
-    "getting_variable_ids": {
-      "step_1": "Create data layer variables for event name and any required payload properties",
-      "step_2": "Use list_variables(app_id) to confirm the variables exist",
-      "step_3": "Copy the 'id' field from the variable object",
-      "step_4": "Use that UUID as the variable_id in your trigger conditions"
-    }
-  },
-  "related_mcp_tools": {
-    "create_trigger": {
-      "description": "Create event triggers",
-      "usage": "create_trigger(app_id, name, trigger_type='event', conditions=[...])"
-    },
-    "list_triggers": {
-      "description": "View all existing triggers in your app",
-      "usage": "list_triggers(app_id)"
-    },
-    "get_trigger": {
-      "description": "Examine configuration of existing triggers",
-      "usage": "get_trigger(app_id, trigger_id)"
-    },
-    "list_variables": {
-      "description": "Get variables for event name/properties",
-      "usage": "list_variables(app_id)"
-    },
-    "get_trigger_template": {
-      "description": "Get complete template info including field mutability",
-      "usage": "get_trigger_template(template_name='custom_data_layer_event')"
     }
   }
 }

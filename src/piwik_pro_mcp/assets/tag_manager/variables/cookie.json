@@ -1,0 +1,149 @@
+{
+  "extends": "variable_base",
+  "template_name": "cookie",
+  "name_aliases": [
+    "Cookie Variable"
+  ],
+  "description": "Returns the value of a browser cookie by name. Use for User ID tracking without re-authentication, visit counts (e.g. first-time vs returning visitor), or any value your site stores in a cookie. Result is usually a string; numeric strings are converted to numbers and TRUE/FALSE strings to booleans.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Extend User ID tracking for return users without requiring re-authentication",
+      "Store and read visit count (e.g. fire different tags for first-time vs x-time visitor)",
+      "Read consent or preference values stored in cookies",
+      "Use session or persistent identifiers set by your site or auth system",
+      "Pass values between pages via cookies for tags and triggers"
+    ],
+    "common_use_cases": [
+      "User ID: read auth/session cookie for consistent user identification",
+      "Visit count: cookie holding number of visits for segmenting first-time vs returning",
+      "Consent state: cookie set by CMP or your app",
+      "Campaign/source: UTM or referral stored in a cookie",
+      "A/B test variant: variant ID stored in cookie"
+    ],
+    "best_practices": [
+      "Use the exact cookie name as set by your site or application",
+      "Cookie names are case-sensitive",
+      "For complex values (e.g. JSON), handle parsing in a custom JavaScript variable if needed",
+      "Respect cookie lifetime and domain – variable returns empty if cookie is missing or expired",
+      "Document which cookie names your tags depend on for team and debugging"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "description": "Create a cookie variable that returns the value of the specified cookie",
+      "required_parameters": {
+        "variable_type": {
+          "value": "cookie",
+          "description": "Must be 'cookie' for cookie variables"
+        },
+        "value": {
+          "description": "Name of the cookie to read (API: value). At runtime the variable returns that cookie's value."
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "examples": [
+        "Session ID",
+        "Visit Count",
+        "User ID Cookie",
+        "Consent Cookie"
+      ]
+    },
+    "template": {
+      "examples": [
+        "cookie"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "cookie"
+        ]
+      }
+    },
+    "value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Name of the cookie to read (API: value). The variable's value at runtime is the cookie's content.",
+      "examples": [
+        "session_id",
+        "_ppms_id",
+        "visit_count",
+        "consent"
+      ],
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "recommendation": "Use the exact cookie name as set by your site. Cookie names are case-sensitive."
+    }
+  },
+  "complete_examples": {
+    "create_example": {
+      "description": "Create a cookie variable for session ID",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Session ID",
+            "variable_type": "cookie",
+            "value": "session_id"
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update the cookie name for an existing cookie variable",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "User ID Cookie",
+            "value": "_ppms_id"
+          }
+        }
+      }
+    },
+    "visit_count_example": {
+      "description": "Cookie variable for visit count (e.g. first-time vs returning)",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Visit Count",
+            "variable_type": "cookie",
+            "value": "visit_count"
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using the cookie's content as value – value must be the cookie name to read",
+    "Typos or wrong case in cookie name – cookie names are case-sensitive",
+    "Assuming the cookie is always set – variable can be empty if cookie is missing or expired",
+    "Expecting complex (e.g. JSON) cookie content without parsing – use custom JS variable if needed"
+  ],
+  "troubleshooting": {
+    "variable_empty_or_undefined": {
+      "problem": "Cookie variable returns empty or undefined",
+      "solutions": [
+        "Confirm the cookie is set (check Application > Cookies in dev tools)",
+        "Verify value (cookie name) matches exactly (case and spelling)",
+        "Check cookie domain and path – variable runs in page context where cookie is visible",
+        "Ensure cookie exists at the time the variable is evaluated (e.g. after login)"
+      ]
+    },
+    "wrong_type_from_cookie": {
+      "problem": "Need number or boolean but getting string",
+      "solutions": [
+        "Numeric strings and TRUE/FALSE are auto-converted; for other formats use a custom JavaScript variable to parse the cookie value"
+      ]
+    }
+  }
+}

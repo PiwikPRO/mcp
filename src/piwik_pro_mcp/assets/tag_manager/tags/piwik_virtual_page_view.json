@@ -1,0 +1,226 @@
+{
+  "extends": "tag_base",
+  "template_name": "piwik_virtual_page_view",
+  "name_aliases": [
+    "Virtual Page View Tag",
+    "Piwik Virtual Page View Tag"
+  ],
+  "description": "Tracks elements on your site by creating a 'pretend' page that appears in reports with a URL and title, like a real page view. Use when automatic page view tracking doesn't capture the interaction (e.g. SPAs, tab clicks, accordions). Often paired with a click trigger.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Single-page applications (SPAs) where URL doesn't change",
+      "Tracking tab clicks, accordions, or expandable content",
+      "Tracking interactions that represent logical page views",
+      "Elements that should appear as pages in reports"
+    ],
+    "common_use_cases": [
+      "SPA route changes",
+      "Tab or accordion section viewed",
+      "Modal or overlay opened",
+      "Video or content block viewed",
+      "Step in a multi-step form"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "not_require_consent",
+        "conversion_tracking"
+      ]
+    },
+    "template": {
+      "description": "Must be 'piwik_virtual_page_view' for this template",
+      "value": "piwik_virtual_page_view",
+      "validation": {
+        "required": true,
+        "fixed_value": "piwik_virtual_page_view"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Virtual page configuration. Must include url.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "template_options.url": {
+      "type": "string",
+      "description": "Virtual page URL shown in reports. Full URL (e.g. https://example.org) or path (e.g. /pages/about-us). String or variable reference.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "minLength": 1,
+        "maxLength": 255
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options.document_title": {
+      "type": "string",
+      "description": "Virtual page title shown in reports. String or variable reference.",
+      "mutability": "editable",
+      "validation": {
+        "maxLength": 255
+      }
+    },
+    "template_options.custom_dimensions": {
+      "type": "array",
+      "description": "Custom dimensions for this virtual page view. Each has id (slot 1-400) and value.",
+      "mutability": "editable",
+      "structure": {
+        "id": "integer (1-400) - Custom dimension slot ID",
+        "value": "string|number|boolean or variable reference"
+      },
+      "example": [
+        {
+          "id": 1,
+          "value": "{{ Tab Name }}"
+        }
+      ]
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_virtual_page": {
+      "description": "Track virtual page on tab click",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Tab View - Pricing",
+            "template": "piwik_virtual_page_view",
+            "template_options": {
+              "url": "/pricing",
+              "document_title": "Pricing - Viewed"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "click-trigger-pricing-tab-uuid"
+        }
+      }
+    },
+    "spa_route": {
+      "description": "Track SPA route as virtual page",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "SPA Route View",
+            "template": "piwik_virtual_page_view",
+            "template_options": {
+              "url": "{{ Current Route }}",
+              "document_title": "{{ Page Title }}"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "history-change-trigger-uuid"
+        }
+      }
+    },
+    "with_custom_dimensions": {
+      "description": "Virtual page with custom dimensions",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Accordion Section View",
+            "template": "piwik_virtual_page_view",
+            "template_options": {
+              "url": "/faq/{{ Section ID }}",
+              "document_title": "FAQ - {{ Section Name }}",
+              "custom_dimensions": [
+                {
+                  "id": 1,
+                  "value": "{{ Section Category }}"
+                }
+              ]
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "accordion-click-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update virtual page URL and title",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "url": "/pricing/enterprise",
+              "document_title": "Enterprise Pricing"
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options.url (required)",
+    "Forgetting to attach a trigger (often click trigger for specific element)",
+    "Using same URL as real pages (causes duplicate/confusion in reports)",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "virtual_page_not_in_reports": [
+      "Verify triggers are attached and firing",
+      "Check url and document_title are set correctly",
+      "Confirm consent_type is met"
+    ],
+    "duplicate_page_views": [
+      "Ensure Piwik PRO tag has track_page_view: false if using virtual pages for SPAs",
+      "Avoid overlapping virtual URLs with real page URLs"
+    ]
+  }
+}

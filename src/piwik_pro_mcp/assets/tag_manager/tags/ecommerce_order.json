@@ -1,0 +1,325 @@
+{
+  "extends": "tag_base_ecommerce",
+  "template_name": "ecommerce_order",
+  "name_aliases": [
+    "Ecommerce Order Tag"
+  ],
+  "description": "Collects data about completed orders: products purchased, order ID, grand total, tax, shipping, discount, currency. Use a Data layer event trigger (e.g. purchase, transaction). Tracks purchase conversions for ecommerce analytics.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking purchase/order events from ecommerce data layer",
+      "Conversion tracking for completed orders",
+      "Revenue and order analytics",
+      "GA4 or Universal Analytics purchase events"
+    ],
+    "common_use_cases": [
+      "Thank-you page after checkout",
+      "Order confirmation tracking",
+      "Revenue and conversion reporting",
+      "Product performance in orders"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "conversion_tracking"
+      ]
+    },
+    "template": {
+      "description": "Must be 'ecommerce_order' for this template",
+      "value": "ecommerce_order",
+      "validation": {
+        "required": true,
+        "fixed_value": "ecommerce_order"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Ecommerce configuration. Must include product_mapping, category_mapping_type, products_array, order.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "product_mapping",
+        "category_mapping_type",
+        "products_array",
+        "order"
+      ]
+    },
+    "template_options.products_array": {
+      "type": "string",
+      "description": "Source of product array in data layer. E.g. '{{ ecommerce }}.items' or '{{ items }}'.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "example": "{{ ecommerce }}.items"
+    },
+    "template_options.product_mapping": {
+      "type": "object",
+      "description": "Map data layer keys to product fields. sku is required; others optional.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "sku"
+      ],
+      "properties": {
+        "sku": "Key for product SKU (required)",
+        "name": "Key for product name",
+        "category": "Key for main category",
+        "price": "Key for price",
+        "quantity": "Key for quantity",
+        "brand": "Key for brand",
+        "variant": "Key for variant (e.g. size, color)"
+      }
+    },
+    "template_options.category_mapping_type": {
+      "type": "string",
+      "description": "How to handle subcategories. disabled | split_by_delimiter | use_mapping.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "options": {
+        "disabled": "No subcategories",
+        "split_by_delimiter": "Categories in single field, separated by / (UA style)",
+        "use_mapping": "Separate keys for category2-5 (GA4 style)"
+      }
+    },
+    "template_options.order": {
+      "type": "object",
+      "description": "Order details. order_id and grand_total required; subtotal, tax, shipping, discount optional.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "order_id",
+        "grand_total"
+      ],
+      "properties": {
+        "order_id": "Path to order/transaction ID",
+        "grand_total": "Path to grand total value",
+        "subtotal": "Path to subtotal (optional)",
+        "tax": "Path to tax value (optional)",
+        "shipping": "Path to shipping cost (optional)",
+        "discount": "Path to discount value (optional)"
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options.currency": {
+      "type": "string",
+      "description": "Source of currency. Variable syntax or key path.",
+      "mutability": "editable"
+    },
+    "template_options.category_mapping": {
+      "type": "object",
+      "description": "When category_mapping_type is use_mapping: keys for category2-5.",
+      "mutability": "editable",
+      "properties": {
+        "category2": "string",
+        "category3": "string",
+        "category4": "string",
+        "category5": "string"
+      }
+    },
+    "template_options.custom_dimensions": {
+      "type": "array",
+      "description": "Custom dimensions for the event. Each has id (1-400) and value.",
+      "mutability": "editable"
+    },
+    "template_options.product_dimensions": {
+      "type": "array",
+      "description": "Product-level custom dimensions. Each has id (1-20) and value.",
+      "mutability": "editable"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "presets": {
+    "description": "Extends ecommerce_base presets with order object. Base provides product mapping.",
+    "dataLayerGA4": {
+      "order": {
+        "order_id": "{{ ecommerce }}.transaction_id",
+        "grand_total": "{{ ecommerce }}.value",
+        "subtotal": "",
+        "tax": "{{ ecommerce }}.tax",
+        "shipping": "{{ ecommerce }}.shipping",
+        "discount": ""
+      }
+    },
+    "dataLayerUA": {
+      "order": {
+        "order_id": "{{ ecommerce }}.purchase.actionField.id",
+        "grand_total": "{{ ecommerce }}.purchase.actionField.revenue",
+        "subtotal": "",
+        "tax": "{{ ecommerce }}.purchase.actionField.tax",
+        "shipping": "{{ ecommerce }}.purchase.actionField.shipping",
+        "discount": ""
+      }
+    },
+    "gtagGA4": {
+      "order": {
+        "order_id": "{{ transaction_id }}",
+        "grand_total": "{{ value }}",
+        "subtotal": "",
+        "tax": "{{ tax }}",
+        "shipping": "{{ shipping }}",
+        "discount": ""
+      }
+    },
+    "gtagUA": {
+      "order": {
+        "order_id": "{{ transaction_id }}",
+        "grand_total": "{{ value }}",
+        "subtotal": "",
+        "tax": "{{ tax }}",
+        "shipping": "{{ shipping }}",
+        "discount": ""
+      }
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "custom_order": {
+      "description": "Custom data layer (order event with order_data)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Order - Custom",
+            "template": "ecommerce_order",
+            "template_options": {
+              "products_array": "{{ items }}",
+              "currency": "{{ order_data }}.currency",
+              "product_mapping": {
+                "sku": "item_id",
+                "name": "item_name",
+                "price": "price",
+                "quantity": "quantity",
+                "category": "item_category",
+                "brand": "item_brand",
+                "variant": "item_color"
+              },
+              "category_mapping_type": "use_mapping",
+              "category_mapping": {
+                "category2": "item_category2",
+                "category3": "item_category3",
+                "category4": "item_category4",
+                "category5": "item_category5"
+              },
+              "order": {
+                "order_id": "{{ order_data }}.transaction_id",
+                "grand_total": "{{ order_data }}.value",
+                "subtotal": "{{ order_data }}.subtotal",
+                "tax": "{{ order_data }}.tax",
+                "shipping": "{{ order_data }}.shipping",
+                "discount": "{{ order_data }}.discount"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "purchase-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create Data layer event trigger with event name 'purchase' (GA4) or 'transaction' (UA)."
+    },
+    "ga4_preset": {
+      "description": "Using dataLayerGA4 preset",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Order - GA4",
+            "template": "ecommerce_order",
+            "template_options": {
+              "products_array": "{{ ecommerce }}.items",
+              "currency": "{{ ecommerce }}.currency",
+              "product_mapping": {
+                "sku": "item_id",
+                "name": "item_name",
+                "category": "item_category",
+                "price": "price",
+                "quantity": "quantity",
+                "brand": "item_brand",
+                "variant": "item_variant"
+              },
+              "category_mapping_type": "use_mapping",
+              "category_mapping": {
+                "category2": "item_category2",
+                "category3": "item_category3",
+                "category4": "item_category4",
+                "category5": "item_category5"
+              },
+              "order": {
+                "order_id": "{{ ecommerce }}.transaction_id",
+                "grand_total": "{{ ecommerce }}.value",
+                "tax": "{{ ecommerce }}.tax",
+                "shipping": "{{ ecommerce }}.shipping"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "purchase-trigger-uuid"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options.order or order.order_id or order.grand_total (required)",
+    "Omitting product_mapping.sku (required)",
+    "Wrong event name for trigger (purchase vs transaction for GA4 vs UA)",
+    "Wrong paths for order fields - verify data layer structure"
+  ],
+  "troubleshooting": {
+    "no_data_collected": [
+      "Verify Data layer event trigger with correct event name (purchase/transaction)",
+      "Check products_array and order paths match your data layer",
+      "Ensure product_mapping keys match your product object structure"
+    ]
+  }
+}

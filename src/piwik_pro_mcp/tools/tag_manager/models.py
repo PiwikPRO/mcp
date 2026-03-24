@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field, field_validator
 
 from ...common.settings import tag_manager_resource_check_enabled
-from ...common.templates import list_template_names
+from ...common.templates import list_available_assets
 
 
 class TagManagerCreateAttributes(BaseModel):
@@ -37,9 +37,9 @@ class TagManagerCreateAttributes(BaseModel):
     def _validate_template(cls, v: str) -> str:
         if not tag_manager_resource_check_enabled():
             return v
-        allowed = set(list_template_names("tag_manager/tags"))
+        allowed = set(list_available_assets("tag_manager/tags").keys())
         if v not in allowed:
-            raise ValueError(f"Unsupported tag template '{v}'. Use templates_list() to discover options.")
+            raise ValueError(f"Unsupported tag template '{v}'. Use templates_list_tags() to discover options.")
         return v
 
 
@@ -68,33 +68,18 @@ class VariableCreateAttributes(BaseModel):
 
     model_config = {"extra": "allow"}  # Allow additional fields for template-specific attributes
 
-    name: str = Field(..., description="Variable name")
     variable_type: str = Field(..., description="Variable type")
+    name: str = Field(..., description="Variable name")
     is_active: Optional[bool] = Field(None, description="Whether variable is active")
-
-    # Data Layer variable fields
-    data_layer_variable_name: Optional[str] = Field(None, description="Data layer property name to access")
-    data_layer_version: Optional[str] = Field(None, description="Data layer version (1 or 2)")
-    default_value: Optional[str] = Field(None, description="Fallback value when property is undefined")
-    decode_uri_component: Optional[bool] = Field(None, description="Whether to decode URI components")
-    # Custom JavaScript variable fields
-    code: Optional[str] = Field(None, description="JavaScript code to execute")
-    # Constant variable fields
-    value: Optional[str] = Field(None, description="Constant value for constant variables")
-    # URL variable fields
-    url_component: Optional[str] = Field(None, description="URL component to extract (host, path, query, etc.)")
-    # Cookie variable fields
-    cookie_name: Optional[str] = Field(None, description="Name of cookie to read")
-    # Random number variable fields
-    min_value: Optional[int] = Field(None, description="Minimum value for random number")
-    max_value: Optional[int] = Field(None, description="Maximum value for random number")
+    value: Optional[str] = Field(None, description="Value differs based on variable type")
+    options: Optional[Dict[str, Any]] = Field(None, description="Template-specific options.")
 
     @field_validator("variable_type")
     @classmethod
     def _validate_variable_type(cls, v: str) -> str:
         if not tag_manager_resource_check_enabled():
             return v
-        allowed = set(list_template_names("tag_manager/variables"))
+        allowed = set(list_available_assets("tag_manager/variables").keys())
         if v not in allowed:
             raise ValueError(f"Unsupported variable type '{v}'. Use templates_list_variables() to discover options.")
         return v
@@ -114,7 +99,7 @@ class TriggerCreateAttributes(BaseModel):
     def _validate_trigger_type(cls, v: str) -> str:
         if not tag_manager_resource_check_enabled():
             return v
-        allowed = set(list_template_names("tag_manager/triggers"))
+        allowed = set(list_available_assets("tag_manager/triggers").keys())
         if v not in allowed:
             raise ValueError(f"Unsupported trigger type '{v}'. Use templates_list_triggers() to discover options.")
         return v
@@ -127,30 +112,8 @@ class VariableUpdateAttributes(BaseModel):
 
     name: Optional[str] = Field(None, description="Variable name")
     is_active: Optional[bool] = Field(None, description="Whether variable is active")
-
-    # Data Layer variable fields
-    data_layer_variable_name: Optional[str] = Field(None, description="Data layer property name to access")
-    data_layer_version: Optional[str] = Field(None, description="Data layer version (1 or 2)")
-    default_value: Optional[str] = Field(None, description="Fallback value when property is undefined")
-    decode_uri_component: Optional[bool] = Field(None, description="Whether to decode URI components")
-    # Custom JavaScript variable fields
-    code: Optional[str] = Field(None, description="JavaScript code to execute")
-
-    # Constant variable fields
-    value: Optional[str] = Field(None, description="Constant value for constant variables")
-
-    # DOM Element variable fields
-    element_selector: Optional[str] = Field(None, description="CSS selector or XPath to identify target element")
-    selection_method: Optional[str] = Field(None, description="Selection method: 'css' or 'xpath'")
-    attribute_name: Optional[str] = Field(None, description="HTML attribute to extract (empty for text content)")
-
-    # URL variable fields
-    url_component: Optional[str] = Field(None, description="URL component to extract (host, path, query, etc.)")
-    # Cookie variable fields
-    cookie_name: Optional[str] = Field(None, description="Name of cookie to read")
-    # Random number variable fields
-    min_value: Optional[int] = Field(None, description="Minimum value for random number")
-    max_value: Optional[int] = Field(None, description="Maximum value for random number")
+    value: Optional[str] = Field(None, description="Value differs based on variable type")
+    options: Optional[Dict[str, Any]] = Field(None, description="Template-specific options.")
 
 
 class PublishStatusResponse(BaseModel):

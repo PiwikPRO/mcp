@@ -1,0 +1,75 @@
+{
+  "_comment": "Shared base for ecommerce tag templates. Extends tag_base and adds product presets. Ecommerce tags extend this; order and cart_update tags add order/grand_total to presets.",
+  "extends": "tag_base",
+  "presets": {
+    "description": "Predefined template_options for common ecommerce setups (GA4, UA, data layer, gtag).",
+    "dataLayerGA4": {
+      "products_array": "{{ ecommerce }}.items",
+      "currency": "{{ ecommerce }}.currency",
+      "product_mapping": {
+        "sku": "item_id",
+        "name": "item_name",
+        "category": "item_category",
+        "price": "price",
+        "quantity": "quantity",
+        "brand": "item_brand",
+        "variant": "item_variant"
+      },
+      "category_mapping_type": "use_mapping",
+      "category_mapping": {
+        "category2": "item_category2",
+        "category3": "item_category3",
+        "category4": "item_category4",
+        "category5": "item_category5"
+      }
+    },
+    "dataLayerUA": {
+      "products_array": "{{ ecommerce }}.items",
+      "currency": "{{ ecommerce }}.currencyCode",
+      "product_mapping": {
+        "sku": "id",
+        "name": "name",
+        "category": "category",
+        "price": "price",
+        "quantity": "quantity",
+        "brand": "brand",
+        "variant": "variant"
+      },
+      "category_mapping_type": "split_by_delimiter"
+    },
+    "gtagGA4": {
+      "products_array": "{{ items }}",
+      "currency": "{{ currency }}",
+      "product_mapping": {
+        "sku": "item_id",
+        "name": "item_name",
+        "category": "item_category",
+        "price": "price",
+        "quantity": "quantity",
+        "brand": "item_brand",
+        "variant": "item_variant"
+      },
+      "category_mapping_type": "use_mapping",
+      "category_mapping": {
+        "category2": "item_category2",
+        "category3": "item_category3",
+        "category4": "item_category4",
+        "category5": "item_category5"
+      }
+    },
+    "gtagUA": {
+      "products_array": "{{ items }}",
+      "currency": "{{ currency }}",
+      "product_mapping": {
+        "sku": "id",
+        "name": "name",
+        "category": "category",
+        "price": "price",
+        "quantity": "quantity",
+        "brand": "brand",
+        "variant": "variant"
+      },
+      "category_mapping_type": "split_by_delimiter"
+    }
+  }
+}

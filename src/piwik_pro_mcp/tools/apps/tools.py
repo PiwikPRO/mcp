@@ -2,7 +2,7 @@
 App management MCP tools.
 
 This module provides MCP tool functions for managing Piwik PRO apps,
-including creation, updating, listing, and deletion of apps.
+including creation, updating, and listing of apps.
 """
 
 from typing import Optional
@@ -13,10 +13,7 @@ from piwik_pro_mcp.api.exceptions import BadRequestError, NotFoundError
 from piwik_pro_mcp.api.methods.apps.models import AppEditableAttributes, NewAppAttributes
 
 from ...common.utils import create_piwik_client, validate_data_against_model
-from ...responses import (
-    OperationStatusResponse,
-    UpdateStatusResponse,
-)
+from ...responses import UpdateStatusResponse
 from .models import (
     AppCreateMCPResponse,
     AppDetailsMCPResponse,
@@ -145,21 +142,6 @@ def update_app(app_id: str, attributes: dict) -> UpdateStatusResponse:
         raise RuntimeError(f"Failed to update app: {str(e)}")
 
 
-def delete_app(app_id: str) -> OperationStatusResponse:
-    try:
-        client = create_piwik_client()
-        client.apps.delete_app(app_id)
-
-        return OperationStatusResponse(status="success", message=f"App {app_id} deleted successfully")
-
-    except NotFoundError:
-        raise RuntimeError(f"App with ID {app_id} not found")
-    except BadRequestError as e:
-        raise RuntimeError(f"Failed to delete app: {e.message}")
-    except Exception as e:
-        raise RuntimeError(f"Failed to delete app: {str(e)}")
-
-
 def register_app_tools(mcp: FastMCP) -> None:
     """Register all app management tools with the MCP server."""
 
@@ -205,7 +187,7 @@ def register_app_tools(mcp: FastMCP) -> None:
             - created_at: App creation datetime
             - updated_at: App last update datetime
 
-        For more details use also get_app_tracker_settings tool.
+        For more details use also tracker_settings_app_get tool.
         """
         return get_app_details(app_id)
 
@@ -232,7 +214,7 @@ def register_app_tools(mcp: FastMCP) -> None:
             - updated_at: Last update datetime
 
         Parameter Discovery:
-            Use list_available_parameters("piwik_create_app") to get the complete JSON schema
+            Use tools_parameters_get("apps_create") to get the complete JSON schema
             for all available fields. This returns validation rules, field types, and examples.
 
         Examples:
@@ -273,7 +255,7 @@ def register_app_tools(mcp: FastMCP) -> None:
             - updated_fields: List of fields that were updated
 
         Parameter Discovery:
-            Use list_available_parameters("piwik_update_app") to get the complete JSON schema
+            Use tools_parameters_get("apps_update") to get the complete JSON schema
             for all available fields. This returns validation rules, field types, and examples.
 
         Examples:
@@ -287,20 +269,3 @@ def register_app_tools(mcp: FastMCP) -> None:
             attributes = {"name": "Updated App", "urls": ["https://example.com"], "gdpr": true}
         """
         return update_app(app_id, attributes)
-
-    @mcp.tool(annotations={"title": "Piwik PRO: Delete App"})
-    def apps_delete(app_id: str) -> OperationStatusResponse:
-        """Delete an app from Piwik PRO analytics.
-
-        Warning: This action is irreversible and will permanently delete
-        all data associated with the app.
-
-        Args:
-            app_id: UUID of the app to delete
-
-        Returns:
-            Dictionary containing deletion status:
-            - status: "success" if deletion was successful
-            - message: Descriptive message about the deletion
-        """
-        return delete_app(app_id)

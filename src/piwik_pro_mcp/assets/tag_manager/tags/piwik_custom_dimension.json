@@ -1,0 +1,244 @@
+{
+  "extends": "tag_base",
+  "template_name": "piwik_custom_dimension",
+  "name_aliases": [
+    "Custom Dimension Tag",
+    "Piwik Custom Dimension Tag"
+  ],
+  "description": "Collects custom dimension values for session and event dimensions. Create custom dimensions first in Analytics > Settings > Custom dimensions, then use a variable to capture the value. For event dimensions, this tag must fire before the Piwik PRO tracking tag (use higher priority).",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Sending session or event custom dimension values to Piwik PRO",
+      "Passing user attributes (role, plan, segment) as dimensions",
+      "Enriching page view or event data with custom context",
+      "Using variables to dynamically set dimension values"
+    ],
+    "common_use_cases": [
+      "User role or membership tier",
+      "Logged-in user ID or email",
+      "Page type or content category",
+      "A/B test variant",
+      "Campaign or traffic source"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "not_require_consent",
+        "conversion_tracking"
+      ]
+    },
+    "template": {
+      "description": "Must be 'piwik_custom_dimension' for this template",
+      "value": "piwik_custom_dimension",
+      "validation": {
+        "required": true,
+        "fixed_value": "piwik_custom_dimension"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Configuration for custom dimensions. Must include custom_dimensions array.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "custom_dimensions"
+      ]
+    },
+    "template_options.custom_dimensions": {
+      "type": "array",
+      "description": "Array of custom dimension objects. Each has id (dimension slot 1-400) and value (string, number, boolean, or variable reference like {{ Variable }}).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "minItems": 1,
+        "maxItems": 400
+      },
+      "structure": {
+        "id": "integer (1-400) - Custom dimension slot ID from Analytics > Settings > Custom dimensions",
+        "value": "string|number|boolean or variable reference - Value to send"
+      },
+      "example": [
+        {
+          "id": 1,
+          "value": "{{ User Role }}"
+        },
+        {
+          "id": 2,
+          "value": "premium"
+        }
+      ]
+    }
+  },
+  "optional_attributes": {
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order. For event dimensions, use higher priority than the Piwik PRO tag so this fires first.",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.custom_dimensions"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "session_dimension": {
+      "description": "Send user role as session custom dimension",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "User Role Dimension",
+            "template": "piwik_custom_dimension",
+            "template_options": {
+              "custom_dimensions": [
+                {
+                  "id": 1,
+                  "value": "{{ User Role }}"
+                }
+              ]
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create custom dimension slot 1 in Analytics > Settings > Custom dimensions. Create a variable for User Role."
+    },
+    "multiple_dimensions": {
+      "description": "Send multiple custom dimensions",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "User Context Dimensions",
+            "template": "piwik_custom_dimension",
+            "template_options": {
+              "custom_dimensions": [
+                {
+                  "id": 1,
+                  "value": "{{ User Role }}"
+                },
+                {
+                  "id": 2,
+                  "value": "{{ Page Type }}"
+                },
+                {
+                  "id": 3,
+                  "value": "{{ AB Variant }}"
+                }
+              ]
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "event_dimension_high_priority": {
+      "description": "Event dimension must fire before Piwik PRO tag (higher priority)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Event Dimension - CTA Label",
+            "template": "piwik_custom_dimension",
+            "template_options": {
+              "custom_dimensions": [
+                {
+                  "id": 5,
+                  "value": "{{ Clicked CTA Label }}"
+                }
+              ]
+            },
+            "consent_type": "analytics",
+            "priority": 100
+          },
+          "triggers": "click-trigger-uuid"
+        }
+      },
+      "note": "Use priority higher than the Piwik PRO tag so this runs before the page view is tracked."
+    },
+    "update_example": {
+      "description": "Update custom dimension values",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "custom_dimensions": [
+                {
+                  "id": 1,
+                  "value": "{{ User Role }}"
+                },
+                {
+                  "id": 2,
+                  "value": "{{ Plan Tier }}"
+                }
+              ]
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options.custom_dimensions or passing empty array",
+    "Using dimension id not created in Analytics > Settings > Custom dimensions",
+    "For event dimensions: not setting higher priority than Piwik PRO tag",
+    "Forgetting to create a variable for dynamic values",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "dimension_not_recorded": [
+      "Verify custom dimension exists in Analytics > Settings > Custom dimensions",
+      "Check dimension id matches the slot (1-400)",
+      "For event dimensions: ensure this tag has higher priority than Piwik PRO tag",
+      "Verify triggers are attached and firing"
+    ],
+    "wrong_value_recorded": [
+      "Check variable resolves correctly (use debug mode)",
+      "Ensure variable fires before this tag"
+    ]
+  }
+}

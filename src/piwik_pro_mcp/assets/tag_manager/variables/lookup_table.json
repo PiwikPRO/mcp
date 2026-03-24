@@ -1,0 +1,214 @@
+{
+  "extends": "variable_base",
+  "template_name": "lookup_table",
+  "name_aliases": [
+    "Lookup Table Variable"
+  ],
+  "description": "Maps the value of an input variable to an output using a lookup table. You set value to a variable reference (e.g. {{ Referrer }}) and options.mapping to input→output pairs. When the input variable's value matches an entry, the variable returns the corresponding output. options.default_value when no match is found (optional). Useful for mapping campaign IDs, product IDs, referrer URLs to categories. Available from 16.33.0.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Map referrer URLs to campaign or source labels (e.g. https://promo.example.com/ → 'big promo')",
+      "Map campaign IDs or product IDs to human-readable names",
+      "Categorise or normalise values from another variable (string, number, or boolean)",
+      "Create conditional outputs based on the value of a built-in or custom variable"
+    ],
+    "common_use_cases": [
+      "Referrer mapping: value {{ Referrer }}, mapping → help center, blog, big promo",
+      "Campaign ID → campaign name",
+      "Product ID → product category or name",
+      "URL path or host → site section or environment"
+    ],
+    "best_practices": [
+      "value must be a variable reference in the form {{ Variable Name }}",
+      "Input variable value is converted to string for comparison; use a variable with string, number, or boolean value",
+      "Input and output in mapping are case-sensitive; empty string is allowed",
+      "If multiple mapping inputs match, the output for the last match is returned",
+      "Set options.default_value when no match is found, or the variable returns undefined",
+      "Avoid circular dependency between variables"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "description": "Create a lookup table variable. Set value to the input variable reference (e.g. {{ Referrer }}), and options.mapping to the list of input→output pairs. Optionally set options.default_value.",
+      "required_parameters": {
+        "variable_type": {
+          "value": "lookup_table",
+          "description": "Must be 'lookup_table' for lookup table variables"
+        },
+        "value": {
+          "description": "Variable reference for the input variable (API: value). Must match pattern {{ Variable Name }}, e.g. {{ Referrer }}."
+        },
+        "options": {
+          "description": "Object with mapping (array of { input, output }) and optionally default_value (string or variable UUID)."
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "examples": [
+        "Referrer Category",
+        "Campaign Name",
+        "Product Category",
+        "Source Label"
+      ]
+    },
+    "template": {
+      "examples": [
+        "lookup_table"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "lookup_table"
+        ]
+      }
+    },
+    "value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Variable reference used as input (API: value). Must be in the form {{ Variable Name }}, e.g. {{ Referrer }}. The variable's value is compared against options.mapping inputs.",
+      "examples": [
+        "{{ Referrer }}",
+        "{{ Campaign }}",
+        "{{ Page URL }}"
+      ],
+      "validation": {
+        "required": true,
+        "pattern": "^{{((?:.(?!}}))*.)}}$"
+      },
+      "recommendation": "Use the exact variable name as in Tag Manager; the reference is case-sensitive."
+    },
+    "options": {
+      "type": "object",
+      "mutability": "editable",
+      "description": "Lookup table options (API: options). Must include mapping; optionally default_value.",
+      "validation": {
+        "required": true
+      },
+      "fields": {
+        "mapping": {
+          "type": "array",
+          "description": "Lookup table mapping (API: options.mapping). Array of input→output pairs. Each item: { input: string or variable reference, output: string or variable reference }. Comparison is case-sensitive.",
+          "items": {
+            "input": "Value to match against the input variable's value",
+            "output": "Value returned when input matches (can be string or variable reference)"
+          },
+          "examples": [
+            [
+              {
+                "input": "https://help.example.com/",
+                "output": "help center"
+              },
+              {
+                "input": "https://blog.example.com/",
+                "output": "blog"
+              },
+              {
+                "input": "https://big-promo.example.com/",
+                "output": "big promo"
+              }
+            ]
+          ],
+          "recommendation": "Order matters: if input matches multiple rows, the last match wins."
+        },
+        "default_value": {
+          "type": "string",
+          "description": "Returned when input variable does not match any mapping input (API: options.default_value). Can be null, a static string, or a variable UUID.",
+          "examples": [
+            "unknown",
+            "direct",
+            ""
+          ],
+          "recommendation": "Set when you want a fallback instead of undefined."
+        }
+      },
+      "recommendation": "Ensure the variable referenced in value exists. Use exact strings for mapping input/output; comparison is case-sensitive."
+    }
+  },
+  "complete_examples": {
+    "create_referrer_example": {
+      "description": "Create a lookup table variable that maps referrer URL to a category label",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Referrer Category",
+            "variable_type": "lookup_table",
+            "value": "{{ Referrer }}",
+            "options": {
+              "mapping": [
+                {
+                  "input": "https://help.example.com/",
+                  "output": "help center"
+                },
+                {
+                  "input": "https://blog.example.com/",
+                  "output": "blog"
+                },
+                {
+                  "input": "https://big-promo.example.com/",
+                  "output": "big promo"
+                }
+              ],
+              "default_value": "direct"
+            }
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update lookup table mapping or default value",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "Source Label",
+            "value": "{{ Referrer }}",
+            "options": {
+              "mapping": [
+                {
+                  "input": "https://newsletter.example.com/",
+                  "output": "newsletter"
+                },
+                {
+                  "input": "https://big-promo.example.com/",
+                  "output": "big promo"
+                }
+              ],
+              "default_value": "other"
+            }
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using a variable UUID for value instead of the variable reference {{ Variable Name }}",
+    "Wrong or misspelled variable name in value so the lookup never receives the expected input",
+    "Assuming case-insensitive comparison—input and output are case-sensitive",
+    "Expecting first match to win—when multiple mapping inputs match, the last match wins",
+    "Forgetting a default_value and getting undefined when nothing matches",
+    "Creating a circular dependency between variables"
+  ],
+  "troubleshooting": {
+    "always_undefined_or_default": {
+      "problem": "Variable always returns undefined or the default value",
+      "solutions": [
+        "Verify value is a valid variable reference in the form {{ Variable Name }} and that variable exists",
+        "Check that options.mapping input strings exactly match the input variable's value (case and spacing)",
+        "Remember input variable value is converted to string before comparison"
+      ]
+    },
+    "wrong_output_for_match": {
+      "problem": "Getting a different output than expected for a match",
+      "solutions": [
+        "If multiple rows could match, the last matching row wins; reorder or make inputs more specific",
+        "Confirm mapping input/output strings are exactly as intended (case-sensitive)"
+      ]
+    }
+  }
+}

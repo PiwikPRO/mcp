@@ -1,0 +1,277 @@
+{
+  "extends": "trigger_base",
+  "template_name": "page_scroll",
+  "name_aliases": [
+    "Page Scroll Trigger"
+  ],
+  "description": "Fires when a visitor scrolls down to a specific point on the page (e.g. 50% of the page or a given number of pixels). By default the tag fires on all pages; add conditions to fire only on a certain page or under specific criteria. You must specify the scroll threshold using the built-in Page Scroll variable and set the condition options.unit to 'percentage' or 'pixels'. See Piwik PRO help: Page scroll trigger.",
+  "page_scroll_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/page-scroll-trigger/",
+    "scroll_condition": {
+      "type": "Amount of page scrolled",
+      "description": "Fires the tag when a visitor scrolls to the selected point on the page. For example, a visitor scrolls 50% of the page or scrolls down to 1440 px."
+    },
+    "builtin_variable": {
+      "variable_id": "a9a87b7d-d565-433d-8090-df9d80bf91f5",
+      "name": "Page Scroll",
+      "description": "A variable used in the page scroll trigger. It defines the scroll depth threshold at which the tag fires.",
+      "usage": "Use this variable_id in the condition that defines when the trigger fires. The condition_type for this condition must be set to each_time, once_per_page_view, or once_per_session. Set the condition value to the threshold (percentage 0–100 when unit is percentage, or pixel value when unit is pixels). The condition options object must contain a field 'unit' with value 'percentage' or 'pixels'.",
+      "condition_type_enum": [
+        "each_time",
+        "once_per_page_view",
+        "once_per_session"
+      ],
+      "condition_type_description": "For the Page Scroll condition, condition_type must be one of these (not equals or other comparison).",
+      "value_range": "When unit is 'percentage': 0–100. When unit is 'pixels': scroll depth in pixels (e.g. 1440).",
+      "condition_options": {
+        "unit": {
+          "required": true,
+          "enum": [
+            "percentage",
+            "pixels"
+          ],
+          "description": "Unit for the scroll threshold. 'percentage' = percent of page scrolled (value 0–100). 'pixels' = scroll depth in pixels."
+        }
+      }
+    },
+    "multiplicity": [
+      "Many times during a session (each time)",
+      "Once for each page view",
+      "Once in a session"
+    ],
+    "note": "The scroll condition must use the built-in variable 'Page Scroll' (id a9a87b7d-d565-433d-8090-df9d80bf91f5). Set condition_type to each_time, once_per_page_view, or once_per_session. Set value to the threshold (0–100 for percentage, or pixel number for pixels). Condition options must include unit: 'percentage' or 'pixels'."
+  },
+  "event_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/page-scroll-trigger/",
+    "condition_types": [
+      {
+        "type": "Page URL",
+        "description": "Fires when a visitor scrolls on a page with the selected page URL to the selected point",
+        "example": "Page URL equals https://example.com/product-tour/"
+      },
+      {
+        "type": "Page path",
+        "description": "Fires when a visitor scrolls on a page with the selected page path to the selected point",
+        "example": "Page Path contains /product-tour"
+      },
+      {
+        "type": "Page hostname",
+        "description": "Fires when a visitor scrolls on a page hosted on the selected domain to the selected point",
+        "example": "Page Hostname equals example.com"
+      },
+      {
+        "type": "Referrer",
+        "description": "Fires when a visitor scrolls on a page to which they were directed by the selected internal referrer and scrolls to the selected point",
+        "example": "Referrer equals https://example.com/blog"
+      },
+      {
+        "type": "External referrer",
+        "description": "Fires when a visitor scrolls on a page to which they were directed by the selected external referrer and scrolls to the selected point",
+        "example": "External referrer equals https://google.com"
+      },
+      {
+        "type": "Campaign",
+        "description": "Fires when a visitor scrolls on a page to which they were directed by the selected campaign (utm_campaign) and scrolls to the selected point",
+        "example": "Campaign equals winter-promo"
+      },
+      {
+        "type": "Traffic source",
+        "description": "Fires when a visitor scrolls on a page to which they were directed by the selected traffic source. Values: campaign, organic search, social, referral, direct",
+        "example": "Traffic source equals direct"
+      },
+      {
+        "type": "Returning visitor",
+        "description": "Fires when a visitor is a returning visitor and scrolls to the selected point",
+        "example": "Returning visitor is true"
+      },
+      {
+        "type": "Variable-based conditions",
+        "description": "Any variable can be used to define trigger conditions"
+      }
+    ],
+    "multiplicity": [
+      "Many times during a session",
+      "Once for each page view",
+      "Once in a session"
+    ]
+  },
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Track scroll depth (e.g. 25%, 50%, 75%, 100%) for content engagement",
+      "Fire tags when the user reaches a specific section of the page",
+      "Measure how far visitors scroll before leaving or converting"
+    ],
+    "common_use_cases": [
+      "Scroll depth tracking for analytics (25%, 50%, 75%, 100%)",
+      "Lazy-load or trigger content when user scrolls to a point",
+      "Conversion or survey when user reaches bottom of article"
+    ],
+    "best_practices": [
+      "Use options.unit 'percentage' and value 0–100 for percent-based thresholds",
+      "Use options.unit 'pixels' and value in pixels for fixed scroll depth",
+      "Add Page path conditions to limit the trigger to specific pages; set multiplicity (e.g. once per page view) to avoid duplicate events"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "description": "Create a page scroll trigger. Requires at least one condition using the built-in 'Page Scroll' variable (variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5) with condition_type set to each_time, once_per_page_view, or once_per_session; value set to the threshold (0–100 for percentage, or pixels); options.unit set to 'percentage' or 'pixels'; optionally add event conditions.",
+      "required_parameters": {
+        "trigger_type": {
+          "value": "page_scroll",
+          "description": "Must be 'page_scroll' for page scroll triggers"
+        },
+        "conditions": {
+          "description": "Array of condition objects. Include at least one condition with variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5 (Page Scroll), condition_type = each_time, once_per_page_view, or once_per_session, value = threshold (0–100 for percentage or pixel number), and options = { \"unit\": \"percentage\" } or { \"unit\": \"pixels\" }. Optional event conditions."
+        }
+      }
+    },
+    "update_trigger": {
+      "description": "Update an existing page scroll trigger – only editable fields will be processed"
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "description": "Human-readable trigger name",
+      "examples": [
+        "Scroll 50% – All Pages",
+        "Page Scroll – Article Pages",
+        "Scroll 75% – Product"
+      ]
+    },
+    "trigger_type": {
+      "enum": [
+        "page_scroll"
+      ],
+      "description": "Trigger type – must be 'page_scroll'",
+      "fixed_value": "page_scroll",
+      "validation": {
+        "required": true
+      }
+    },
+    "conditions": {
+      "description": "Array of condition objects. Must include at least one condition using the built-in variable 'Page Scroll' (variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5) with condition_type = each_time, once_per_page_view, or once_per_session; value = threshold (0–100 when unit is percentage, or pixel value when unit is pixels); options.unit = 'percentage' or 'pixels'. May include event conditions.",
+      "structure": {
+        "variable_id": "For scroll threshold use a9a87b7d-d565-433d-8090-df9d80bf91f5 (Page Scroll); for event conditions use the appropriate variable UUID",
+        "condition_type": "For the Page Scroll condition (variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5) must be one of: each_time, once_per_page_view, once_per_session. For event conditions use the appropriate type (e.g. equals, contains).",
+        "value": "When unit is percentage: number 0–100 (e.g. 50). When unit is pixels: number of pixels (e.g. 1440)",
+        "options": {
+          "unit": "Required. Must be 'percentage' or 'pixels'"
+        }
+      },
+      "recommendation": "Include one condition with variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5 (Page Scroll), condition_type each_time | once_per_page_view | once_per_session, value 0–100 for percentage (or pixel number), and options: { \"unit\": \"percentage\" } or { \"unit\": \"pixels\" }; add Page path or Page URL conditions to limit where the trigger fires."
+    }
+  },
+  "complete_examples": {
+    "page_scroll_50_percent": {
+      "description": "Fire when user scrolls to 50% of the page (percentage unit)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Scroll 50% – All Pages",
+          "trigger_type": "page_scroll",
+          "conditions": [
+            {
+              "variable_id": "a9a87b7d-d565-433d-8090-df9d80bf91f5",
+              "condition_type": "each_time",
+              "value": "50",
+              "options": {
+                "unit": "percentage"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "page_scroll_75_percent": {
+      "description": "Fire when user scrolls to 75% (percentage unit)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Scroll 75%",
+          "trigger_type": "page_scroll",
+          "conditions": [
+            {
+              "variable_id": "a9a87b7d-d565-433d-8090-df9d80bf91f5",
+              "condition_type": "once_per_page_view",
+              "value": "75",
+              "options": {
+                "unit": "percentage"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "page_scroll_pixels": {
+      "description": "Fire when user scrolls down to 1440 pixels",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Scroll 1440px",
+          "trigger_type": "page_scroll",
+          "conditions": [
+            {
+              "variable_id": "a9a87b7d-d565-433d-8090-df9d80bf91f5",
+              "condition_type": "once_per_session",
+              "value": "1440",
+              "options": {
+                "unit": "pixels"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "page_scroll_with_page_path": {
+      "description": "Scroll 50% only on article pages",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "Scroll 50% – Articles",
+          "trigger_type": "page_scroll",
+          "conditions": [
+            {
+              "variable_id": "a9a87b7d-d565-433d-8090-df9d80bf91f5",
+              "condition_type": "each_time",
+              "value": "50",
+              "options": {
+                "unit": "percentage"
+              }
+            },
+            {
+              "variable_id": "page-path-variable-uuid",
+              "condition_type": "contains",
+              "value": "/blog/",
+              "options": {}
+            }
+          ]
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using condition_type other than each_time, once_per_page_view, or once_per_session for the Page Scroll condition",
+    "Omitting options.unit or using a value other than 'percentage' or 'pixels'",
+    "Using a value outside 0–100 when unit is 'percentage'",
+    "Omitting the Page Scroll condition so the trigger has no scroll threshold"
+  ],
+  "troubleshooting": {
+    "trigger_not_firing": {
+      "possible_causes": [
+        "condition_type not set to each_time, once_per_page_view, or once_per_session for the Page Scroll condition",
+        "Missing or invalid options.unit",
+        "Value format wrong for chosen unit",
+        "Event conditions too restrictive"
+      ],
+      "debugging_steps": [
+        "Ensure one condition uses variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5 with condition_type each_time, once_per_page_view, or once_per_session and options: { \"unit\": \"percentage\" } or { \"unit\": \"pixels\" }",
+        "Use value 0–100 for percentage; integer for pixels",
+        "Test with only the Page Scroll condition"
+      ]
+    }
+  }
+}

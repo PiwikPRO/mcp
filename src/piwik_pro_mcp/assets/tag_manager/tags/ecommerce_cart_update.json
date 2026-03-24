@@ -1,0 +1,275 @@
+{
+  "extends": "tag_base_ecommerce",
+  "template_name": "ecommerce_cart_update",
+  "name_aliases": [
+    "Ecommerce Cart Update Tag"
+  ],
+  "description": "Collects data about the shopping cart whenever it changes. Reads from the data layer (GA4, Universal Analytics, or custom). Tracks products in cart and grand total. Fire with each cart status change. Cannot be used together with ecommerce add-to-cart or remove-from-cart tags.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking full cart state on each change (add, remove, quantity update)",
+      "Alternative to separate add-to-cart and remove-from-cart tags",
+      "Cart value and product-level analytics on every cart update",
+      "GA4 or UA ecommerce cart tracking"
+    ],
+    "common_use_cases": [
+      "Cart value tracking",
+      "Product mix in cart",
+      "Cart abandonment with full cart data",
+      "Real-time cart analytics"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "conversion_tracking"
+      ]
+    },
+    "template": {
+      "description": "Must be 'ecommerce_cart_update' for this template",
+      "value": "ecommerce_cart_update",
+      "validation": {
+        "required": true,
+        "fixed_value": "ecommerce_cart_update"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Ecommerce configuration. Must include product_mapping, category_mapping_type, products_array, grand_total.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "product_mapping",
+        "category_mapping_type",
+        "products_array",
+        "grand_total"
+      ]
+    },
+    "template_options.products_array": {
+      "type": "string",
+      "description": "Source of product array in data layer. Use variable syntax, e.g. '{{ ecommerce }}.items' or '{{ items }}'.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "example": "{{ ecommerce }}.items"
+    },
+    "template_options.product_mapping": {
+      "type": "object",
+      "description": "Map data layer keys to product fields. sku is required; others optional.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "sku"
+      ],
+      "properties": {
+        "sku": "Key for product SKU (required)",
+        "name": "Key for product name",
+        "category": "Key for main category",
+        "price": "Key for price",
+        "quantity": "Key for quantity",
+        "brand": "Key for brand",
+        "variant": "Key for variant (e.g. size, color)"
+      }
+    },
+    "template_options.category_mapping_type": {
+      "type": "string",
+      "description": "How to handle subcategories. disabled | split_by_delimiter | use_mapping.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "options": {
+        "disabled": "No subcategories",
+        "split_by_delimiter": "Categories in single field, separated by / (UA style)",
+        "use_mapping": "Separate keys for category2-5 (GA4 style)"
+      }
+    },
+    "template_options.grand_total": {
+      "type": "string",
+      "description": "Path to property holding total value of all products in cart. E.g. '{{ ecommerce }}.value' or 'grand_total'.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "example": "{{ ecommerce }}.value"
+    }
+  },
+  "optional_attributes": {
+    "template_options.currency": {
+      "type": "string",
+      "description": "Source of currency. Variable syntax or key path.",
+      "mutability": "editable"
+    },
+    "template_options.category_mapping": {
+      "type": "object",
+      "description": "When category_mapping_type is use_mapping: keys for category2-5.",
+      "mutability": "editable",
+      "properties": {
+        "category2": "string",
+        "category3": "string",
+        "category4": "string",
+        "category5": "string"
+      }
+    },
+    "template_options.custom_dimensions": {
+      "type": "array",
+      "description": "Custom dimensions for the event. Each has id (1-400) and value.",
+      "mutability": "editable"
+    },
+    "template_options.product_dimensions": {
+      "type": "array",
+      "description": "Product-level custom dimensions. Each has id (1-20) and value.",
+      "mutability": "editable"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "presets": {
+    "description": "Extends ecommerce_base presets with grand_total. Base provides product mapping.",
+    "dataLayerGA4": {
+      "grand_total": "{{ ecommerce }}.value"
+    },
+    "dataLayerUA": {
+      "grand_total": "{{ ecommerce }}.value"
+    },
+    "gtagGA4": {
+      "grand_total": "{{ value }}"
+    },
+    "gtagUA": {
+      "grand_total": "{{ value }}"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "custom_cart_update": {
+      "description": "Custom data layer (cart_update event with items and grand_total)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Cart Update - Custom",
+            "template": "ecommerce_cart_update",
+            "template_options": {
+              "products_array": "{{ items }}",
+              "currency": "currency",
+              "grand_total": "grand_total",
+              "product_mapping": {
+                "sku": "item_id",
+                "name": "item_name",
+                "price": "price",
+                "quantity": "quantity",
+                "category": "item_category",
+                "brand": "item_brand",
+                "variant": "item_color"
+              },
+              "category_mapping_type": "use_mapping",
+              "category_mapping": {
+                "category2": "item_category2",
+                "category3": "item_category3",
+                "category4": "item_category4",
+                "category5": "item_category5"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "cart-update-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create trigger that fires on each cart change (e.g. Data layer event 'cart_update')."
+    },
+    "ga4_preset": {
+      "description": "Using dataLayerGA4 preset",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Cart Update - GA4",
+            "template": "ecommerce_cart_update",
+            "template_options": {
+              "products_array": "{{ ecommerce }}.items",
+              "currency": "{{ ecommerce }}.currency",
+              "grand_total": "{{ ecommerce }}.value",
+              "product_mapping": {
+                "sku": "item_id",
+                "name": "item_name",
+                "category": "item_category",
+                "price": "price",
+                "quantity": "quantity",
+                "brand": "item_brand",
+                "variant": "item_variant"
+              },
+              "category_mapping_type": "use_mapping",
+              "category_mapping": {
+                "category2": "item_category2",
+                "category3": "item_category3",
+                "category4": "item_category4",
+                "category5": "item_category5"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "cart-update-trigger-uuid"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using together with ecommerce add-to-cart or remove-from-cart tags (they conflict)",
+    "Omitting grand_total (required)",
+    "Omitting product_mapping.sku (required)",
+    "Trigger not firing on each cart change",
+    "Wrong products_array or grand_total path for your data layer"
+  ],
+  "troubleshooting": {
+    "no_data_collected": [
+      "Verify trigger fires on each cart status change",
+      "Check products_array and grand_total paths match your data layer",
+      "Ensure product_mapping keys match your product object structure"
+    ]
+  }
+}

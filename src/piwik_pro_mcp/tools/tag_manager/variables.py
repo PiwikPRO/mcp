@@ -16,7 +16,7 @@ from piwik_pro_mcp.api.methods.tag_manager.models import (
     VariableFilters,
 )
 
-from ...common.templates import list_template_names
+from ...common.templates import list_available_assets
 from ...common.utils import create_piwik_client, validate_data_against_model
 from ...responses import CopyResourceResponse
 from .models import VariableCreateAttributes, VariableUpdateAttributes
@@ -69,7 +69,7 @@ def create_variable(app_id: str, attributes: dict) -> TagManagerSingleResponse:
         variable_type = create_kwargs.pop("variable_type")
 
         # Enforce assets-driven allowlist via model validation (retained as a safety check)
-        allowed_variable_types = set(list_template_names("tag_manager/variables"))
+        allowed_variable_types = set(list_available_assets("tag_manager/variables").keys())
         if variable_type not in allowed_variable_types:
             raise RuntimeError(
                 f"Unsupported variable type '{variable_type}'. Use templates_list_variables() to discover options."
@@ -235,8 +235,8 @@ def register_variable_tools(mcp: FastMCP) -> None:
             for all available fields. This returns validation rules, field types, and examples.
 
         Template Discovery:
-            Use piwik_get_available_variable_templates() to see all available templates, then
-            use piwik_get_variable_template(template_name) for detailed template information.
+            Use templates_list_variables() to see all available templates, then
+            use templates_get_variable(template_name) for detailed template information.
 
         Examples:
             # Get available parameters first

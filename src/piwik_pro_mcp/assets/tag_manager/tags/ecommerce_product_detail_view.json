@@ -1,0 +1,247 @@
+{
+  "extends": "tag_base_ecommerce",
+  "template_name": "ecommerce_product_detail_view",
+  "name_aliases": [
+    "Ecommerce Product Detail View Tag"
+  ],
+  "description": "Collects data about product detail page views. Tracks which products visitors view (SKU, name, price, category, etc.). Use a Data layer event trigger (e.g. view_item for GA4, viewItem for UA). Supports GA4, Universal Analytics, or custom data layer.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking product detail page views",
+      "Product impression analytics",
+      "Understanding which products get the most views",
+      "Ecommerce funnel: product view → add to cart → purchase"
+    ],
+    "common_use_cases": [
+      "Product page view tracking",
+      "Product popularity analysis",
+      "Category and brand performance",
+      "Pre-purchase behavior"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "conversion_tracking"
+      ]
+    },
+    "template": {
+      "description": "Must be 'ecommerce_product_detail_view' for this template",
+      "value": "ecommerce_product_detail_view",
+      "validation": {
+        "required": true,
+        "fixed_value": "ecommerce_product_detail_view"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Ecommerce configuration. Must include product_mapping, category_mapping_type, products_array.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "product_mapping",
+        "category_mapping_type",
+        "products_array"
+      ]
+    },
+    "template_options.products_array": {
+      "type": "string",
+      "description": "Source of product array in data layer. E.g. '{{ ecommerce }}.items' or '{{ items }}'.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "example": "{{ ecommerce }}.items"
+    },
+    "template_options.product_mapping": {
+      "type": "object",
+      "description": "Map data layer keys to product fields. sku is required; others optional.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "sku"
+      ],
+      "properties": {
+        "sku": "Key for product SKU (required)",
+        "name": "Key for product name",
+        "category": "Key for main category",
+        "price": "Key for price",
+        "quantity": "Key for quantity",
+        "brand": "Key for brand",
+        "variant": "Key for variant (e.g. size, color)"
+      }
+    },
+    "template_options.category_mapping_type": {
+      "type": "string",
+      "description": "How to handle subcategories. disabled | split_by_delimiter | use_mapping.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "options": {
+        "disabled": "No subcategories",
+        "split_by_delimiter": "Categories in single field, separated by / (UA style)",
+        "use_mapping": "Separate keys for category2-5 (GA4 style)"
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options.currency": {
+      "type": "string",
+      "description": "Source of currency. Variable syntax or key path.",
+      "mutability": "editable"
+    },
+    "template_options.category_mapping": {
+      "type": "object",
+      "description": "When category_mapping_type is use_mapping: keys for category2-5.",
+      "mutability": "editable",
+      "properties": {
+        "category2": "string",
+        "category3": "string",
+        "category4": "string",
+        "category5": "string"
+      }
+    },
+    "template_options.custom_dimensions": {
+      "type": "array",
+      "description": "Custom dimensions for the event. Each has id (1-400) and value.",
+      "mutability": "editable"
+    },
+    "template_options.product_dimensions": {
+      "type": "array",
+      "description": "Product-level custom dimensions. Each has id (1-20) and value.",
+      "mutability": "editable"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "custom_product_view": {
+      "description": "Custom data layer (product_detail_view event)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Product Detail View - Custom",
+            "template": "ecommerce_product_detail_view",
+            "template_options": {
+              "products_array": "{{ items }}",
+              "currency": "currency",
+              "product_mapping": {
+                "sku": "item_id",
+                "name": "item_name",
+                "price": "price",
+                "quantity": "quantity",
+                "category": "item_category",
+                "brand": "item_brand",
+                "variant": "item_color"
+              },
+              "category_mapping_type": "use_mapping",
+              "category_mapping": {
+                "category2": "item_category2",
+                "category3": "item_category3",
+                "category4": "item_category4",
+                "category5": "item_category5"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "view-item-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create Data layer event trigger with event name 'view_item' (GA4) or 'viewItem' (UA)."
+    },
+    "ga4_preset": {
+      "description": "Using dataLayerGA4 preset",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Product Detail View - GA4",
+            "template": "ecommerce_product_detail_view",
+            "template_options": {
+              "products_array": "{{ ecommerce }}.items",
+              "currency": "{{ ecommerce }}.currency",
+              "product_mapping": {
+                "sku": "item_id",
+                "name": "item_name",
+                "category": "item_category",
+                "price": "price",
+                "quantity": "quantity",
+                "brand": "item_brand",
+                "variant": "item_variant"
+              },
+              "category_mapping_type": "use_mapping",
+              "category_mapping": {
+                "category2": "item_category2",
+                "category3": "item_category3",
+                "category4": "item_category4",
+                "category5": "item_category5"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "view-item-trigger-uuid"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting product_mapping.sku (required)",
+    "Wrong event name for trigger (view_item vs viewItem for GA4 vs UA)",
+    "UA: default data layer push may not include event field - add event field with name like 'viewItem'",
+    "Wrong products_array path for your data layer"
+  ],
+  "troubleshooting": {
+    "no_data_collected": [
+      "Verify Data layer event trigger with correct event name (view_item/viewItem)",
+      "Check products_array path matches your data layer",
+      "Ensure product_mapping keys match your product object structure"
+    ]
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "extends": "tag_base",
+  "template_name": "google_adwords",
+  "name_aliases": [
+    "Google Ads Tag",
+    "Google Ads Remarketing",
+    "Google Ads Conversion Tracking"
+  ],
+  "description": "Google Ads tag with two variants via template_options.type: remarketing (collects visitors for remarketing lists) or conversion_tracking (tracks conversions from campaigns). Both require conversion_id (number after AW-). Conversion tracking also requires conversion_label (and optionally conversion_value). Install remarketing tag first; add conversion tracking for specific conversion actions.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Google Ads remarketing (type: remarketing)",
+      "Google Ads conversion tracking (type: conversion_tracking)",
+      "Building audiences and measuring campaign conversions"
+    ],
+    "common_use_cases": [
+      "Remarketing: add visitors to lists for retargeting",
+      "Conversion tracking: track signups, purchases, downloads",
+      "Campaign ROI measurement"
+    ]
+  },
+  "variants": {
+    "template_options.type": {
+      "description": "Selects remarketing or conversion tracking. Required.",
+      "options": {
+        "remarketing": "Adds Google tag to collect visitors for remarketing lists. Requires conversion_id. Use All page views trigger.",
+        "conversion_tracking": "Tracks conversions. Requires conversion_id and conversion_tracking.conversion_label. Use trigger matching conversion action (e.g. thank-you page)."
+      }
+    }
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "remarketing",
+      "examples": [
+        "remarketing",
+        "conversion_tracking",
+        "marketing_automation"
+      ]
+    },
+    "template": {
+      "description": "Must be 'google_adwords'",
+      "value": "google_adwords",
+      "validation": {
+        "required": true,
+        "fixed_value": "google_adwords"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Google Ads configuration. Must include type and conversion_id. For conversion_tracking, also conversion_tracking.conversion_label.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "type",
+        "conversion_id"
+      ]
+    },
+    "template_options.type": {
+      "type": "string",
+      "description": "remarketing or conversion_tracking.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "enum": [
+        "remarketing",
+        "conversion_tracking"
+      ]
+    },
+    "template_options.conversion_id": {
+      "type": "integer|string",
+      "description": "Google tag ID - number after AW-. Remarketing: from Google Ads > Audience manager > Your data sources > Google tag. Conversion: from conversion action event snippet (first number in AW-***/***).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "minimum": 0
+      },
+      "example": 123456789
+    }
+  },
+  "variant_specific_attributes": {
+    "conversion_tracking": {
+      "required": [
+        "conversion_tracking"
+      ],
+      "template_options.conversion_tracking": {
+        "conversion_label": "Required. Second number after / in event snippet (AW-***/conversion_label). From Google Ads > Goals > Conversions > conversion action > Tag setup.",
+        "conversion_value": "Optional. Conversion value (number or variable reference)."
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options.conversion_tracking": {
+      "type": "object",
+      "description": "Required when type is conversion_tracking. Contains conversion_label (required) and conversion_value (optional).",
+      "mutability": "editable",
+      "structure": {
+        "conversion_label": "string - Conversion label from Google Ads",
+        "conversion_value": "number or variable reference - Optional conversion value"
+      }
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.*",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "remarketing": {
+      "description": "Google Ads Remarketing - collect visitors for lists",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Google Ads Remarketing",
+            "template": "google_adwords",
+            "template_options": {
+              "type": "remarketing",
+              "conversion_id": 123456789
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "all-page-views-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get conversion_id from Google Ads > Tools > Shared library > Audience manager > Your data sources > Google tag (number after AW-). Use All page views trigger."
+    },
+    "conversion_tracking": {
+      "description": "Google Ads Conversion Tracking - track conversions",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Google Ads - Signup Conversion",
+            "template": "google_adwords",
+            "template_options": {
+              "type": "conversion_tracking",
+              "conversion_id": 123456789,
+              "conversion_tracking": {
+                "conversion_label": "AbCdEfGhIjKlMnOp",
+                "conversion_value": "{{ Order Total }}"
+              }
+            },
+            "consent_type": "conversion_tracking"
+          },
+          "triggers": "thank-you-page-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create conversion action in Google Ads > Goals > Conversions. Get conversion_id and conversion_label from event snippet (AW-***/***). Use trigger matching conversion (e.g. thank-you page). Install remarketing tag first."
+    },
+    "update_example": {
+      "description": "Update conversion ID or label",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "type": "conversion_tracking",
+              "conversion_id": 123456789,
+              "conversion_tracking": {
+                "conversion_label": "NewLabel",
+                "conversion_value": 99.99
+              }
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using full Google tag ID (AW-123456789) - use only the number",
+    "For conversion_tracking: missing conversion_tracking.conversion_label",
+    "Using page_view trigger for conversion_tracking - use conversion-specific trigger",
+    "Installing conversion tracking before remarketing tag"
+  ],
+  "troubleshooting": {
+    "remarketing_tag_not_firing": [
+      "Verify conversion_id (number only)",
+      "Ensure All page views trigger",
+      "Check consent_type"
+    ],
+    "conversion_not_tracking": [
+      "Install remarketing tag first",
+      "Verify conversion_id and conversion_label from event snippet",
+      "Use trigger that fires on conversion action (thank-you page, form submit)"
+    ]
+  }
+}

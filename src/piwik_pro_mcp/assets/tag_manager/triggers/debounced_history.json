@@ -1,0 +1,196 @@
+{
+  "extends": "trigger_base",
+  "template_name": "debounced_history",
+  "name_aliases": [
+    "Debounced History Change Trigger"
+  ],
+  "description": "Fires when the hash or browser history changes, with a delay (e.g. wait 1 second) before firing. Designed for single-page applications (SPAs): the delay helps match page URLs with page titles and avoids recording multiple rapid navigations as separate page views. If multiple history changes occur during the delay, only the last one is recorded. Events before the delay are attributed to the previous page. Recommended over the plain history trigger for more accurate SPA tracking. Same conditions as History change trigger (Page URL, Page path, History source, History fragment, etc.). See Piwik PRO help: History change trigger.",
+  "relationship_to_history_trigger": {
+    "note": "Two history trigger types exist in the API: 'history' and 'debounced_history'. Use 'history' to fire on every hash/history change. Use 'debounced_history' when you want the 'Wait 1 second before firing' behaviour for better SPA accuracy.",
+    "same_conditions": "Condition types and structure are the same as for the History change trigger."
+  },
+  "event_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/history-change-trigger/",
+    "condition_types": [
+      {
+        "type": "Page URL",
+        "description": "Fires when a history or hash change (after delay) occurs on the selected page URL",
+        "example": "Page URL equals https://example.com/product-tour/"
+      },
+      {
+        "type": "Page path",
+        "description": "Fires when a history or hash change occurs on a page with the selected path",
+        "example": "Page Path contains /product-tour"
+      },
+      {
+        "type": "Page hostname",
+        "description": "Fires when a history or hash change occurs on the selected hostname",
+        "example": "Page Hostname equals example.com"
+      },
+      {
+        "type": "History source",
+        "description": "Fires when a specific history event occurs (pushState, replaceState, popState or hashchange)",
+        "example": "History source equals pushState"
+      },
+      {
+        "type": "History fragment",
+        "description": "Fires when the URL hash matches the selected condition",
+        "example": "History fragment equals pricing"
+      },
+      {
+        "type": "Old history fragment",
+        "description": "Fires when the previous URL hash matches",
+        "example": "Old history fragment equals about-us"
+      },
+      {
+        "type": "History state",
+        "description": "Fires when the history state matches",
+        "example": "History state is set or History state equals my-state"
+      },
+      {
+        "type": "Old history state",
+        "description": "Fires when the previous history state matches",
+        "example": "Old history state equals my-state"
+      },
+      {
+        "type": "Referrer",
+        "description": "Fires when a history/hash change occurs on a page from the selected internal referrer",
+        "example": "Referrer equals https://example.com/blog"
+      },
+      {
+        "type": "External referrer",
+        "description": "Fires when a history/hash change occurs on a page from the selected external referrer",
+        "example": "External referrer equals https://google.com"
+      },
+      {
+        "type": "Campaign",
+        "description": "Fires when a history/hash change occurs on a page from the selected campaign",
+        "example": "Campaign equals winter-promo"
+      },
+      {
+        "type": "Traffic source",
+        "description": "Fires when traffic source matches",
+        "example": "Traffic source equals direct"
+      },
+      {
+        "type": "Returning visitor",
+        "description": "Fires when the visitor is a returning visitor and a history or hash change occurs",
+        "example": "Returning visitor is true"
+      },
+      {
+        "type": "Variable-based conditions",
+        "description": "Any variable can be used to define trigger conditions"
+      }
+    ]
+  },
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Track SPA virtual page views with accurate page URL and title matching",
+      "Avoid duplicate or out-of-order events when users navigate quickly in an SPA",
+      "Attribute events to the correct virtual page after the delay (recommended for SPAs)"
+    ],
+    "common_use_cases": [
+      "SPA route change tracking with 1-second wait for stable page title",
+      "Virtual page views where only the last navigation in a burst is recorded",
+      "React/Vue/Angular apps where history changes are frequent and rapid"
+    ],
+    "best_practices": [
+      "Prefer debounced_history over history for SPAs so data is more accurate",
+      "When the wait is on: tag fires only if the visitor stays on the page at least one second; events before the delay are attributed to the previous page",
+      "Add conditions (Page path, History fragment, etc.) to restrict when the tag fires"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "description": "Create a debounced history change trigger. Fires after a short delay when hash or history changes; recommended for SPAs.",
+      "required_parameters": {
+        "trigger_type": {
+          "value": "debounced_history",
+          "description": "Must be 'debounced_history' for debounced history change triggers"
+        },
+        "conditions": {
+          "description": "Array of condition objects; same as history trigger. Optional."
+        }
+      }
+    },
+    "update_trigger": {
+      "description": "Update an existing debounced history change trigger – only editable fields will be processed"
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "description": "Human-readable trigger name",
+      "examples": [
+        "SPA Debounced History",
+        "SPA Virtual Page View",
+        "History Change – SPA with delay"
+      ]
+    },
+    "trigger_type": {
+      "enum": [
+        "debounced_history"
+      ],
+      "description": "Trigger type – must be 'debounced_history'",
+      "fixed_value": "debounced_history",
+      "validation": {
+        "required": true
+      }
+    },
+    "conditions": {
+      "description": "Array of condition objects. Same as history trigger (Page URL, Page path, History source, History fragment, Referrer, etc.). Optional.",
+      "recommendation": "Use conditions to fire only on relevant SPA routes or history events."
+    }
+  },
+  "complete_examples": {
+    "spa_debounced_example": {
+      "description": "Debounced history trigger for SPA (fires after delay; only last change in a burst is recorded)",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "SPA Debounced History",
+          "trigger_type": "debounced_history",
+          "conditions": []
+        }
+      }
+    },
+    "debounced_with_condition_example": {
+      "description": "Debounced history only when History fragment equals pricing",
+      "mcp_call": {
+        "function": "create_trigger",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "name": "SPA – Pricing section (debounced)",
+          "trigger_type": "debounced_history",
+          "conditions": [
+            {
+              "variable_id": "history-fragment-variable-uuid",
+              "condition_type": "equals",
+              "value": "pricing",
+              "options": {}
+            }
+          ]
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using debounced_history on non-SPA sites where page view is sufficient",
+    "Expecting the tag to fire immediately – it fires after the configured delay",
+    "Assuming every history change is recorded – only the last change in the delay window is recorded"
+  ],
+  "troubleshooting": {
+    "trigger_not_firing": {
+      "possible_causes": [
+        "Visitor navigates away before the delay ends",
+        "SPA does not use hash or History API",
+        "Conditions too restrictive"
+      ],
+      "debugging_steps": [
+        "Confirm history/hash changes occur in the app",
+        "Test with empty conditions",
+        "Ensure visitor stays on the new 'page' at least until the delay completes"
+      ]
+    }
+  }
+}

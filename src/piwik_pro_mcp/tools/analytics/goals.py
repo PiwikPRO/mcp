@@ -7,7 +7,6 @@ from typing import Optional
 from mcp.server.fastmcp import FastMCP
 
 from ...common import create_piwik_client
-from ...responses import OperationStatusResponse
 from .models import (
     GoalItem,
     GoalsList,
@@ -150,25 +149,3 @@ def register_goals_tools(mcp: FastMCP) -> None:
             case_sensitive=case_sensitive,
         )
         return GoalItem(**api_resp.model_dump())
-
-    @mcp.tool(annotations={"title": "Piwik PRO: Delete Goal"})
-    def analytics_goals_delete(goal_id: str, website_id: str) -> OperationStatusResponse:
-        """
-        Delete a goal by ID.
-
-        Args:
-            goal_id: Goal UUID
-            website_id: Website/App UUID
-
-        Returns:
-            Operation status with success message
-        """
-        try:
-            client = create_piwik_client()
-            client.analytics.delete_goal(goal_id=goal_id, website_id=website_id)
-            return OperationStatusResponse(
-                status="success",
-                message=f"Goal {goal_id} deleted successfully",
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed to delete goal: {str(e)}")

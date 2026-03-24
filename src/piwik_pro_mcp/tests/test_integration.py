@@ -30,7 +30,7 @@ READ_ONLY_TOOLS = [
     "triggers_list_tags",
     "variables_list",
     "variables_get",
-    "templates_list",
+    "templates_list_tags",
     "templates_get_tag",
     "templates_list_triggers",
     "templates_get_trigger",
@@ -64,11 +64,9 @@ WRITE_TOOLS = [
     # App Management
     "apps_create",
     "apps_update",
-    "apps_delete",
     # CDP
     "audiences_create",
     "audiences_update",
-    "audiences_delete",
     # Tag Manager
     "tags_copy",
     "tags_create",
@@ -90,7 +88,6 @@ WRITE_TOOLS = [
     "analytics_annotations_delete",
     "analytics_goals_create",
     "analytics_goals_update",
-    "analytics_goals_delete",
     "analytics_custom_dimensions_create",
     "analytics_custom_dimensions_update",
 ]

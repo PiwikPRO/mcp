@@ -1,0 +1,114 @@
+{
+  "extends": "variable_base",
+  "template_name": "random",
+  "name_aliases": [
+    "Random Number Variable"
+  ],
+  "description": "Returns a random number in the range [0, 1)—including 0, excluding 1—each time it is evaluated. Use for A/B splits, sampling, or any logic that needs a random value. Optionally configure min and max for a different range when the API supports it.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "A/B testing or experimentation (e.g. assign random bucket 0–1 for variant selection)",
+      "Sampling a percentage of users or events",
+      "Randomizing order or selection in tags",
+      "Any condition or tag that should behave randomly per evaluation"
+    ],
+    "common_use_cases": [
+      "A/B test: compare variable to 0.5 for 50/50 split, or use buckets for multiple variants",
+      "Sampling: fire tag only when random < 0.1 for 10% of page views",
+      "Random IDs or seeds derived from the value",
+      "Load balancing or random choice between options"
+    ],
+    "best_practices": [
+      "Default range is [0, 1); no configuration required for that behavior",
+      "Value is re-evaluated each time the variable is used",
+      "Use in triggers or tags that need per-page or per-event randomness"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "description": "Create a random number variable that returns a value in [0, 1) by default",
+      "required_parameters": {
+        "variable_type": {
+          "value": "random",
+          "description": "Must be 'random' for random number variables"
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "examples": [
+        "Random 0-1",
+        "A/B Random",
+        "Sampling Random"
+      ]
+    },
+    "template": {
+      "examples": [
+        "random"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "random"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "create_example": {
+      "description": "Create a random number variable (default [0, 1))",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Random 0-1",
+            "variable_type": "random"
+          }
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update the name of an existing random variable",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "A/B Random Bucket"
+          }
+        }
+      }
+    },
+    "with_range_example": {
+      "description": "Create random variable with optional min/max (if API supports)",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Random 1-10",
+            "variable_type": "random",
+            "min_value": 1,
+            "max_value": 10
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Expecting the same value on every evaluation—the value changes each time the variable is read",
+    "Assuming range other than [0, 1) without confirming API support for min_value/max_value"
+  ],
+  "troubleshooting": {
+    "always_same_value": {
+      "problem": "Variable seems to return the same value",
+      "solutions": [
+        "Random is evaluated per use; ensure you are reading the variable in the context where it is evaluated (e.g. tag or trigger)",
+        "Check that you are not reusing a cached value from a previous request or page"
+      ]
+    }
+  }
+}

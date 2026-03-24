@@ -1,0 +1,192 @@
+{
+  "extends": "variable_base",
+  "template_name": "url",
+  "name_aliases": [
+    "URL Variable"
+  ],
+  "description": "Returns a component of the page URL. Exactly three modes: (1) a specific GET parameter value when value is 'parameter' and options.parameter_name is set; (2) the full query string when value is 'query'; (3) the protocol (http/https) when value is 'protocol'. Missing or empty GET params return empty string; numeric and TRUE/FALSE strings are converted to numbers/booleans.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Read UTM or campaign parameters (utm_source, utm_medium, source, etc.) — use value 'parameter' and options.parameter_name",
+      "Get the full query string for logging or conditions — use value 'query'",
+      "Detect protocol (http vs https) for mixed content or security logic — use value 'protocol'"
+    ],
+    "common_use_cases": [
+      "UTM/campaign: value 'parameter' and options.parameter_name e.g. 'utm_source', 'utm_medium', 'source'",
+      "Newsletter/source: value 'parameter', options.parameter_name 'source' or 'medium'",
+      "Full query: value 'query' returns the complete query string",
+      "Protocol: value 'protocol' returns 'http' or 'https'"
+    ],
+    "best_practices": [
+      "Use value 'parameter' only with options.parameter_name set to the GET parameter name",
+      "value must be exactly one of: parameter, query, protocol",
+      "When parameter is absent or empty, variable value is empty string"
+    ]
+  },
+  "mcp_usage": {
+    "create_variable": {
+      "description": "Create a URL variable. Set value to one of: parameter, query, protocol. When value is 'parameter', set options.parameter_name to the GET parameter name.",
+      "required_parameters": {
+        "variable_type": {
+          "value": "url",
+          "description": "Must be 'url' for URL variables"
+        },
+        "value": {
+          "description": "One of exactly 3 values (API: value): 'parameter', 'query', or 'protocol'."
+        }
+      },
+      "optional_parameters": {
+        "options": {
+          "description": "When value is 'parameter', required: { \"parameter_name\": \"<GET param name>\" } e.g. { \"parameter_name\": \"source\" }. Omit or leave empty for 'query' and 'protocol'."
+        }
+      }
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "examples": [
+        "UTM Source",
+        "Query String",
+        "Protocol",
+        "Campaign Source"
+      ]
+    },
+    "template": {
+      "examples": [
+        "url"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "url"
+        ]
+      }
+    },
+    "value": {
+      "type": "string",
+      "mutability": "editable",
+      "description": "Which URL part to return (API: value). Exactly one of: 'parameter', 'query', 'protocol'.",
+      "examples": [
+        "parameter",
+        "query",
+        "protocol"
+      ],
+      "validation": {
+        "required": true,
+        "allowed_values": [
+          "parameter",
+          "query",
+          "protocol"
+        ]
+      },
+      "recommendation": "Use 'parameter' for a single GET parameter (then set options.parameter_name). Use 'query' for the full query string, 'protocol' for http/https."
+    }
+  },
+  "optional_attributes": {
+    "options": {
+      "type": "object",
+      "mutability": "editable",
+      "description": "Template options. When value is 'parameter', required: parameter_name (the GET parameter name, e.g. source, utm_medium).",
+      "validation": {
+        "required_when_value_is": "parameter",
+        "required_fields_when_parameter": [
+          "parameter_name"
+        ]
+      },
+      "fields": {
+        "parameter_name": {
+          "type": "string",
+          "description": "Name of the GET parameter to read (e.g. source, utm_source). Required when value is 'parameter'.",
+          "examples": [
+            "source",
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+            "medium"
+          ]
+        }
+      },
+      "recommendation": "When value is 'parameter', always set options.parameter_name to the query parameter name. Case-sensitive."
+    }
+  },
+  "complete_examples": {
+    "create_parameter_example": {
+      "description": "Create a URL variable for the source GET parameter (value 'parameter' + options.parameter_name)",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "UTM Source",
+            "variable_type": "url",
+            "value": "parameter",
+            "options": {
+              "parameter_name": "source"
+            }
+          }
+        }
+      }
+    },
+    "update_parameter_example": {
+      "description": "Update URL variable to a different parameter name",
+      "mcp_call": {
+        "function": "update_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "variable_id": "var-67890-1234-5678-9012-123456789def",
+          "attributes": {
+            "name": "Campaign Source",
+            "value": "parameter",
+            "options": {
+              "parameter_name": "utm_source"
+            }
+          }
+        }
+      }
+    },
+    "query_example": {
+      "description": "URL variable for full query string (value 'query', no options)",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Query String",
+            "variable_type": "url",
+            "value": "query"
+          }
+        }
+      }
+    },
+    "protocol_example": {
+      "description": "URL variable for protocol (http or https)",
+      "mcp_call": {
+        "function": "create_variable",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Protocol",
+            "variable_type": "url",
+            "value": "protocol"
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using value 'parameter' without setting options.parameter_name",
+    "Using a GET parameter name as value instead of value 'parameter' plus options.parameter_name",
+    "Using any value other than 'parameter', 'query', or 'protocol'",
+    "Expecting a value when the GET parameter is missing—variable returns empty string"
+  ],
+  "troubleshooting": {
+    "variable_empty": {
+      "problem": "URL variable returns empty",
+      "solutions": [
+        "For value 'parameter': confirm the page URL includes the query parameter and options.parameter_name matches it (case-sensitive)",
+        "For value 'query': ensure the URL has a query string; otherwise value is empty",
+        "Check that value is exactly one of: parameter, query, protocol"
+      ]
+    }
+  }
+}

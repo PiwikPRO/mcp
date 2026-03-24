@@ -1,0 +1,161 @@
+{
+  "extends": "tag_base",
+  "template_name": "sales_manago",
+  "name_aliases": [
+    "SALESmanago Tracking Tag"
+  ],
+  "description": "Collects data from your site and sends it to SALESmanago. Enables popups and email marketing conversion tracking. Copy your Client ID from SALESmanago > Settings > Integrations. Respect opt-out and DNT is on by default for SALESmanago.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting visitor data for SALESmanago",
+      "Marketing automation and email tracking",
+      "Displaying popups on site"
+    ],
+    "common_use_cases": [
+      "Visitor tracking for SALESmanago",
+      "Email marketing conversion tracking",
+      "Popup campaigns"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "marketing_automation",
+      "examples": [
+        "marketing_automation",
+        "analytics"
+      ]
+    },
+    "template": {
+      "description": "Must be 'sales_manago' for this template",
+      "value": "sales_manago",
+      "validation": {
+        "required": true,
+        "fixed_value": "sales_manago"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "SALESmanago configuration. Must include smid.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "smid"
+      ]
+    },
+    "template_options.smid": {
+      "type": "string",
+      "description": "SALESmanago identifier (Client ID). Find in SALESmanago > Settings > Integrations.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "example-client-id"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. On by default for SALESmanago.",
+      "mutability": "editable",
+      "default": true,
+      "recommendation": "Leave on to respect Do-Not-Track and opt-out preferences"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.smid",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "SALESmanago tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "SALESmanago Tracking",
+            "template": "sales_manago",
+            "template_options": {
+              "smid": "example-client-id"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get smid (Client ID) from SALESmanago > Settings > Integrations. Use page_view trigger."
+    },
+    "update_example": {
+      "description": "Update Client ID or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "smid": "example-client-id"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options or smid",
+    "Using wrong Client ID - copy from Settings > Integrations",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "data_not_in_salesmanago": [
+      "Verify smid is correct (SALESmanago > Settings > Integrations)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

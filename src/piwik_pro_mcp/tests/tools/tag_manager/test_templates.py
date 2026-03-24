@@ -61,11 +61,11 @@ class TestTemplateDiscoveryFunctional:
             data = json.loads(result[0].text)
         else:
             _, data = result
-        assert "available_templates" in data and isinstance(data["available_templates"], list)
+        assert "available_templates" in data and isinstance(data["available_templates"], dict)
 
         # Probe one template (if any available in assets)
         if data["available_templates"]:
-            template = data["available_templates"][0]
+            template = next(iter(data["available_templates"].keys()))
             result = await mcp_server.call_tool("templates_get_trigger", {"template_name": template})
             if isinstance(result, list):
                 tdata = json.loads(result[0].text)
@@ -80,10 +80,10 @@ class TestTemplateDiscoveryFunctional:
             data = json.loads(result[0].text)
         else:
             _, data = result
-        assert "available_templates" in data and isinstance(data["available_templates"], list)
+        assert "available_templates" in data and isinstance(data["available_templates"], dict)
 
         if data["available_templates"]:
-            template = data["available_templates"][0]
+            template = next(iter(data["available_templates"].keys()))
             result = await mcp_server.call_tool("templates_get_variable", {"template_name": template})
             if isinstance(result, list):
                 tdata = json.loads(result[0].text)

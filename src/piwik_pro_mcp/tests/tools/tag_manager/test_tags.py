@@ -27,7 +27,7 @@ class TestTagCreateFunctional:
 
     @pytest.mark.asyncio
     async def test_tags_create_with_valid_json_attributes_functional(self, mcp_server, mock_piwik_client):
-        """Test piwik_create_tag with valid JSON attributes through MCP."""
+        """Test tags_create with valid JSON attributes through MCP."""
         # Valid attributes dictionary
         attributes = {"name": "Test Tag", "template": "custom_tag", "is_active": True}
 
@@ -80,7 +80,7 @@ class TestTagUpdateFunctional:
 
     @pytest.mark.asyncio
     async def test_tags_update_with_valid_json_attributes_functional(self, mcp_server, mock_piwik_client):
-        """Test piwik_update_tag with valid JSON attributes through MCP."""
+        """Test tags_update with valid JSON attributes through MCP."""
         # Valid attributes dictionary
         attributes = {"name": "Updated Tag", "is_active": True}
 
@@ -311,25 +311,6 @@ class TestTagEdgeCases:
                     {"app_id": "app-1", "tag_id": "t1", "sort": "-unknown"},
                 )
             assert "failed to get tag triggers" in str(exc_info.value).lower()
-
-    @pytest.mark.asyncio
-    async def test_triggers_list_tags_not_found_mapping(self, mcp_server):
-        with patch("piwik_pro_mcp.tools.tag_manager.tags.create_piwik_client") as mock_client:
-            mock_instance = Mock()
-            mock_client.return_value = mock_instance
-
-            def _raise(*args, **kwargs):
-                raise Exception("not found")
-
-            mock_instance.tag_manager.get_trigger_tags.side_effect = _raise
-
-            with pytest.raises(Exception) as exc_info:
-                await mcp_server.call_tool(
-                    "triggers_list_tags",
-                    {"app_id": "app-1", "trigger_id": "tr1"},
-                )
-            s = str(exc_info.value).lower()
-            assert "trigger" in s and "app" in s and ("not found" in s or "failed" in s)
 
     @pytest.mark.asyncio
     async def test_tags_update_204_fetches_latest(self, mcp_server):

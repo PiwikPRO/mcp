@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "piwik-pro-analytics": {
+      "command": "uv",
+      "args": ["run", "piwik-pro-mcp", "--env-file", ".mcp.env"]
+    }
+  }
+}

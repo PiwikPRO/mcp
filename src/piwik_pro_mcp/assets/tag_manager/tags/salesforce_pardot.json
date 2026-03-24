@@ -1,0 +1,175 @@
+{
+  "extends": "tag_base",
+  "template_name": "salesforce_pardot",
+  "name_aliases": [
+    "Salesforce Pardot Tracking Tag",
+    "Salesforce Pardot Tracking Code"
+  ],
+  "description": "Tracks visitor activity on your website and sends data to Salesforce. Copy piAid and piCid from Salesforce Pardot > Marketing > Campaigns > Website tracking campaign > View tracking code. Used for marketing automation and lead tracking.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking visitors for Salesforce Pardot",
+      "Marketing automation and lead tracking",
+      "Campaign attribution in Salesforce"
+    ],
+    "common_use_cases": [
+      "Visitor tracking for Pardot campaigns",
+      "Form submissions and page views in Salesforce",
+      "Lead scoring and attribution"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "marketing_automation",
+      "examples": [
+        "marketing_automation",
+        "analytics"
+      ]
+    },
+    "template": {
+      "description": "Must be 'salesforce_pardot' for this template",
+      "value": "salesforce_pardot",
+      "validation": {
+        "required": true,
+        "fixed_value": "salesforce_pardot"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Salesforce Pardot configuration. Must include pi_a_id and pi_c_id.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "pi_a_id",
+        "pi_c_id"
+      ]
+    },
+    "template_options.pi_a_id": {
+      "type": "string",
+      "description": "Account identifier (piAid). Find in Pardot > Marketing > Campaigns > Website tracking campaign > View tracking code.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "12345"
+    },
+    "template_options.pi_c_id": {
+      "type": "string",
+      "description": "Campaign identifier (piCid). Find in Pardot > Marketing > Campaigns > Website tracking campaign > View tracking code.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "0abc123"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.pi_a_id",
+          "template_options.pi_c_id",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "Salesforce Pardot tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Salesforce Pardot Tracking",
+            "template": "salesforce_pardot",
+            "template_options": {
+              "pi_a_id": "12345",
+              "pi_c_id": "0abc123"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get pi_a_id (piAid) and pi_c_id (piCid) from Pardot > Marketing > Campaigns > Website tracking campaign > View tracking code. Use page_view trigger."
+    },
+    "update_example": {
+      "description": "Update Pardot IDs",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "pi_a_id": "12345",
+              "pi_c_id": "0abc123"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting pi_a_id or pi_c_id - both required",
+    "Using wrong values - copy piAid and piCid from tracking code",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "data_not_in_salesforce": [
+      "Verify pi_a_id and pi_c_id (Pardot tracking code)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

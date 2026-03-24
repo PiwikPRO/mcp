@@ -1,0 +1,348 @@
+{
+  "extends": "tag_base",
+  "template_name": "doubleclick_floodlight",
+  "name_aliases": [
+    "DoubleClick Floodlight Tag",
+    "Floodlight Counter",
+    "Floodlight Sales",
+    "DoubleClick Floodlight"
+  ],
+  "description": "Floodlight (DoubleClick) conversion tracking. One template with 5 variants: set template_options.type to doubleclick_floodlight_counter or doubleclick_floodlight_sales, then set template_options.counting_method. Counter: standard_method, session, unique_method. Sales: item_sold, transactions (require revenue, order_id; item_sold also requires quantity). Copy advertiser ID (src=), group tag (type=), activity tag (cat=) from Floodlight code. Note: In versions below 16.23.0, called DoubleClick Floodlight.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Counting ad conversions (Counter)",
+      "Tracking purchase conversions (Sales)",
+      "Campaign attribution from display/paid ads"
+    ],
+    "common_use_cases": [
+      "Landing page conversion after ad click",
+      "Thank-you page purchase tracking",
+      "Display campaign performance"
+    ]
+  },
+  "variants": {
+    "template_options.type": {
+      "description": "Selects Counter or Sales. Required.",
+      "options": {
+        "doubleclick_floodlight_counter": "Counter - counts page views (set counting_method: standard_method, session, or unique_method)",
+        "doubleclick_floodlight_sales": "Sales - monitors purchases (set counting_method: item_sold or transactions)"
+      }
+    },
+    "template_options.counting_method": {
+      "description": "Required. Depends on type.",
+      "when_type_doubleclick_floodlight_counter": {
+        "standard_method": "Every page view",
+        "session": "Per session",
+        "unique_method": "One per user"
+      },
+      "when_type_doubleclick_floodlight_sales": {
+        "item_sold": "Item sold (requires revenue, order_id, quantity)",
+        "transactions": "Transactions (requires revenue, order_id)"
+      }
+    }
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "remarketing"
+    },
+    "template": {
+      "description": "Must be 'doubleclick_floodlight'",
+      "value": "doubleclick_floodlight",
+      "validation": {
+        "required": true,
+        "fixed_value": "doubleclick_floodlight"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Floodlight configuration. Must include type, advertiser_id, group_tag_string, activity_tag_string.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "type",
+        "counting_method",
+        "advertiser_id",
+        "group_tag_string",
+        "activity_tag_string"
+      ]
+    },
+    "template_options.type": {
+      "type": "string",
+      "description": "Floodlight type: doubleclick_floodlight_counter or doubleclick_floodlight_sales.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "enum": [
+        "doubleclick_floodlight_counter",
+        "doubleclick_floodlight_sales"
+      ]
+    },
+    "template_options.counting_method": {
+      "type": "string",
+      "description": "Required. For Counter: standard_method | session | unique_method. For Sales: item_sold | transactions.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "enum": [
+        "standard_method",
+        "session",
+        "unique_method",
+        "item_sold",
+        "transactions"
+      ]
+    },
+    "template_options.advertiser_id": {
+      "type": "string",
+      "description": "Advertiser ID from Floodlight code (src=).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "1234567"
+    },
+    "template_options.group_tag_string": {
+      "type": "string",
+      "description": "Group tag from Floodlight code (type=).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      }
+    },
+    "template_options.activity_tag_string": {
+      "type": "string",
+      "description": "Activity tag from Floodlight code (cat=).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      }
+    }
+  },
+  "variant_specific_attributes": {
+    "doubleclick_floodlight_sales": {
+      "counting_method_item_sold": {
+        "required": [
+          "revenue",
+          "order_id",
+          "quantity"
+        ],
+        "template_options.revenue": "Revenue amount (variable reference or number, min 0)",
+        "template_options.order_id": "Order identifier (variable reference or string)",
+        "template_options.quantity": "Number of items sold (variable reference or integer, min 0)"
+      },
+      "counting_method_transactions": {
+        "required": [
+          "revenue",
+          "order_id"
+        ],
+        "template_options.revenue": "Revenue amount (variable reference or number, min 0)",
+        "template_options.order_id": "Order identifier (variable reference or string)"
+      }
+    },
+    "doubleclick_floodlight_counter": {
+      "counting_method_session": {
+        "required": [
+          "session_id"
+        ],
+        "template_options.session_id": "Session identifier (variable reference or string)"
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options.u": {
+      "type": "string|number",
+      "description": "Standard variable U."
+    },
+    "template_options.tran": {
+      "type": "string|number",
+      "description": "Standard variable Tran."
+    },
+    "template_options.custom_variables": {
+      "type": "array",
+      "description": "Custom variables u1-u100. Items: {id: 'u1'|'u2'|...|'u100', value: string|number}."
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT and opt-out.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.*",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "counter_session": {
+      "description": "Floodlight Counter (session)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Floodlight Counter - Session",
+            "template": "doubleclick_floodlight",
+            "template_options": {
+              "type": "doubleclick_floodlight_counter",
+              "counting_method": "session",
+              "advertiser_id": "1234567",
+              "group_tag_string": "group1",
+              "activity_tag_string": "act1"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "counter_standard": {
+      "description": "Floodlight Counter (standard)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Floodlight Counter - Standard",
+            "template": "doubleclick_floodlight",
+            "template_options": {
+              "type": "doubleclick_floodlight_counter",
+              "counting_method": "standard_method",
+              "advertiser_id": "1234567",
+              "group_tag_string": "group1",
+              "activity_tag_string": "act1"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "counter_unique": {
+      "description": "Floodlight Counter (unique)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Floodlight Counter - Unique",
+            "template": "doubleclick_floodlight",
+            "template_options": {
+              "type": "doubleclick_floodlight_counter",
+              "counting_method": "unique_method",
+              "advertiser_id": "1234567",
+              "group_tag_string": "group1",
+              "activity_tag_string": "act1"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "sales_item_sold": {
+      "description": "Floodlight Sales (item sold)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Floodlight Sales - Item Sold",
+            "template": "doubleclick_floodlight",
+            "template_options": {
+              "type": "doubleclick_floodlight_sales",
+              "counting_method": "item_sold",
+              "advertiser_id": "1234567",
+              "group_tag_string": "group1",
+              "activity_tag_string": "act1",
+              "revenue": "{{ Order Total }}",
+              "order_id": "{{ Order ID }}",
+              "quantity": "{{ Item Count }}"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "purchase-trigger-uuid"
+        }
+      }
+    },
+    "sales_transactions": {
+      "description": "Floodlight Sales (transactions)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Floodlight Sales - Transactions",
+            "template": "doubleclick_floodlight",
+            "template_options": {
+              "type": "doubleclick_floodlight_sales",
+              "counting_method": "transactions",
+              "advertiser_id": "1234567",
+              "group_tag_string": "group1",
+              "activity_tag_string": "act1",
+              "revenue": "{{ Order Total }}",
+              "order_id": "{{ Order ID }}"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "purchase-trigger-uuid"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options.type or template_options.counting_method - both required",
+    "Mismatching type and counting_method (e.g. doubleclick_floodlight_sales with session)",
+    "For Sales: missing revenue, order_id (or quantity for item_sold)",
+    "Using page_view trigger for Sales - use purchase/conversion trigger",
+    "Copying wrong values from Floodlight code (src, type, cat)"
+  ],
+  "troubleshooting": {
+    "conversions_not_counting": [
+      "Verify advertiser_id, group_tag_string, activity_tag_string",
+      "Ensure type + counting_method match (counter: standard_method|session|unique_method; sales: item_sold|transactions)",
+      "For Sales: pass revenue, order_id (quantity for item_sold) via variables",
+      "Check consent_type and trigger"
+    ]
+  }
+}

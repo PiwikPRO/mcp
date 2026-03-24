@@ -1,0 +1,188 @@
+{
+  "extends": "tag_base",
+  "template_name": "video_youtube",
+  "name_aliases": [
+    "YouTube Video Tracking Tag"
+  ],
+  "description": "Collects data from YouTube videos embedded on your site: plays, rewinds, pauses, mutes, watch time, and progress. The tag runs a script that automatically detects and tracks YouTube embeds. Use a page view trigger so it fires on pages with videos.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking YouTube videos embedded on your site",
+      "Measuring video engagement (plays, pauses, watch time)",
+      "Tracking progress milestones (e.g. 25%, 50%, 75% watched)",
+      "Video analytics for content performance"
+    ],
+    "common_use_cases": [
+      "Product demo videos",
+      "Tutorial or how-to content",
+      "Marketing or promotional videos",
+      "Course or training videos",
+      "Landing page hero videos"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics"
+      ]
+    },
+    "template": {
+      "description": "Must be 'video_youtube' for this template",
+      "value": "video_youtube",
+      "validation": {
+        "required": true,
+        "fixed_value": "video_youtube"
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options": {
+      "type": "object",
+      "description": "Optional configuration. Can be omitted for default tracking (plays, pauses, etc.).",
+      "mutability": "editable"
+    },
+    "template_options.track_thresholds": {
+      "type": "array",
+      "description": "Percentage thresholds (0-100) to track progress. E.g. [25, 50, 75] fires when visitor reaches 25%, 50%, 75%. All values must be unique.",
+      "mutability": "editable",
+      "validation": {
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "example": [
+        25,
+        50,
+        75,
+        100
+      ],
+      "recommendation": "Use [25, 50, 75, 100] for standard progress milestones"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_tracking": {
+      "description": "Basic YouTube tracking (plays, pauses, mutes, watch time)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "YouTube Video Tracking",
+            "template": "video_youtube",
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Use All page views trigger or a trigger for pages with YouTube embeds."
+    },
+    "with_progress": {
+      "description": "YouTube tracking with progress thresholds (25%, 50%, 75%, 100%)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "YouTube Video + Progress",
+            "template": "video_youtube",
+            "template_options": {
+              "track_thresholds": [
+                25,
+                50,
+                75,
+                100
+              ]
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Add or change progress thresholds",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "track_thresholds": [
+                10,
+                25,
+                50,
+                75,
+                90,
+                100
+              ]
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Forgetting to attach a trigger (typically All page views or pages with videos)",
+    "Using duplicate values in track_thresholds (must be unique)",
+    "Using values outside 0-100 in track_thresholds",
+    "Expecting tracking of Vimeo or HTML5 videos (use dedicated tags for those)",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "no_data_collected": [
+      "Verify tag fires on pages with YouTube embeds (use page view trigger)",
+      "Check that Piwik PRO tracking code is installed on the site",
+      "Ensure consent_type is met",
+      "Verify YouTube videos use standard embed (iframe)"
+    ],
+    "progress_not_tracking": [
+      "Ensure track_thresholds has at least one value",
+      "Check values are unique and between 0-100"
+    ]
+  }
+}

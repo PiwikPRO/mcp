@@ -1,0 +1,176 @@
+{
+  "extends": "tag_base",
+  "template_name": "qualaroo",
+  "name_aliases": [
+    "Qualaroo Tag",
+    "Qualaroo JavaScript"
+  ],
+  "description": "Loads the Qualaroo JavaScript to collect feedback from website visitors and send it to Qualaroo. Copy your customer ID and site token from Qualaroo > Tracking code. Used for surveys, NPS, and user feedback.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting user feedback via Qualaroo",
+      "Surveys and NPS on website",
+      "User research and feedback collection"
+    ],
+    "common_use_cases": [
+      "Exit intent surveys",
+      "NPS surveys",
+      "In-page feedback widgets"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "user_feedback",
+      "examples": [
+        "user_feedback",
+        "analytics",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'qualaroo' for this template",
+      "value": "qualaroo",
+      "validation": {
+        "required": true,
+        "fixed_value": "qualaroo"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Qualaroo configuration. Must include customer_id and site_token.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "customer_id",
+        "site_token"
+      ]
+    },
+    "template_options.customer_id": {
+      "type": "string",
+      "description": "Qualaroo customer ID. Find in Qualaroo > Tracking code.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "50553"
+    },
+    "template_options.site_token": {
+      "type": "string",
+      "description": "Qualaroo site token. Find in Qualaroo > Tracking code.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "aTU"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.customer_id",
+          "template_options.site_token",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "Qualaroo feedback on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Qualaroo Feedback",
+            "template": "qualaroo",
+            "template_options": {
+              "customer_id": "50553",
+              "site_token": "aTU"
+            },
+            "consent_type": "user_feedback"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get customer_id and site_token from Qualaroo > Tracking code. Use page_view trigger."
+    },
+    "update_example": {
+      "description": "Update customer ID or site token",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "customer_id": "50553",
+              "site_token": "aTU"
+            },
+            "consent_type": "user_feedback"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting customer_id or site_token - both required",
+    "Using wrong values - copy from Qualaroo > Tracking code",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "surveys_not_appearing": [
+      "Verify customer_id and site_token (Qualaroo > Tracking code)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

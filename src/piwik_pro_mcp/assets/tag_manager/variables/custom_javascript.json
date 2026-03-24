@@ -1,6 +1,9 @@
 {
+  "extends": "variable_base",
   "template_name": "custom_javascript",
-  "display_name": "Custom JavaScript Variable",
+  "name_aliases": [
+    "Custom JavaScript Variable"
+  ],
   "description": "Executes custom JavaScript code to return dynamic values. Provides maximum flexibility for complex logic, calculations, API integrations, and accessing browser-specific data that other variable types cannot handle.",
   "ai_usage_guide": {
     "when_to_use": [
@@ -42,86 +45,28 @@
   },
   "mcp_usage": {
     "create_variable": {
-      "function_name": "create_variable",
       "description": "Create a new custom JavaScript variable that executes code to return dynamic values",
       "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "UUID of your Piwik PRO app"
-        },
-        "name": {
-          "type": "string",
-          "description": "Descriptive name for the custom JavaScript variable"
-        },
         "variable_type": {
-          "type": "string",
           "value": "custom_javascript",
           "description": "Must be 'custom_javascript' for custom JavaScript variables"
         },
         "value": {
-          "type": "string",
           "description": "JavaScript code to execute - must return a value"
-        }
-      },
-      "optional_parameters": {
-        "options": {
-          "type": "object",
-          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support",
-          "default": {}
-        }
-      }
-    },
-    "update_variable": {
-      "function_name": "update_variable",
-      "description": "Update an existing custom JavaScript variable - only editable fields will be processed",
-      "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "UUID of your Piwik PRO app"
-        },
-        "variable_id": {
-          "type": "string",
-          "description": "UUID of the variable to update"
-        }
-      },
-      "optional_parameters": {
-        "name": {
-          "type": "string",
-          "description": "Updated descriptive name for the variable"
-        },
-        "value": {
-          "type": "string",
-          "description": "Updated JavaScript code to execute"
-        },
-        "options": {
-          "type": "object",
-          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support"
         }
       }
     }
   },
   "required_attributes": {
     "name": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Descriptive name for the custom JavaScript variable",
       "examples": [
         "User Login Status",
         "Cart Total Value",
         "A/B Test Variant",
         "Custom User ID"
-      ],
-      "validation": {
-        "required": true,
-        "min_length": 1,
-        "max_length": 255
-      },
-      "recommendation": "Use clear names that describe what the JavaScript code does or returns"
+      ]
     },
     "template": {
-      "type": "string",
-      "mutability": "create-only",
-      "description": "Variable template type",
       "examples": [
         "custom_javascript"
       ],
@@ -130,8 +75,7 @@
         "allowed_values": [
           "custom_javascript"
         ]
-      },
-      "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
+      }
     },
     "value": {
       "type": "string",
@@ -148,63 +92,6 @@
       },
       "recommendation": "Always include 'return' statement and handle potential errors with try-catch blocks",
       "security_note": "⚠️ Ensure code is safe and doesn't expose sensitive information"
-    }
-  },
-  "optional_attributes": {
-    "options": {
-      "type": "object",
-      "mutability": "editable",
-      "description": "Optional configuration object. Leave empty unless Piwik PRO introduces additional capabilities.",
-      "examples": [
-        {}
-      ],
-      "default": {},
-      "recommendation": "Do not include custom keys—passing additional properties is rejected by the API."
-    }
-  },
-  "read_only_attributes": {
-    "created_at": {
-      "mutability": "read-only",
-      "description": "Timestamp when the variable was created",
-      "edit_note": "🚫 Automatically set by the API, cannot be modified"
-    },
-    "updated_at": {
-      "mutability": "read-only",
-      "description": "Timestamp when the variable was last updated",
-      "edit_note": "🚫 Automatically updated by the API on changes"
-    }
-  },
-  "field_mutability_guide": {
-    "description": "Understanding field editability after variable creation",
-    "mutability_types": {
-      "editable": {
-        "description": "✅ Can be updated anytime after creation",
-        "examples": [
-          "name",
-          "value",
-          "options"
-        ],
-        "use_cases": [
-          "Renaming variables",
-          "Updating JavaScript logic",
-          "Fixing bugs in code"
-        ]
-      },
-      "create-only": {
-        "description": "⚠️ Set during creation, immutable after creation",
-        "examples": [
-          "template"
-        ],
-        "explanation": "Template determines the variable type and behavior - cannot be changed to maintain data integrity"
-      },
-      "read-only": {
-        "description": "🚫 Auto-generated by API, never user-modifiable",
-        "examples": [
-          "created_at",
-          "updated_at"
-        ],
-        "explanation": "System timestamps managed automatically by Piwik PRO"
-      }
     }
   },
   "complete_examples": {
@@ -231,7 +118,7 @@
           "variable_id": "var-67890-1234-5678-9012-123456789def",
           "attributes": {
             "name": "Enhanced User Status",
-            "value": "try {\n  var userId = localStorage.getItem('userId');\n  var isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';\n  return isLoggedIn ? (userId || 'authenticated') : 'guest';\n} catch (e) {\n  console.warn('User status check failed:', e);\n  return 'error';\n}"
+            "value": "try {\n  var userId = localStorage.getItem('userId');\n  var isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';\n  return isLoggedIn ? (userId || 'authenticated') : 'guest';\n} catch (e) {\n  return 'error';\n}"
           }
         }
       }
@@ -263,20 +150,6 @@
           }
         }
       }
-    },
-    "date_formatting_example": {
-      "description": "Custom date formatting for tracking",
-      "mcp_call": {
-        "function": "create_variable",
-        "parameters": {
-          "app_id": "abc12345-1234-5678-9012-123456789abc",
-          "attributes": {
-            "name": "Current Hour",
-            "variable_type": "custom_javascript",
-            "value": "try {\n  var now = new Date();\n  return now.getHours().toString().padStart(2, '0');\n} catch (e) {\n  return '00';\n}"
-          }
-        }
-      }
     }
   },
   "common_mistakes": [
@@ -305,8 +178,7 @@
       "solutions": [
         "Wrap all code in try-catch blocks with meaningful fallback values",
         "Use console.warn() instead of console.error() for non-critical issues",
-        "Test JavaScript code thoroughly before deployment",
-        "Use 'use strict'; to catch common JavaScript errors early"
+        "Test JavaScript code thoroughly before deployment"
       ]
     },
     "performance_issues": {
@@ -314,19 +186,7 @@
       "solutions": [
         "Avoid heavy computations or complex loops",
         "Don't make synchronous API calls or file operations",
-        "Cache results when possible to avoid repeated calculations",
-        "Use asynchronous operations for non-critical data fetching",
-        "Profile JavaScript execution time in development"
-      ]
-    },
-    "browser_compatibility": {
-      "problem": "JavaScript works in some browsers but not others",
-      "solutions": [
-        "Use well-supported JavaScript features or include polyfills",
-        "Test in multiple browsers during development",
-        "Check for browser-specific API availability before using",
-        "Use feature detection instead of browser detection",
-        "Implement graceful degradation with fallback values"
+        "Cache results when possible to avoid repeated calculations"
       ]
     }
   },
@@ -335,33 +195,9 @@
       "description": "Safely access localStorage with error handling",
       "code": "try {\n  return localStorage.getItem('key') || 'default';\n} catch (e) {\n  return 'unavailable';\n}"
     },
-    "cookie_parsing": {
-      "description": "Parse cookies safely",
-      "code": "try {\n  var cookies = document.cookie.split(';');\n  for (var i = 0; i < cookies.length; i++) {\n    var cookie = cookies[i].trim();\n    if (cookie.startsWith('cookieName=')) {\n      return cookie.substring('cookieName='.length);\n    }\n  }\n  return 'not-set';\n} catch (e) {\n  return 'error';\n}"
-    },
     "url_parameter_extraction": {
       "description": "Extract URL parameters with fallbacks",
       "code": "try {\n  var params = new URLSearchParams(window.location.search);\n  return params.get('param') || 'default';\n} catch (e) {\n  return 'unknown';\n}"
-    },
-    "dom_element_value": {
-      "description": "Get DOM element value safely",
-      "code": "try {\n  var element = document.getElementById('elementId');\n  return element ? element.value || element.textContent : 'not-found';\n} catch (e) {\n  return 'error';\n}"
     }
-  },
-  "related_mcp_tools": {
-    "discovery": [
-      "piwik_get_available_variable_templates() - List all available variable templates",
-      "piwik_get_variable_template() - Get detailed template information"
-    ],
-    "management": [
-      "piwik_create_variable() - Create new variables with this template",
-      "piwik_update_variable() - Update existing variables (editable fields only)",
-      "piwik_list_variables() - List all variables in your app",
-      "piwik_get_variable() - Get detailed information about specific variables"
-    ],
-    "workflow": [
-      "piwik_list_tags() - Find tags that might use this variable",
-      "piwik_list_triggers() - Find triggers that might use this variable"
-    ]
   }
 }

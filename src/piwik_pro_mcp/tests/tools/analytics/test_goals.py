@@ -210,17 +210,3 @@ class TestGoalsCrudFunctional:
         assert data["data"]["attributes"]["name"] == "Updated Goal"
         assert data["data"]["attributes"]["revenue"] == "25.50"
         mock_piwik_client.analytics.update_goal.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_goals_delete_functional(self, mcp_server, mock_piwik_client):
-        result = await mcp_server.call_tool(
-            "analytics_goals_delete",
-            {"goal_id": "goal-1", "website_id": "app-1"},
-        )
-
-        assert isinstance(result, tuple) and len(result) == 2
-        _, data = result
-        # Verify OperationStatusResponse structure
-        assert data["status"] == "success"
-        assert data["message"] == "Goal goal-1 deleted successfully"
-        mock_piwik_client.analytics.delete_goal.assert_called_once_with(goal_id="goal-1", website_id="app-1")

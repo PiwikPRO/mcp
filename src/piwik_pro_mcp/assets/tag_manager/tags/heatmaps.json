@@ -1,0 +1,146 @@
+{
+  "extends": "tag_base",
+  "template_name": "heatmaps",
+  "name_aliases": [
+    "Heatmaps & Clickmaps Tag"
+  ],
+  "description": "Collects data for heatmaps and clickmaps displayed in the Piwik PRO Site Inspector Chrome extension. Heatmaps show where users clicked on a page; clickmaps show details about clicked elements. Only one heatmap & clickmap tag per site or app. Requires a click trigger.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Visualizing where users click on pages",
+      "Analyzing click patterns for UX optimization",
+      "Understanding which elements get the most interaction",
+      "Heatmap and clickmap reports in Site Inspector"
+    ],
+    "common_use_cases": [
+      "Landing page click analysis",
+      "Navigation and CTA engagement",
+      "Form and button interaction patterns",
+      "Content layout optimization"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "user_feedback"
+      ]
+    },
+    "template": {
+      "description": "Must be 'heatmaps' for this template",
+      "value": "heatmaps",
+      "validation": {
+        "required": true,
+        "fixed_value": "heatmaps"
+      }
+    }
+  },
+  "optional_attributes": {
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "all_clicks": {
+      "description": "Track all clicks on any page",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Heatmaps & Clickmaps",
+            "template": "heatmaps",
+            "consent_type": "analytics"
+          },
+          "triggers": "click-trigger-all-uuid"
+        }
+      },
+      "prerequisite": "Create a click trigger without conditions to track all clicks. Use triggers_list() to find or triggers_create() to create one."
+    },
+    "specific_clicks": {
+      "description": "Track clicks on specific elements (e.g. buttons, links)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Heatmaps - CTA Buttons",
+            "template": "heatmaps",
+            "consent_type": "analytics"
+          },
+          "triggers": "click-trigger-cta-buttons-uuid"
+        }
+      },
+      "prerequisite": "Create a click trigger with conditions (e.g. element matches selector) for specific elements."
+    },
+    "update_example": {
+      "description": "Update tag name or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "name": "Heatmaps & Clickmaps (Updated)",
+            "consent_type": "user_feedback"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using a page view trigger instead of a click trigger (only click triggers work)",
+    "Adding more than one heatmap tag per site/app",
+    "Expecting scrollmaps (requires separate setup)",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "no_data_in_site_inspector": [
+      "Verify a click trigger is attached (not page view)",
+      "Allow ~2 hours for data to appear",
+      "Install Piwik PRO Site Inspector Chrome extension",
+      "Check consent_type is met"
+    ],
+    "tag_not_firing": [
+      "Heatmaps tag requires a click trigger - verify trigger type",
+      "Ensure trigger conditions match your pages"
+    ]
+  }
+}

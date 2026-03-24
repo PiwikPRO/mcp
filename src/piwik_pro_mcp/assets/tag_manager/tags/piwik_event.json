@@ -1,6 +1,10 @@
 {
+  "extends": "tag_base",
   "template_name": "piwik_event",
-  "display_name": "Custom Event Tag",
+  "name_aliases": [
+    "Custom Event Tag",
+    "Piwik Custom Event Tag"
+  ],
   "description": "Sends custom events to Piwik PRO Analytics with category, action, optional name, value, and custom dimensions. Ideal for tracking interactions (clicks, downloads), conversions, and business-specific actions.",
   "ai_usage_guide": {
     "when_to_use": [
@@ -19,15 +23,9 @@
   },
   "mcp_usage": {
     "create_tag": {
-      "function_name": "create_tag",
       "description": "Create a new Piwik PRO Event tag using this template.",
       "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "Piwik PRO app UUID"
-        },
         "attributes": {
-          "type": "object",
           "description": "Tag attributes for creation. Must include name, template='piwik_event', and required template_options.",
           "required": [
             "name",
@@ -36,62 +34,33 @@
             "template_options.action"
           ]
         }
-      },
-      "optional_parameters": {
-        "triggers": {
-          "type": "string",
-          "description": "Comma-separated list of trigger UUIDs to attach to this tag",
-          "default": ""
-        }
       }
     },
     "update_tag": {
-      "function_name": "update_tag",
       "description": "Update an existing event tag. Only editable fields are processed (create-only and read-only fields are ignored).",
       "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "Piwik PRO app UUID"
-        },
-        "tag_id": {
-          "type": "string",
-          "description": "Tag UUID to update"
-        },
         "attributes": {
-          "type": "object",
           "description": "Editable tag attributes (e.g., name, is_active, template_options.*)"
-        }
-      },
-      "optional_parameters": {
-        "triggers": {
-          "type": "string",
-          "description": "Comma-separated trigger UUIDs. If omitted, triggers remain unchanged; empty string removes all triggers.",
-          "default": "__unchanged__"
         }
       }
     }
   },
   "required_attributes": {
-    "name": {
-      "type": "string",
-      "description": "Human-readable tag name",
-      "mutability": "editable",
-      "validation": {
-        "required": true,
-        "min_length": 1,
-        "max_length": 255
-      }
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "not_require_consent",
+        "conversion_tracking"
+      ]
     },
     "template": {
-      "type": "string",
       "description": "Must be 'piwik_event' for this template",
-      "mutability": "create-only",
       "value": "piwik_event",
       "validation": {
         "required": true,
         "fixed_value": "piwik_event"
-      },
-      "edit_note": "⚠️ Cannot be changed after tag creation"
+      }
     },
     "template_options": {
       "type": "object",
@@ -121,40 +90,16 @@
   },
   "optional_attributes": {
     "is_active": {
-      "type": "boolean",
-      "description": "Whether the tag is active",
-      "mutability": "editable",
-      "default": true
+      "description": "Whether the tag is active"
     },
     "priority": {
-      "type": "integer",
-      "description": "Firing order priority (higher numbers fire earlier)",
-      "mutability": "editable",
-      "default": 0,
       "range": "0 to 4294967295"
     },
-    "consent_type": {
-      "type": "string",
-      "description": "Consent category required before firing (e.g., analytics, conversion_tracking)",
-      "mutability": "editable",
-      "examples": [
-        "not_require_consent",
-        "analytics",
-        "conversion_tracking",
-        "marketing_automation"
-      ]
-    },
     "disable_in_debug_mode": {
-      "type": "boolean",
-      "description": "Disable this tag when Tag Manager is in debug mode",
-      "mutability": "editable",
-      "default": false
+      "description": "Disable this tag when Tag Manager is in debug mode"
     },
     "respect_visitors_privacy": {
-      "type": "boolean",
-      "description": "Respect visitor privacy settings (DNT header, opt-out)",
-      "mutability": "editable",
-      "default": true
+      "description": "Respect visitor privacy settings (DNT header, opt-out)"
     },
     "template_options.name": {
       "type": "string",
@@ -172,46 +117,15 @@
       "mutability": "editable"
     }
   },
-  "read_only_attributes": {
-    "created_at": {
-      "mutability": "read-only",
-      "description": "Creation timestamp"
-    },
-    "updated_at": {
-      "mutability": "read-only",
-      "description": "Last update timestamp"
-    },
-    "is_published": {
-      "mutability": "read-only",
-      "description": "Whether the tag is published"
-    }
-  },
   "field_mutability_guide": {
-    "description": "Understanding field editability after tag creation",
     "mutability_types": {
       "editable": {
-        "description": "✅ Can be updated anytime",
         "examples": [
           "name",
           "is_active",
           "priority",
           "consent_type",
           "template_options.*"
-        ]
-      },
-      "create-only": {
-        "description": "⚠️ Set during creation, immutable after",
-        "examples": [
-          "template",
-          "tag_type"
-        ]
-      },
-      "read-only": {
-        "description": "🚫 Auto-generated, never user-modifiable",
-        "examples": [
-          "created_at",
-          "updated_at",
-          "is_published"
         ]
       }
     }
@@ -220,7 +134,7 @@
     "create_example": {
       "description": "Create an event tag for CTA button clicks",
       "mcp_call": {
-        "function": "create_tag",
+        "function": "tags_create",
         "parameters": {
           "app_id": "12345678-1234-1234-1234-123456789012",
           "attributes": {
@@ -240,7 +154,7 @@
     "update_example": {
       "description": "Update event name and add value",
       "mcp_call": {
-        "function": "update_tag",
+        "function": "tags_update",
         "parameters": {
           "app_id": "12345678-1234-1234-1234-123456789012",
           "tag_id": "87654321-4321-4321-4321-210987654321",
@@ -267,18 +181,6 @@
       "Confirm consent requirements are met",
       "Check category/action values are non-empty",
       "Inspect browser console for blocked requests or errors"
-    ]
-  },
-  "related_mcp_tools": {
-    "discovery": [
-      "piwik_get_available_templates()",
-      "piwik_get_tag_template(template_name='piwik_event')"
-    ],
-    "management": [
-      "piwik_create_tag(app_id, attributes, triggers)",
-      "piwik_update_tag(app_id, tag_id, attributes, triggers)",
-      "piwik_list_triggers(app_id)",
-      "piwik_get_tag_triggers(app_id, tag_id)"
     ]
   }
 }

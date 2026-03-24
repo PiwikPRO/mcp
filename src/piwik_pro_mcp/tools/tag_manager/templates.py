@@ -12,8 +12,10 @@ from mcp.server.fastmcp import FastMCP
 
 from piwik_pro_mcp.common.templates import (
     get_assets_base_path,
-    list_template_names,
-    load_template_asset,
+    list_available_assets,
+    load_tag_template_with_extends,
+    load_trigger_template_with_extends,
+    load_variable_template_with_extends,
 )
 
 
@@ -23,23 +25,23 @@ def get_tag_template(template_name: str) -> Dict[str, Any]:
         template_file: Path = assets_dir / f"{template_name}.json"
 
         if not template_file.exists():
-            available_templates = list_template_names(assets_dir)
-            available_msg = f" Available templates: {', '.join(available_templates)}" if available_templates else ""
+            available_assets = list_available_assets(assets_dir)
+            available_msg = f" Available templates: {', '.join(available_assets.keys())}" if available_assets else ""
             raise RuntimeError(f"Template '{template_name}' not found.{available_msg}")
 
-        return load_template_asset(template_file)
+        return load_tag_template_with_extends(template_file)
 
     except Exception as e:
         raise RuntimeError(f"Failed to get tag template information: {str(e)}")
 
 
-def get_available_templates() -> Dict[str, Any]:
+def get_available_tag_templates() -> Dict[str, Any]:
     try:
-        template_names = list_template_names("tag_manager/tags")
+        available_assets = list_available_assets("tag_manager/tags")
 
         return {
-            "available_templates": template_names,
-            "total_count": len(template_names),
+            "available_templates": available_assets,
+            "total_count": len(available_assets),
             "usage_guide": {
                 "next_steps": [
                     "Use get_tag_template(template_name='TEMPLATE_NAME') to get detailed information "
@@ -47,7 +49,7 @@ def get_available_templates() -> Dict[str, Any]:
                     "Use create_tag() with the template information to create tags",
                 ],
                 "example_workflow": {
-                    "step_1": "get_available_templates() - See all available templates",
+                    "step_1": "get_available_tag_templates() - See all available templates",
                     "step_2": "get_tag_template(template_name='custom_tag') - Get details for a specific template",
                     "step_3": "create_tag(app_id='...', attributes={...}) - Create the tag with proper attributes",
                 },
@@ -66,13 +68,13 @@ def get_trigger_template(template_name: str) -> Dict[str, Any]:
         template_file: Path = assets_dir / f"{template_name}.json"
 
         if not template_file.exists():
-            available_templates = list_template_names(assets_dir)
+            available_assets = list_available_assets(assets_dir)
             available_msg = (
-                f" Available trigger templates: {', '.join(available_templates)}" if available_templates else ""
+                f" Available trigger templates: {', '.join(available_assets.keys())}" if available_assets else ""
             )
             raise RuntimeError(f"Trigger template '{template_name}' not found.{available_msg}")
 
-        return load_template_asset(template_file)
+        return load_trigger_template_with_extends(template_file)
 
     except Exception as e:
         raise RuntimeError(f"Failed to get trigger template information: {str(e)}")
@@ -80,11 +82,11 @@ def get_trigger_template(template_name: str) -> Dict[str, Any]:
 
 def get_available_trigger_templates() -> Dict[str, Any]:
     try:
-        template_names = list_template_names("tag_manager/triggers")
+        available_assets = list_available_assets("tag_manager/triggers")
 
         return {
-            "available_templates": template_names,
-            "total_count": len(template_names),
+            "available_templates": available_assets,
+            "total_count": len(available_assets),
             "usage_guide": {
                 "next_steps": [
                     "Use get_trigger_template(template_name='TEMPLATE_NAME') to get detailed information "
@@ -113,13 +115,13 @@ def get_variable_template(template_name: str) -> Dict[str, Any]:
         template_file: Path = assets_dir / f"{template_name}.json"
 
         if not template_file.exists():
-            available_templates = list_template_names(assets_dir)
+            available_assets = list_available_assets(assets_dir)
             available_msg = (
-                f" Available variable templates: {', '.join(available_templates)}" if available_templates else ""
+                f" Available variable templates: {', '.join(available_assets.keys())}" if available_assets else ""
             )
             raise RuntimeError(f"Variable template '{template_name}' not found.{available_msg}")
 
-        return load_template_asset(template_file)
+        return load_variable_template_with_extends(template_file)
 
     except Exception as e:
         raise RuntimeError(f"Failed to get variable template information: {str(e)}")
@@ -127,11 +129,11 @@ def get_variable_template(template_name: str) -> Dict[str, Any]:
 
 def get_available_variable_templates() -> Dict[str, Any]:
     try:
-        template_names = list_template_names("tag_manager/variables")
+        available_assets = list_available_assets("tag_manager/variables")
 
         return {
-            "available_templates": template_names,
-            "total_count": len(template_names),
+            "available_templates": available_assets,
+            "total_count": len(available_assets),
             "usage_guide": {
                 "discovery_workflow": [
                     "Use get_variable_template(template_name='TEMPLATE_NAME') to get detailed information "
@@ -168,7 +170,7 @@ def register_template_tools(mcp: FastMCP) -> None:
     """Register all template discovery tools with the MCP server."""
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Tag Templates", "readOnlyHint": True})
-    def templates_list() -> dict:
+    def templates_list_tags() -> dict:
         """List all available Piwik PRO Tag Manager templates.
 
         This tool returns a list of all available tag templates that can be used with tags_create.
@@ -176,24 +178,24 @@ def register_template_tools(mcp: FastMCP) -> None:
 
         Returns:
             Dictionary containing:
-            - available_templates: List of template names
+            - available_templates: Mapping of template names to metadata (name_aliases, description)
             - total_count: Number of available templates
             - usage_guide: Instructions on how to use templates
             - note: Information about template documentation
 
         Examples:
             # Get list of all available templates
-            templates = templates_list()
+            templates = templates_list_tags()
 
             # Then get details for a specific template
             details = templates_get_tag(template_name='custom_tag')
 
         Workflow:
-            1. Use templates_list() to see all available templates
+            1. Use templates_list_tags() to see all available templates
             2. Use templates_get_tag(template_name='NAME') to get specific requirements
             3. Use tags_create() with the template information to create the tag
         """
-        return get_available_templates()
+        return get_available_tag_templates()
 
     @mcp.tool(annotations={"title": "Piwik PRO: Get Tag Template", "readOnlyHint": True})
     def templates_get_tag(template_name: str) -> dict:
@@ -224,9 +226,9 @@ def register_template_tools(mcp: FastMCP) -> None:
             ga_info = templates_get_tag(template_name='google_analytics')
 
         Workflow:
-            1. Use piwik_get_available_templates() to see all available templates
+            1. Use templates_list_tags() to see all available templates
             2. Use this tool to get specific requirements for your chosen template
-            3. Use piwik_create_tag() with the template information to create the tag
+            3. Use tags_create() with the template information to create the tag
         """
         return get_tag_template(template_name)
 
@@ -239,7 +241,7 @@ def register_template_tools(mcp: FastMCP) -> None:
 
         Returns:
             Dictionary containing:
-            - available_templates: List of trigger template names
+            - available_templates: Mapping of trigger template names to metadata (name_aliases, description)
             - total_count: Number of available trigger templates
             - usage_guide: Instructions on how to use trigger templates
             - note: Information about trigger template documentation
@@ -288,9 +290,9 @@ def register_template_tools(mcp: FastMCP) -> None:
             form_info = templates_get_trigger(template_name='form_submission')
 
         Workflow:
-            1. Use piwik_get_available_trigger_templates() to see all available trigger templates
+            1. Use templates_list_triggers() to see all available trigger templates
             2. Use this tool to get specific requirements for your chosen trigger template
-            3. Use piwik_create_trigger() with the template information to create the trigger
+            3. Use triggers_create() with the template information to create the trigger
         """
         return get_trigger_template(template_name)
 
@@ -304,7 +306,7 @@ def register_template_tools(mcp: FastMCP) -> None:
 
         Returns:
             Dictionary containing:
-            - available_templates: List of template names (e.g., 'data_layer', 'custom_javascript')
+            - available_templates: Mapping of template names to metadata (name_aliases, description)
             - total_count: Number of available templates
             - usage_guide: Workflow instructions for template discovery and usage
             - field_mutability: Overview of editable, create-only, and read-only fields
@@ -315,7 +317,16 @@ def register_template_tools(mcp: FastMCP) -> None:
 
             # Example response structure:
             {
-                "available_templates": ["data_layer", "custom_javascript", "constant"],
+                "available_templates": {
+                    "data_layer": {
+                        "name_aliases": ["Data Layer Variable"],
+                        "description": "Reads values from the data layer object."
+                    },
+                    "custom_javascript": {
+                        "name_aliases": ["Custom JavaScript Variable"],
+                        "description": "Computes a value by executing user-defined JavaScript."
+                    }
+                },
                 "total_count": 3,
                 "usage_guide": {
                     "discovery_workflow": [...],

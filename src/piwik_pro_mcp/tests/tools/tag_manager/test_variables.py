@@ -10,7 +10,7 @@ class TestVariableCreateFunctional:
 
     @pytest.mark.asyncio
     async def test_variables_create_with_valid_json_attributes_functional(self, mcp_server):
-        """Test piwik_create_variable with valid JSON attributes through MCP."""
+        """Test variables_create with valid JSON attributes through MCP."""
         # Valid attributes dictionary
         attributes = {"name": "Test Variable", "variable_type": "constant"}
 
@@ -59,7 +59,7 @@ class TestVariableUpdateFunctional:
 
     @pytest.mark.asyncio
     async def test_variables_update_with_none_response_functional(self, mcp_server):
-        """Test piwik_update_variable handles None response (204 No Content) correctly."""
+        """Test variables_update handles None response (204 No Content) correctly."""
         # Valid attributes dictionary for update
         attributes = {"name": "Updated Variable", "value": "new_value"}
 
@@ -125,7 +125,7 @@ class TestVariableUpdateFunctional:
 
     @pytest.mark.asyncio
     async def test_variables_update_with_normal_response_functional(self, mcp_server):
-        """Test piwik_update_variable handles normal response correctly."""
+        """Test variables_update handles normal response correctly."""
         # Valid attributes dictionary for update
         attributes = {"name": "Updated Variable", "value": "new_value"}
 

@@ -1,0 +1,182 @@
+{
+  "extends": "tag_base",
+  "template_name": "mautic",
+  "name_aliases": [
+    "Mautic Tracking Tag",
+    "Mautic Tracking Code"
+  ],
+  "description": "Loads the Mautic tracking script to collect visitor data and send it to Mautic. Paste your Mautic instance URL without /mtc.js (e.g. https://example.org/mautic/ or /mautic/). Respect opt-out and DNT is on by default for Mautic.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting visitor data for Mautic",
+      "Marketing automation and lead tracking",
+      "Mautic campaign attribution"
+    ],
+    "common_use_cases": [
+      "Visitor tracking for Mautic CRM",
+      "Form submissions and page views in Mautic",
+      "Marketing automation workflows"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "marketing_automation",
+      "examples": [
+        "marketing_automation",
+        "analytics",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'mautic' for this template",
+      "value": "mautic",
+      "validation": {
+        "required": true,
+        "fixed_value": "mautic"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Mautic configuration. Must include instance_url.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "instance_url"
+      ]
+    },
+    "template_options.instance_url": {
+      "type": "string",
+      "description": "Mautic instance URL without /mtc.js. E.g. https://example.org/mautic/ or /mautic/.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "https://example.org/mautic/"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. On by default for Mautic.",
+      "mutability": "editable",
+      "default": true,
+      "recommendation": "Leave on to respect Do-Not-Track and opt-out preferences"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.instance_url",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "Mautic tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Mautic Tracking",
+            "template": "mautic",
+            "template_options": {
+              "instance_url": "https://example.org/mautic/"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get Mautic instance URL (without /mtc.js). Use page_view trigger."
+    },
+    "relative_path": {
+      "description": "Mautic with relative path (same domain)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Mautic Tracking",
+            "template": "mautic",
+            "template_options": {
+              "instance_url": "/mautic/"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update instance URL or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "instance_url": "https://mautic.example.org/"
+            },
+            "consent_type": "marketing_automation"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Including /mtc.js in instance_url - omit it (e.g. https://example.org/mautic/)",
+    "Omitting template_options or instance_url",
+    "Using wrong URL format - use base URL without trailing script path",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "data_not_in_mautic": [
+      "Verify instance_url is correct (no /mtc.js)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

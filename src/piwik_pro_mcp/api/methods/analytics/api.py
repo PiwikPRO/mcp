@@ -361,20 +361,6 @@ class AnalyticsAPI:
         response = self.client.put(f"{self._GOALS_BASE}/{goal_id}/", data=data)
         return GoalSingleResponse(**(response or {}))
 
-    def delete_goal(self, goal_id: str, website_id: str) -> None:
-        """
-        Delete a goal.
-
-        Args:
-            goal_id: Goal UUID
-            website_id: Website/App UUID (required; sent as website_id query param)
-
-        Returns:
-            None (204 No Content)
-        """
-        params = {"website_id": website_id}
-        self.client.delete(f"{self._GOALS_BASE}/{goal_id}/", params=params)
-
     def execute_query(
         self,
         website_id: str,

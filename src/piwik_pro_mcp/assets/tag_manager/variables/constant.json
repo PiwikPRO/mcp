@@ -1,6 +1,9 @@
 {
+  "extends": "variable_base",
   "template_name": "constant",
-  "display_name": "Constant Variable",
+  "name_aliases": [
+    "Constant Variable"
+  ],
   "description": "Returns a static value that never changes. Perfect for storing configuration values, environment identifiers, version numbers, or any fixed data that needs to be referenced across multiple tags and triggers.",
   "ai_usage_guide": {
     "when_to_use": [
@@ -32,86 +35,20 @@
   },
   "mcp_usage": {
     "create_variable": {
-      "function_name": "create_variable",
       "description": "Create a new constant variable that returns a fixed static value",
       "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "UUID of your Piwik PRO app"
-        },
-        "name": {
-          "type": "string",
-          "description": "Descriptive name for the constant variable"
-        },
         "variable_type": {
-          "type": "string",
           "value": "constant",
           "description": "Must be 'constant' for constant variables"
         },
         "value": {
-          "type": "string",
           "description": "The static value this variable will always return"
-        }
-      },
-      "optional_parameters": {
-        "options": {
-          "type": "object",
-          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support",
-          "default": {}
-        }
-      }
-    },
-    "update_variable": {
-      "function_name": "update_variable",
-      "description": "Update an existing constant variable - only editable fields will be processed",
-      "required_parameters": {
-        "app_id": {
-          "type": "string",
-          "description": "UUID of your Piwik PRO app"
-        },
-        "variable_id": {
-          "type": "string",
-          "description": "UUID of the variable to update"
-        }
-      },
-      "optional_parameters": {
-        "name": {
-          "type": "string",
-          "description": "Updated descriptive name for the variable"
-        },
-        "value": {
-          "type": "string",
-          "description": "Updated static value"
-        },
-        "options": {
-          "type": "object",
-          "description": "Reserved for future enhancements; leave empty unless instructed by Piwik PRO support"
         }
       }
     }
   },
   "required_attributes": {
-    "name": {
-      "type": "string",
-      "mutability": "editable",
-      "description": "Descriptive name for the constant variable",
-      "examples": [
-        "Environment",
-        "GA Tracking ID",
-        "App Version",
-        "Default Currency"
-      ],
-      "validation": {
-        "required": true,
-        "min_length": 1,
-        "max_length": 255
-      },
-      "recommendation": "Use clear, descriptive names that indicate what the constant represents"
-    },
     "template": {
-      "type": "string",
-      "mutability": "create-only",
-      "description": "Variable template type",
       "examples": [
         "constant"
       ],
@@ -120,8 +57,7 @@
         "allowed_values": [
           "constant"
         ]
-      },
-      "edit_note": "⚠️ Cannot be changed after creation - template determines variable behavior"
+      }
     },
     "value": {
       "type": "string",
@@ -139,62 +75,6 @@
         "max_length": 1000
       },
       "recommendation": "Use meaningful values that are self-documenting and consistent across your implementation"
-    }
-  },
-  "optional_attributes": {
-    "options": {
-      "type": "object",
-      "mutability": "editable",
-      "description": "Optional configuration object. Leave empty unless Piwik PRO introduces additional capabilities.",
-      "examples": [
-        {}
-      ],
-      "default": {},
-      "recommendation": "Do not include custom keys—passing additional properties is rejected by the API."
-    }
-  },
-  "read_only_attributes": {
-    "created_at": {
-      "mutability": "read-only",
-      "description": "Timestamp when the variable was created",
-      "edit_note": "🚫 Automatically set by the API, cannot be modified"
-    },
-    "updated_at": {
-      "mutability": "read-only",
-      "description": "Timestamp when the variable was last updated",
-      "edit_note": "🚫 Automatically updated by the API on changes"
-    }
-  },
-  "field_mutability_guide": {
-    "description": "Understanding field editability after variable creation",
-    "mutability_types": {
-      "editable": {
-        "description": "✅ Can be updated anytime after creation",
-        "examples": [
-          "name",
-          "value",
-          "options"
-        ],
-        "use_cases": [
-          "Renaming variables",
-          "Changing constant values"
-        ]
-      },
-      "create-only": {
-        "description": "⚠️ Set during creation, immutable after creation",
-        "examples": [
-          "template"
-        ],
-        "explanation": "Template determines the variable type and behavior - cannot be changed to maintain data integrity"
-      },
-      "read-only": {
-        "description": "🚫 Auto-generated by API, never user-modifiable",
-        "examples": [
-          "created_at",
-          "updated_at"
-        ],
-        "explanation": "System timestamps managed automatically by Piwik PRO"
-      }
     }
   },
   "complete_examples": {
@@ -239,34 +119,6 @@
           }
         }
       }
-    },
-    "version_example": {
-      "description": "Creating a constant for application version",
-      "mcp_call": {
-        "function": "create_variable",
-        "parameters": {
-          "app_id": "abc12345-1234-5678-9012-123456789abc",
-          "attributes": {
-            "name": "App Version",
-            "variable_type": "constant",
-            "value": "2.1.4"
-          }
-        }
-      }
-    },
-    "feature_flag_example": {
-      "description": "Creating a constant for feature flag status",
-      "mcp_call": {
-        "function": "create_variable",
-        "parameters": {
-          "app_id": "abc12345-1234-5678-9012-123456789abc",
-          "attributes": {
-            "name": "New Feature Enabled",
-            "variable_type": "constant",
-            "value": "enabled"
-          }
-        }
-      }
     }
   },
   "common_mistakes": [
@@ -283,8 +135,7 @@
       "solutions": [
         "Ensure the tag manager version is published after making changes",
         "Clear browser cache and test in incognito/private mode",
-        "Verify the constant variable is being used correctly in tags",
-        "Check that the variable is active and not disabled"
+        "Verify the constant variable is being used correctly in tags"
       ]
     },
     "wrong_value_in_different_environments": {
@@ -292,24 +143,13 @@
       "solutions": [
         "Create environment-specific constants with different values",
         "Use conditional logic in custom JavaScript variables for environment detection",
-        "Implement proper deployment processes that update constants per environment",
-        "Consider using environment-specific containers or variable configurations"
-      ]
-    },
-    "too_many_constants": {
-      "problem": "Managing too many constant variables becomes difficult",
-      "solutions": [
-        "Group related constants with consistent naming conventions (e.g., 'Config - Environment', 'Config - Version')",
-        "Use a configuration object in a single custom JavaScript variable for complex configurations",
-        "Document the purpose and usage of each constant variable",
-        "Regularly review and clean up unused constant variables"
+        "Implement proper deployment processes that update constants per environment"
       ]
     }
   },
   "use_case_patterns": {
     "environment_detection": {
       "description": "Using constants for environment-specific configurations",
-      "pattern": "Create separate constants for each environment value needed",
       "examples": [
         {
           "name": "Environment",
@@ -327,7 +167,6 @@
     },
     "tracking_configuration": {
       "description": "Centralizing tracking IDs and configuration",
-      "pattern": "Use constants to avoid hardcoding tracking IDs in multiple tags",
       "examples": [
         {
           "name": "GA Measurement ID",
@@ -336,46 +175,8 @@
         {
           "name": "Facebook Pixel ID",
           "value": "123456789012345"
-        },
-        {
-          "name": "Conversion Goal ID",
-          "value": "goal_purchase"
-        }
-      ]
-    },
-    "feature_flags": {
-      "description": "Managing feature flags through constants",
-      "pattern": "Use constants to control feature availability across the site",
-      "examples": [
-        {
-          "name": "Chat Widget Enabled",
-          "value": "true"
-        },
-        {
-          "name": "A/B Test Active",
-          "value": "false"
-        },
-        {
-          "name": "Beta Features",
-          "value": "disabled"
         }
       ]
     }
-  },
-  "related_mcp_tools": {
-    "discovery": [
-      "piwik_get_available_variable_templates() - List all available variable templates",
-      "piwik_get_variable_template() - Get detailed template information"
-    ],
-    "management": [
-      "piwik_create_variable() - Create new variables with this template",
-      "piwik_update_variable() - Update existing variables (editable fields only)",
-      "piwik_list_variables() - List all variables in your app",
-      "piwik_get_variable() - Get detailed information about specific variables"
-    ],
-    "workflow": [
-      "piwik_list_tags() - Find tags that might use this variable",
-      "piwik_list_triggers() - Find triggers that might use this variable"
-    ]
   }
 }

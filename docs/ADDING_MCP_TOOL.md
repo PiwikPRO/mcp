@@ -656,7 +656,7 @@ Tools use the `{module}_{operation}` naming pattern:
 | `{module}_get`    | `apps_get`, `tags_get`, `triggers_get`           |
 | `{module}_create` | `apps_create`, `tags_create`, `variables_create` |
 | `{module}_update` | `apps_update`, `tags_update`, `audiences_update` |
-| `{module}_delete` | `apps_delete`, `tags_delete`, `triggers_delete`  |
+| `{module}_delete` | `tags_delete`, `tracker_settings_app_delete`, `analytics_annotations_delete` |
 
 **Do NOT** prefix tools with `piwik_`.
 

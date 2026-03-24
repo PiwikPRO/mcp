@@ -15,7 +15,7 @@ env:
 
 jobs:
   prepare:
-    if: github.repository == "PiwikPRO/mcp"
+    if: github.repository == 'PiwikPRO/mcp'
     runs-on: ubuntu-latest
     outputs:
       is_semver: ${{ steps.semver.outputs.is_semver }}

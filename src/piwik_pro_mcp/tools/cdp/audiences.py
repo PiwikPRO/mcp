@@ -7,7 +7,6 @@ CDP audiences, with proper error handling and response formatting.
 
 from piwik_pro_mcp.api.exceptions import BadRequestError, NotFoundError
 from piwik_pro_mcp.api.methods.cdp.models import EditableAudienceAttributes, NewAudienceAttributes
-from piwik_pro_mcp.responses import OperationStatusResponse
 
 from ...common.utils import create_piwik_client, validate_data_against_model
 from .models import (
@@ -213,36 +212,3 @@ def update_audience(app_id: str, audience_id: str, attributes: dict) -> Audience
         raise RuntimeError(f"Failed to update audience: {e}")
     except Exception as e:
         raise RuntimeError(f"Unexpected error updating audience: {e}")
-
-
-def delete_audience(app_id: str, audience_id: str) -> OperationStatusResponse:
-    """
-    Delete an existing audience.
-
-    Args:
-        app_id: UUID of the app containing the audience
-        audience_id: UUID of the audience to delete
-
-    Returns:
-        Dictionary with deletion status and message
-
-    Raises:
-        RuntimeError: If audience not found or API request fails
-    """
-    try:
-        client = create_piwik_client()
-
-        # Delete the audience
-        client.cdp.delete_audience(app_id=app_id, audience_id=audience_id)
-
-        return OperationStatusResponse(
-            status="success",
-            message=f"Successfully deleted audience {audience_id}",
-        )
-
-    except NotFoundError:
-        raise RuntimeError(f"Audience {audience_id} not found")
-    except BadRequestError as e:
-        raise RuntimeError(f"Failed to delete audience: {e}")
-    except Exception as e:
-        raise RuntimeError(f"Unexpected error deleting audience: {e}")

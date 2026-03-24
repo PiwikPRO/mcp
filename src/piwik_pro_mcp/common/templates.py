@@ -3,11 +3,84 @@ Template loading and discovery utilities.
 
 This module provides utilities for loading JSON schema templates
 and discovering available templates in the assets directory.
+Tag templates may use "extends": "base_name" to inherit from a shared
+JSON under assets/tag_manager/_common/; the loader deep-merges base
+with the template (template keys win).
 """
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
+
+
+def _deep_merge(base: Dict[str, Any], overlay: Dict[str, Any]) -> Dict[str, Any]:
+    """Recursively merge overlay into base. For dicts, overlay wins on conflict; for lists/other, overlay replaces."""
+    result = dict(base)
+    for key, overlay_val in overlay.items():
+        if key not in result:
+            result[key] = overlay_val
+        elif isinstance(overlay_val, dict) and isinstance(result[key], dict):
+            result[key] = _deep_merge(result[key], overlay_val)
+        else:
+            result[key] = overlay_val
+    return result
+
+
+def get_tag_manager_common_path() -> Path:
+    """Path to tag_manager _common directory (shared base JSONs)."""
+    return get_assets_base_path() / "tag_manager" / "_common"
+
+
+def _load_base_with_extends(base_path: Path, common_dir: Path) -> Dict[str, Any]:
+    """
+    Load a base JSON and recursively resolve its "extends" chain.
+    Returns the fully resolved base (extends key removed from result).
+    """
+    with open(base_path, "r", encoding="utf-8") as f:
+        base = json.load(f)
+    extends = base.pop("extends", None)
+    if not extends:
+        return base
+    parent_path = common_dir / f"{extends}.json"
+    if not parent_path.exists():
+        raise RuntimeError(f"Extended base not found: {parent_path}")
+    parent = _load_base_with_extends(parent_path, common_dir)
+    return _deep_merge(parent, base)
+
+
+def _load_template_with_extends(asset_path: Path, common_dir: Path) -> Dict[str, Any]:
+    """
+    Load a template JSON and resolve "extends" by deep-merging with a base from common_dir.
+
+    If the template has "extends": "base_name", loads common_dir/base_name.json
+    (recursively resolving any chain of extends) and merges with the template (template wins).
+    The "extends" key is removed from the result.
+    """
+    with open(asset_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    extends = data.pop("extends", None)
+    if not extends:
+        return data
+    base_path = common_dir / f"{extends}.json"
+    if not base_path.exists():
+        raise RuntimeError(f"Extended base not found: {base_path}")
+    base = _load_base_with_extends(base_path, common_dir)
+    return _deep_merge(base, data)
+
+
+def load_tag_template_with_extends(asset_path: Path) -> Dict[str, Any]:
+    """Load a tag template JSON and resolve \"extends\" from tag_manager/_common."""
+    return _load_template_with_extends(asset_path, get_tag_manager_common_path())
+
+
+def load_trigger_template_with_extends(asset_path: Path) -> Dict[str, Any]:
+    """Load a trigger template JSON and resolve \"extends\" from tag_manager/_common."""
+    return _load_template_with_extends(asset_path, get_tag_manager_common_path())
+
+
+def load_variable_template_with_extends(asset_path: Path) -> Dict[str, Any]:
+    """Load a variable template JSON and resolve \"extends\" from tag_manager/_common."""
+    return _load_template_with_extends(asset_path, get_tag_manager_common_path())
 
 
 def get_assets_base_path() -> Path:
@@ -30,16 +103,21 @@ def load_template_asset(asset_path: Path) -> Dict[str, Any]:
         raise RuntimeError(f"Failed to load template asset {asset_path}: {str(e)}")
 
 
-def list_template_names(directory: Union[Path, str]) -> List[str]:
-    """Return sorted template names (without extension) from a directory.
+def list_available_assets(directory: Union[Path, str]) -> Dict[str, Dict[str, Any]]:
+    """Return metadata for available template assets keyed by template name.
 
     Args:
         directory: Either a full directory path or a relative path under the assets base directory
                    (e.g., "tag_manager/tags").
 
     Returns:
-        Sorted list of template base names without the `.json` suffix.
-        Returns an empty list if the directory does not exist or contains no JSON files.
+        Mapping in shape:
+        {
+            "template_name": {
+                "name_aliases": [...],
+                "description": "..."
+            }
+        }
     """
     path = Path(directory)
 
@@ -49,9 +127,20 @@ def list_template_names(directory: Union[Path, str]) -> List[str]:
     if not path.exists():
         raise RuntimeError("Templates directory not found. No templates are currently available.")
 
-    templates = sorted([p.stem for p in path.glob("*.json")])
+    templates = sorted(path.glob("*.json"), key=lambda p: p.stem)
 
     if not templates:
         raise RuntimeError("No templates found in templates directory.")
 
-    return templates
+    assets: Dict[str, Dict[str, Any]] = {}
+    for template_path in templates:
+        template_name = template_path.stem
+        template_data = load_template_asset(template_path)
+        name_aliases = template_data.get("name_aliases")
+
+        assets[template_name] = {
+            "name_aliases": name_aliases if isinstance(name_aliases, list) else [],
+            "description": template_data.get("description", ""),
+        }
+
+    return assets

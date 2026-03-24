@@ -1,0 +1,300 @@
+{
+  "extends": "trigger_base",
+  "template_name": "trigger_group",
+  "name_aliases": [
+    "Trigger Group"
+  ],
+  "description": "Fires a tag only after all triggers in the group have been activated the number of times you set. It connects several visitor actions and waits until they all happen before the tag fires. Once the group is activated, extra activations of any trigger won't fire the tag again; the group activates again after page reload. You cannot add one trigger group to another. Multiplicity is set per trigger in the group (e.g. Page view – 1 time, Click – 2 times), not on the group itself. See Piwik PRO help: Trigger group.",
+  "trigger_group_creation": {
+    "source": "https://help.piwik.pro/support/tag-manager/trigger-group/",
+    "note": "The trigger group is created by adding a trigger with trigger_type 'trigger_group', plus relationships to other triggers. Each object in the relationships.triggers array must include meta.firing_threshold (how many times that trigger must be activated).",
+    "request_structure": {
+      "attributes": {
+        "name": "Trigger name",
+        "trigger_type": "trigger_group",
+        "conditions": "Required by API. Array of event condition objects (Page URL, Page path, etc.); use [] if no event conditions. Each condition needs condition_id, variable_id, condition_type, value, options."
+      },
+      "relationships": {
+        "triggers": {
+          "description": "The triggers that belong to this group. Each trigger must already exist.",
+          "data": "Array of trigger relationship objects. Each object must have: id (trigger UUID), type ('trigger'), and meta with firing_threshold (number of times that trigger must be activated).",
+          "item_structure": {
+            "id": "UUID of the member trigger",
+            "type": "trigger",
+            "meta": {
+              "firing_threshold": "Number of times this trigger must be activated (e.g. 1, 2)"
+            }
+          },
+          "example": [
+            {
+              "id": "page-view-trigger-uuid",
+              "type": "trigger",
+              "meta": {
+                "firing_threshold": 1
+              }
+            },
+            {
+              "id": "click-trigger-uuid",
+              "type": "trigger",
+              "meta": {
+                "firing_threshold": 2
+              }
+            }
+          ]
+        }
+      }
+    },
+    "before_you_start": [
+      "Create the triggers you want to add to the group before creating the trigger group.",
+      "You cannot add one trigger group to another trigger group."
+    ],
+    "mcp_payload_note": "The MCP tool triggers_create(app_id, attributes) accepts a single attributes object. For trigger_group, pass in that same object: name, trigger_type: 'trigger_group', conditions (required; use [] if none), and relationships: { triggers: { data: [ { id, type: 'trigger', meta: { firing_threshold } }, ... ] } }. The client sends relationships at request body data.relationships (JSON:API)."
+  },
+  "event_conditions_reference": {
+    "source": "https://help.piwik.pro/support/tag-manager/trigger-group/",
+    "condition_types": [
+      {
+        "type": "Page URL",
+        "description": "Fires the tag when a visitor visits a page with the selected page URL",
+        "example": "Page URL equals https://example.com/product-tour/"
+      },
+      {
+        "type": "Page path",
+        "description": "Fires the tag when a visitor visits a page with the selected page path",
+        "example": "Page Path contains /product-tour"
+      },
+      {
+        "type": "Page hostname",
+        "description": "Fires the tag when a visitor visits a page hosted on the selected domain",
+        "example": "Page Hostname equals example.com"
+      },
+      {
+        "type": "History source",
+        "description": "Fires when a specific history event (pushState, replaceState, popState or hashchange) occurs",
+        "example": "History source equals pushState"
+      },
+      {
+        "type": "History fragment",
+        "description": "Fires when the URL hash matches the selected condition",
+        "example": "History fragment equals pricing"
+      },
+      {
+        "type": "Old history fragment",
+        "description": "Fires when the previous URL hash matches the selected condition",
+        "example": "Old history fragment equals about-us"
+      },
+      {
+        "type": "History state",
+        "description": "Fires when the history state matches the selected condition",
+        "example": "History state is set or History state equals my-state"
+      },
+      {
+        "type": "Old history state",
+        "description": "Fires when the previous history state matches the selected condition",
+        "example": "Old history state equals my-state"
+      },
+      {
+        "type": "Referrer",
+        "description": "Fires when a visitor visits a page from the selected internal referrer",
+        "example": "Referrer equals https://example.com/blog"
+      },
+      {
+        "type": "External referrer",
+        "description": "Fires when a visitor visits a page from the selected external referrer",
+        "example": "External referrer equals https://google.com"
+      },
+      {
+        "type": "Campaign",
+        "description": "Fires when a visitor visits a page from the selected campaign (utm_campaign)",
+        "example": "Campaign equals winter-promo"
+      },
+      {
+        "type": "Traffic source",
+        "description": "Fires when traffic source matches. Values: campaign, organic search, social, referral, direct",
+        "example": "Traffic source equals direct"
+      },
+      {
+        "type": "Returning visitor",
+        "description": "Fires when the visitor is a returning visitor",
+        "example": "Returning visitor is true"
+      },
+      {
+        "type": "Variable-based conditions",
+        "description": "Any variable can be used to define trigger conditions"
+      }
+    ]
+  },
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Fire a tag only after multiple actions have happened (e.g. page view + 2 clicks)",
+      "Sequence-based conversion (e.g. visit contact page once and click submit twice)",
+      "Combine several triggers with different activation counts"
+    ],
+    "common_use_cases": [
+      "Contact page visit + contact form click (e.g. page view 1 time, click 1 time)",
+      "Product page view + add to cart (page view 1, click 1)",
+      "Multiple clicks on the same or different elements before firing"
+    ],
+    "best_practices": [
+      "Create all member triggers first, then create the trigger group with relationships; set meta.firing_threshold on each item in relationships.triggers.data",
+      "Each trigger in the array has its own meta.firing_threshold (e.g. 1 for page view, 2 for click); the group has no separate multiplicity",
+      "Do not nest trigger groups inside another trigger group"
+    ]
+  },
+  "mcp_usage": {
+    "create_trigger": {
+      "description": "Create a trigger group. Requires trigger_type 'trigger_group', plus relationships.triggers.data: each item must have id, type: 'trigger', and meta.firing_threshold (activation count for that trigger). Optional event conditions.",
+      "required_parameters": {
+        "trigger_type": {
+          "value": "trigger_group",
+          "description": "Must be 'trigger_group' for trigger groups"
+        },
+        "conditions": {
+          "description": "Required by API. Array of condition objects; use [] if no event conditions. When non-empty, each needs variable_id, condition_type, value, options (condition_id is auto-generated)."
+        },
+        "relationships": {
+          "description": "Pass inside the attributes object. relationships.triggers.data must be an array; each item must have id (trigger UUID), type: 'trigger', and meta: { firing_threshold: integer } (minimum 1). Required for trigger group."
+        }
+      },
+      "optional_parameters": {
+        "conditions": {
+          "description": "Event conditions (Page URL, Page path, etc.) that apply when the group fires"
+        }
+      }
+    },
+    "update_trigger": {
+      "description": "Update an existing trigger group – only editable fields will be processed; relationships and meta may be editable depending on API."
+    }
+  },
+  "required_attributes": {
+    "name": {
+      "description": "Human-readable trigger name",
+      "examples": [
+        "Contact Page + Submit Click",
+        "Product View + Add to Cart",
+        "Page View + 2 Clicks"
+      ]
+    },
+    "trigger_type": {
+      "enum": [
+        "trigger_group"
+      ],
+      "description": "Trigger type – must be 'trigger_group'",
+      "fixed_value": "trigger_group",
+      "validation": {
+        "required": true
+      }
+    },
+    "relationships": {
+      "description": "relationships.triggers.data is an array of objects; each object must have id (trigger UUID), type: 'trigger', and meta: { firing_threshold: number } (how many times that trigger must be activated).",
+      "triggers_data_item": {
+        "id": "Member trigger UUID",
+        "type": "trigger",
+        "meta": {
+          "firing_threshold": "Activation count for this trigger (e.g. 1 or 2)"
+        }
+      },
+      "recommendation": "Include each member trigger once in the array; set meta.firing_threshold on each item."
+    },
+    "conditions": {
+      "description": "Required by API. Array of event condition objects; use [] if none. When non-empty, each needs variable_id, condition_type, value, options (condition_id is auto-generated)."
+    }
+  },
+  "complete_examples": {
+    "trigger_group_page_and_click": {
+      "description": "Fire tag after page view once and click twice. Pass a single attributes object to triggers_create; relationships must be inside it so the client sends data.relationships.",
+      "mcp_call": {
+        "function": "triggers_create",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Contact Page + 2 Clicks",
+            "trigger_type": "trigger_group",
+            "conditions": [],
+            "relationships": {
+              "triggers": {
+                "data": [
+                  {
+                    "id": "page-view-trigger-uuid",
+                    "type": "trigger",
+                    "meta": {
+                      "firing_threshold": 1
+                    }
+                  },
+                  {
+                    "id": "click-trigger-uuid",
+                    "type": "trigger",
+                    "meta": {
+                      "firing_threshold": 2
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "trigger_group_with_event_conditions": {
+      "description": "Trigger group with event conditions; relationships inside attributes.",
+      "mcp_call": {
+        "function": "triggers_create",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Product Page View + Add to Cart",
+            "trigger_type": "trigger_group",
+            "conditions": [
+              {
+                "variable_id": "page-path-variable-uuid",
+                "condition_type": "contains",
+                "value": "/product/",
+                "options": {}
+              }
+            ],
+            "relationships": {
+              "triggers": {
+                "data": [
+                  {
+                    "id": "pv-uuid",
+                    "type": "trigger",
+                    "meta": {
+                      "firing_threshold": 1
+                    }
+                  },
+                  {
+                    "id": "click-uuid",
+                    "type": "trigger",
+                    "meta": {
+                      "firing_threshold": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Adding one trigger group as a member of another trigger group (not allowed)",
+    "Forgetting to set meta.firing_threshold on each object in relationships.triggers.data",
+    "Creating the trigger group before creating the member triggers",
+    "Expecting the group to have its own multiplicity rule (multiplicity is per trigger via firing_threshold)"
+  ],
+  "troubleshooting": {
+    "trigger_not_firing": {
+      "possible_causes": [
+        "Member triggers not yet created or wrong IDs in relationships",
+        "meta.firing_threshold missing on one or more items in relationships.triggers.data",
+        "Event conditions too restrictive"
+      ],
+      "debugging_steps": [
+        "Verify all member triggers exist; each item in relationships.triggers.data must have id, type: 'trigger', and meta: { firing_threshold: number }",
+        "Ensure every trigger in the array has meta.firing_threshold set",
+        "Test with empty event conditions"
+      ]
+    }
+  }
+}

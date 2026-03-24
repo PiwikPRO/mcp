@@ -1,0 +1,182 @@
+{
+  "extends": "tag_base",
+  "template_name": "hot_jar",
+  "name_aliases": [
+    "Hotjar Tracking Code Tag"
+  ],
+  "description": "Loads the Hotjar tracking script to collect heatmap data from your site. Copy your Hotjar ID from Hotjar > Settings > Sites & Organizations > Tracking code (the number after hjid=). Data is displayed as heatmaps in Hotjar.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Collecting heatmap data for Hotjar",
+      "Visualizing where users click and scroll",
+      "UX analysis with Hotjar heatmaps",
+      "Session recordings and feedback"
+    ],
+    "common_use_cases": [
+      "Heatmaps on landing pages",
+      "Click and scroll behavior analysis",
+      "Form and CTA engagement insights",
+      "Conversion funnel visualization"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics",
+        "user_feedback",
+        "ab_testing_and_personalization"
+      ]
+    },
+    "template": {
+      "description": "Must be 'hot_jar' for this template",
+      "value": "hot_jar",
+      "validation": {
+        "required": true,
+        "fixed_value": "hot_jar"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Hotjar configuration. Must include id.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "template_options.id": {
+      "type": "string",
+      "description": "Hotjar ID. Find in Hotjar > Settings > Sites & Organizations > Tracking code (number after hjid=).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "1234567"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.id",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "Hotjar heatmap tracking on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Hotjar Heatmaps",
+            "template": "hot_jar",
+            "template_options": {
+              "id": "1234567"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get Hotjar ID from Hotjar > Settings > Sites & Organizations > Tracking code (number after hjid=). Use page_view trigger."
+    },
+    "with_consent": {
+      "description": "Hotjar with user feedback consent",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Hotjar - UX Feedback",
+            "template": "hot_jar",
+            "template_options": {
+              "id": "1234567"
+            },
+            "consent_type": "user_feedback"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update Hotjar ID or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "id": "1234567"
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using wrong Hotjar ID - copy from Tracking code (number after hjid=)",
+    "Omitting template_options or id",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "heatmaps_not_appearing": [
+      "Verify id is correct (check Hotjar dashboard)",
+      "Ensure trigger fires (use page_view trigger)",
+      "Check consent_type matches your consent form",
+      "Allow time for Hotjar to process data"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

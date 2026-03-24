@@ -1,0 +1,248 @@
+{
+  "extends": "tag_base",
+  "template_name": "video_html5",
+  "name_aliases": [
+    "HTML5 Video Tracking Tag"
+  ],
+  "description": "Collects data on user interactions with HTML5 videos (<video> elements) on your site. Tracks plays, pauses, volume, progress, and more. Optionally filter by CSS selectors, read titles from an HTML attribute, track volume as a custom dimension, and set progress thresholds.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Tracking native HTML5 <video> elements (not YouTube or Vimeo)",
+      "Measuring video engagement on self-hosted or CDN-hosted videos",
+      "Filtering which videos to track by CSS selector",
+      "Tracking volume level or progress as custom dimensions"
+    ],
+    "common_use_cases": [
+      "Product or marketing videos",
+      "Tutorial content",
+      "Self-hosted video players",
+      "Videos with specific class or ID"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics"
+      ]
+    },
+    "template": {
+      "description": "Must be 'video_html5' for this template",
+      "value": "video_html5",
+      "validation": {
+        "required": true,
+        "fixed_value": "video_html5"
+      }
+    }
+  },
+  "optional_attributes": {
+    "template_options": {
+      "type": "object",
+      "description": "Optional configuration. Can be omitted to track all HTML5 videos with defaults.",
+      "mutability": "editable"
+    },
+    "template_options.element_selectors": {
+      "type": "array",
+      "description": "CSS selectors to limit tracking to matching videos only. E.g. ['video.product-demo', '#hero-video'].",
+      "mutability": "editable",
+      "validation": {
+        "minItems": 1,
+        "items": {
+          "minLength": 1
+        }
+      },
+      "example": [
+        "video",
+        "video.product-demo"
+      ],
+      "recommendation": "Use when you want to track only specific videos on the page"
+    },
+    "template_options.title_attribute": {
+      "type": "string",
+      "description": "HTML attribute name to read video titles from (e.g. 'data-title', 'title').",
+      "mutability": "editable",
+      "validation": {
+        "minLength": 1
+      },
+      "recommendation": "Set if videos have titles in a data attribute"
+    },
+    "template_options.track_thresholds": {
+      "type": "array",
+      "description": "Percentage thresholds (0-100) to track progress. E.g. [25, 50, 75, 100]. All values must be unique. Create a custom dimension in Analytics first for interaction timestamps.",
+      "mutability": "editable",
+      "validation": {
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "example": [
+        25,
+        50,
+        75,
+        100
+      ],
+      "recommendation": "Create custom dimension in Analytics > Settings > Custom dimensions before using"
+    },
+    "template_options.volume_dimension_id": {
+      "type": "integer",
+      "description": "Custom dimension ID (1-400) to store volume level as percentage. Create the dimension in Analytics > Settings > Custom dimensions first.",
+      "mutability": "editable",
+      "validation": {
+        "minimum": 1,
+        "maximum": 400
+      },
+      "recommendation": "Create custom dimension in Analytics first, then use its ID"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_tracking": {
+      "description": "Track all HTML5 videos on the page",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "HTML5 Video Tracking",
+            "template": "video_html5",
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Use All page views trigger or a trigger for pages with HTML5 videos."
+    },
+    "with_selectors": {
+      "description": "Track only videos matching CSS selectors",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "HTML5 Product Videos",
+            "template": "video_html5",
+            "template_options": {
+              "element_selectors": [
+                "video.product-demo",
+                "video.tutorial"
+              ]
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "full_options": {
+      "description": "Track with selectors, title attribute, progress, and volume dimension",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "HTML5 Video Full Tracking",
+            "template": "video_html5",
+            "template_options": {
+              "element_selectors": [
+                "video"
+              ],
+              "title_attribute": "data-title",
+              "track_thresholds": [
+                25,
+                50,
+                75,
+                100
+              ],
+              "volume_dimension_id": 1
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Create custom dimensions in Analytics > Settings > Custom dimensions for volume and progress."
+    },
+    "update_example": {
+      "description": "Update selectors or add progress tracking",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "element_selectors": [
+                "video.hero",
+                "video.content"
+              ],
+              "track_thresholds": [
+                50,
+                100
+              ]
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using for YouTube or Vimeo videos (use video_youtube or custom code)",
+    "Forgetting to create custom dimensions before using volume_dimension_id or track_thresholds",
+    "Using duplicate values in track_thresholds (must be unique)",
+    "Invalid CSS selectors in element_selectors",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "no_data_collected": [
+      "Verify tag fires on pages with HTML5 <video> elements",
+      "Check element_selectors match your video elements if used",
+      "Ensure consent_type is met"
+    ],
+    "volume_or_progress_not_working": [
+      "Create custom dimensions in Analytics > Settings > Custom dimensions first",
+      "Use correct dimension ID for volume_dimension_id"
+    ]
+  }
+}

@@ -1,0 +1,243 @@
+{
+  "extends": "tag_base",
+  "template_name": "adroll",
+  "name_aliases": [
+    "AdRoll Pixel Tag"
+  ],
+  "description": "Places an AdRoll pixel on your site for remarketing campaigns. Get advertiser ID and pixel ID from your AdRoll account. Optionally enable conversion tracking with value and currency. Default consent: remarketing.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Running AdRoll remarketing campaigns",
+      "Retargeting website visitors with ads",
+      "Tracking conversions from AdRoll campaigns",
+      "Attributing sales to AdRoll traffic"
+    ],
+    "common_use_cases": [
+      "Standard remarketing pixel on all pages",
+      "Conversion tracking for purchases or signups",
+      "Campaign performance measurement",
+      "Audience building for retargeting"
+    ]
+  },
+  "required_attributes": {
+    "template": {
+      "description": "Must be 'adroll' for this template",
+      "value": "adroll",
+      "validation": {
+        "required": true,
+        "fixed_value": "adroll"
+      }
+    },
+    "consent_type": {
+      "default": "remarketing",
+      "examples": [
+        "remarketing",
+        "marketing_automation",
+        "analytics"
+      ]
+    },
+    "template_options": {
+      "type": "object",
+      "description": "AdRoll pixel configuration. Must include advertiser_id and pixel_id.",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "advertiser_id",
+        "pixel_id"
+      ]
+    },
+    "template_options.advertiser_id": {
+      "type": "string",
+      "description": "Advertiser ID from AdRoll. Find it in AdRoll under tracking code (pixel).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "ABC123XYZ"
+    },
+    "template_options.pixel_id": {
+      "type": "string",
+      "description": "Pixel ID from AdRoll. Find it in AdRoll under tracking code (pixel).",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "PIX456DEF"
+    }
+  },
+  "optional_attributes": {
+    "template_options.conversion_data": {
+      "type": "object",
+      "description": "Enable conversion tracking. Conforms to AdRoll Enhanced Conversion Tracking. When set, conversion_value and currency are required.",
+      "mutability": "editable",
+      "structure": {
+        "conversion_value": "number (>=0) or variable reference - Amount to count",
+        "currency": "string (3-letter ISO, e.g. USD) or variable reference"
+      },
+      "reference": "https://help.adroll.com/hc/en-us/articles/212629938-Enhanced-Conversion-Tracking",
+      "example": {
+        "conversion_value": 49.99,
+        "currency": "USD"
+      }
+    },
+    "template_options.conversion_data.conversion_value": {
+      "type": "number",
+      "description": "Conversion amount to report to AdRoll.",
+      "mutability": "editable",
+      "validation": {
+        "minimum": 0
+      }
+    },
+    "template_options.conversion_data.currency": {
+      "type": "string",
+      "description": "3-letter ISO currency code (e.g. USD, EUR).",
+      "mutability": "editable",
+      "validation": {
+        "min_length": 3,
+        "max_length": 3
+      },
+      "reference": "https://help.adroll.com/hc/en-us/articles/213429827"
+    },
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default for AdRoll.",
+      "mutability": "editable",
+      "default": false,
+      "recommendation": "Turn on if you want to respect Do-Not-Track and opt-out preferences"
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates - when the tag should fire (date ranges, times of day)"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.*",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority",
+          "scheduler"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_pixel": {
+      "description": "Basic AdRoll remarketing pixel",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "AdRoll Remarketing Pixel",
+            "template": "adroll",
+            "template_options": {
+              "advertiser_id": "ABC123XYZ",
+              "pixel_id": "PIX456DEF"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get advertiser_id and pixel_id from AdRoll > tracking code (pixel). Use a page_view trigger."
+    },
+    "with_conversion": {
+      "description": "AdRoll pixel with conversion tracking",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "AdRoll Purchase Conversion",
+            "template": "adroll",
+            "template_options": {
+              "advertiser_id": "ABC123XYZ",
+              "pixel_id": "PIX456DEF",
+              "conversion_data": {
+                "conversion_value": 99.50,
+                "currency": "USD"
+              }
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "purchase-trigger-uuid"
+        }
+      },
+      "prerequisite": "Use a form submission or custom event trigger that fires on purchase/signup. Pass actual order value via variable if dynamic."
+    },
+    "update_example": {
+      "description": "Update conversion data or IDs",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "advertiser_id": "ABC123XYZ",
+              "pixel_id": "PIX456DEF",
+              "conversion_data": {
+                "conversion_value": 149.99,
+                "currency": "EUR"
+              }
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using wrong advertiser_id or pixel_id - copy from AdRoll tracking code",
+    "Omitting template_options or required advertiser_id/pixel_id",
+    "Setting conversion_data without both conversion_value and currency",
+    "Using page_view trigger for conversion tag - use purchase/signup trigger instead",
+    "Forgetting consent_type - remarketing typically requires remarketing consent"
+  ],
+  "troubleshooting": {
+    "pixel_not_firing": [
+      "Verify advertiser_id and pixel_id are correct (check AdRoll dashboard)",
+      "Ensure trigger is attached and fires (page_view for remarketing, form/custom for conversion)",
+      "Check consent_type matches your consent form"
+    ],
+    "conversion_not_tracking": [
+      "Ensure conversion_data has both conversion_value and currency",
+      "Use a trigger that fires on purchase/signup (not page view)",
+      "Pass dynamic value via variable: {{ Order Total }}"
+    ],
+    "respect_visitors_privacy": [
+      "Off by default - pixel fires even with DNT/opt-out",
+      "Set to true to respect Do-Not-Track and opt-out form"
+    ]
+  }
+}

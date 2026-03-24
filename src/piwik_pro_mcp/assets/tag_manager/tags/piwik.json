@@ -1,0 +1,291 @@
+{
+  "extends": "tag_base",
+  "template_name": "piwik",
+  "name_aliases": [
+    "Piwik PRO Tag (Tracking Code)",
+    "Tracking Tag"
+  ],
+  "description": "The main Piwik PRO tracking tag responsible for collecting analytics data. This tag loads the tracking library and configures data collection (page views, outlinks, downloads, content impressions, custom dimensions). Configure it after installing Piwik PRO to control how the tracker collects data.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "Setting up or configuring the main Piwik PRO analytics tracking on a site or app",
+      "Enabling/disabling specific data collection features (outlinks, downloads, content tracking)",
+      "Configuring visitor recognition across subdomains or domains",
+      "Setting up custom dimensions for the tracking tag",
+      "Adjusting privacy and cookie settings for the tracker"
+    ],
+    "common_use_cases": [
+      "Standard website analytics with page view tracking",
+      "E-commerce or content sites needing outlink and download tracking",
+      "Multi-subdomain or cross-domain setups requiring visitor recognition",
+      "Sites with custom dimensions for enhanced reporting",
+      "Privacy-conscious setups with consent and cookie controls"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "analytics",
+      "examples": [
+        "analytics"
+      ]
+    },
+    "template": {
+      "description": "Must be 'piwik' for this template",
+      "value": "piwik",
+      "validation": {
+        "required": true,
+        "fixed_value": "piwik"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "Configuration for the Piwik PRO tracker. Must be present (can be empty object {} for defaults).",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": []
+    }
+  },
+  "optional_attributes": {
+    "template_options.link_tracking": {
+      "type": "boolean",
+      "description": "Enable outlink and download tracking. Outlinks take visitors outside your site; downloads track file links.",
+      "mutability": "editable",
+      "default": true,
+      "recommendation": "Set to true for most sites to track outlinks and downloads in Analytics > Reports"
+    },
+    "template_options.content_tracking": {
+      "type": "string",
+      "description": "Track popups and content impressions. Options: trackAllContentImpressions (all content) or trackVisibleContentImpressions (only visible content).",
+      "mutability": "editable",
+      "options": {
+        "trackAllContentImpressions": "Track all content impressions within a page",
+        "trackVisibleContentImpressions": "Track only visible content impressions"
+      },
+      "recommendation": "Use for popups and content tracking; see Analytics > Reports > Content performance"
+    },
+    "template_options.cross_domain_tracking": {
+      "type": "boolean",
+      "description": "Recognize visitors across domains. Passes visitor ID via pk_vid parameter in URLs. Requires domains in Administration > Sites & apps > Data collection.",
+      "mutability": "editable",
+      "recommendation": "Enable when tracking users across multiple domains with the same tracking code"
+    },
+    "template_options.cookie_domain": {
+      "type": "string",
+      "description": "Domain to store the visitor cookie for cross-subdomain recognition. Use string or variable reference like {{ Campaign }}.",
+      "mutability": "editable",
+      "recommendation": "Set to your root domain (e.g. '.example.com') to recognize visitors across subdomains"
+    },
+    "template_options.heart_beat_timer": {
+      "type": "object",
+      "description": "Accurately measure session duration. Sends ping requests to detect when visitor leaves the last page.",
+      "mutability": "editable",
+      "structure": {
+        "enabled": "boolean (required) - Enable precise session duration measurement"
+      },
+      "example": {
+        "enabled": true
+      }
+    },
+    "template_options.user_id": {
+      "type": "string",
+      "description": "User ID to connect a user's data across sources (email, username, or unique identifier). String or variable reference.",
+      "mutability": "editable",
+      "recommendation": "Use for logged-in users; stored in 'User ID' dimension for segments and custom reports"
+    },
+    "template_options.secure_cookie": {
+      "type": "boolean",
+      "description": "Enable secure flag on first-party cookies. Use when site is HTTPS-only.",
+      "mutability": "editable",
+      "recommendation": "Set to true for HTTPS sites so cookies are sent only over secure connection"
+    },
+    "template_options.visitor_cookie_timeout": {
+      "type": "integer",
+      "description": "Visitor cookie (_pk_id.*) timeout in seconds. Default is 13 months.",
+      "mutability": "editable",
+      "recommendation": "Adjust for shorter/longer visitor recognition periods"
+    },
+    "template_options.session_cookie_timeout": {
+      "type": "integer",
+      "description": "Session cookie (_pk_ses.*) timeout in seconds. Default is 30 minutes.",
+      "mutability": "editable",
+      "recommendation": "Adjust for different session duration definitions"
+    },
+    "template_options.js_error_tracking": {
+      "type": "boolean",
+      "description": "Automatically track JavaScript errors as custom events (error type and page URL).",
+      "mutability": "editable",
+      "default": true,
+      "recommendation": "Enable to see errors in Analytics > Reports > Custom events"
+    },
+    "template_options.track_page_view": {
+      "type": "boolean",
+      "description": "Track page views automatically. Set to false to track page views manually via virtual page view tag or JavaScript.",
+      "mutability": "editable",
+      "default": true,
+      "recommendation": "Set to false only when using SPA or manual page view tracking"
+    },
+    "template_options.piwik_custom_dimensions": {
+      "type": "array",
+      "description": "Custom dimensions to collect. Create dimensions first in Analytics > Settings > Custom dimensions.",
+      "mutability": "editable",
+      "structure": {
+        "id": "integer (1-400) - Custom dimension slot ID",
+        "value": "string|number|boolean or variable reference - Value to set"
+      },
+      "example": [
+        {
+          "id": 1,
+          "value": "{{ User Role }}"
+        }
+      ]
+    },
+    "template_options.piwik_custom_variables": {
+      "type": "array",
+      "description": "Legacy custom variables (scope: page or visit). Prefer piwik_custom_dimensions for new setups.",
+      "mutability": "editable",
+      "structure": {
+        "id": "integer (1-20) - Custom variable slot",
+        "name": "string or variable reference",
+        "value": "string|number|boolean or variable reference",
+        "scope": "page | visit"
+      }
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "is_active",
+          "priority",
+          "consent_type",
+          "template_options.*",
+          "respect_visitors_privacy"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic_tracking": {
+      "description": "Basic Piwik PRO tracking with defaults (page views, outlinks, downloads, JS errors)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Piwik PRO Tracking",
+            "template": "piwik",
+            "template_options": {},
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Requires a page_view trigger. Use triggers_list() to find one."
+    },
+    "full_data_collection": {
+      "description": "Tracking with outlinks, content, cross-subdomain, and precise session duration",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Piwik PRO Full Tracking",
+            "template": "piwik",
+            "template_options": {
+              "link_tracking": true,
+              "content_tracking": "trackVisibleContentImpressions",
+              "cookie_domain": ".example.com",
+              "heart_beat_timer": {
+                "enabled": true
+              },
+              "js_error_tracking": true,
+              "track_page_view": true
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "with_custom_dimensions": {
+      "description": "Tracking with custom dimensions (create dimensions in Analytics first)",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "Piwik PRO + Custom Dimensions",
+            "template": "piwik",
+            "template_options": {
+              "piwik_custom_dimensions": [
+                {
+                  "id": 1,
+                  "value": "{{ User Role }}"
+                },
+                {
+                  "id": 2,
+                  "value": "{{ Page Type }}"
+                }
+              ]
+            },
+            "consent_type": "analytics"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      }
+    },
+    "update_example": {
+      "description": "Update tracking options (e.g., enable cross-domain, add custom dimensions)",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "cross_domain_tracking": true,
+              "secure_cookie": true
+            }
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Omitting template_options (required; use {} for defaults)",
+    "Forgetting to attach a page_view trigger - the tag won't fire",
+    "Setting cookie_domain incorrectly for cross-subdomain (use leading dot: .example.com)",
+    "Enabling cross_domain_tracking without configuring domains in Administration",
+    "Changing template in updates (create-only; ignored)"
+  ],
+  "troubleshooting": {
+    "tag_not_firing": [
+      "Verify triggers are attached: tags_list_triggers(app_id, tag_id)",
+      "Ensure page_view trigger is active and conditions match",
+      "Check consent_type matches your consent form setup",
+      "Verify tag is_active is true"
+    ],
+    "data_not_collected": [
+      "Confirm track_page_view is true if expecting automatic page views",
+      "Check respect_visitors_privacy and DNT/opt-out settings",
+      "Verify template_options are correctly structured (no typos in keys)"
+    ]
+  }
+}

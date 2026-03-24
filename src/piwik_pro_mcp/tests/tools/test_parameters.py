@@ -172,14 +172,12 @@ class TestParameterRegistryConsistency:
         exemptions = {
             # Discovery/meta
             "tools_parameters_get",
-            # Apps read-only / delete
+            # Apps read-only
             "apps_list",
             "apps_get",
-            "apps_delete",
-            # CDP read-only / delete
+            # CDP read-only
             "audiences_list",
             "audiences_get",
-            "audiences_delete",
             "activations_attributes_list",
             # Tag Manager (read-only / relationships / delete / copy)
             "tags_list",
@@ -200,7 +198,7 @@ class TestParameterRegistryConsistency:
             "versions_get_published",
             "versions_publish_draft",
             # Templates discovery
-            "templates_list",
+            "templates_list_tags",
             "templates_get_tag",
             "templates_list_triggers",
             "templates_get_trigger",
@@ -219,10 +217,9 @@ class TestParameterRegistryConsistency:
             "analytics_annotations_get",
             "analytics_annotations_delete",
             "analytics_annotations_update",
-            # Analytics goals (read-only / delete)
+            # Analytics goals
             "analytics_goals_list",
             "analytics_goals_get",
-            "analytics_goals_delete",
             "analytics_goals_create",
             "analytics_goals_update",
             # Analytics query

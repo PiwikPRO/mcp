@@ -1,0 +1,160 @@
+{
+  "extends": "tag_base",
+  "template_name": "linkedin",
+  "name_aliases": [
+    "LinkedIn Insight Tag"
+  ],
+  "description": "Tracks conversions for LinkedIn advertising campaigns. Copy your partner ID from LinkedIn Campaign Manager > Analyze > Insight tag > I will use a tag manager. The tag collects visitor data for LinkedIn ad targeting and conversion tracking.",
+  "ai_usage_guide": {
+    "when_to_use": [
+      "LinkedIn advertising campaign tracking",
+      "Conversion tracking for LinkedIn Ads",
+      "Audience building for LinkedIn retargeting"
+    ],
+    "common_use_cases": [
+      "Track conversions from LinkedIn campaigns",
+      "Retarget website visitors with LinkedIn ads",
+      "Measure campaign ROI"
+    ]
+  },
+  "required_attributes": {
+    "consent_type": {
+      "default": "remarketing",
+      "examples": [
+        "remarketing",
+        "marketing_automation"
+      ]
+    },
+    "template": {
+      "description": "Must be 'linkedin' for this template",
+      "value": "linkedin",
+      "validation": {
+        "required": true,
+        "fixed_value": "linkedin"
+      }
+    },
+    "template_options": {
+      "type": "object",
+      "description": "LinkedIn configuration. Must include id (partner ID).",
+      "mutability": "editable",
+      "validation": {
+        "required": true
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "template_options.id": {
+      "type": "string",
+      "description": "LinkedIn partner ID. Find in LinkedIn Campaign Manager > Analyze > Insight tag > I will use a tag manager.",
+      "mutability": "editable",
+      "validation": {
+        "required": true,
+        "min_length": 1
+      },
+      "example": "123456"
+    }
+  },
+  "optional_attributes": {
+    "respect_visitors_privacy": {
+      "description": "Respect DNT header and opt-out. Off by default.",
+      "mutability": "editable",
+      "default": false
+    },
+    "is_active": {
+      "description": "Whether the tag is active"
+    },
+    "priority": {
+      "description": "Firing order",
+      "range": "0 to 4294967295"
+    },
+    "disable_in_debug_mode": {
+      "description": "Disable when Tag Manager is in debug mode"
+    },
+    "scheduler": {
+      "description": "Flight dates"
+    }
+  },
+  "field_mutability_guide": {
+    "mutability_types": {
+      "editable": {
+        "examples": [
+          "name",
+          "template_options.id",
+          "consent_type",
+          "respect_visitors_privacy",
+          "is_active",
+          "priority"
+        ]
+      },
+      "create-only": {
+        "examples": [
+          "template"
+        ]
+      },
+      "read-only": {
+        "examples": [
+          "created_at",
+          "updated_at",
+          "is_published",
+          "tag_id"
+        ]
+      }
+    }
+  },
+  "complete_examples": {
+    "basic": {
+      "description": "LinkedIn Insight tag on all pages",
+      "mcp_call": {
+        "function": "tags_create",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "attributes": {
+            "name": "LinkedIn Insight tag",
+            "template": "linkedin",
+            "template_options": {
+              "id": "123456"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "pageview-trigger-uuid"
+        }
+      },
+      "prerequisite": "Get partner ID from LinkedIn Campaign Manager > Analyze > Insight tag > I will use a tag manager. Use page_view trigger."
+    },
+    "update_example": {
+      "description": "Update partner ID or consent",
+      "mcp_call": {
+        "function": "tags_update",
+        "parameters": {
+          "app_id": "12345678-1234-1234-1234-123456789012",
+          "tag_id": "87654321-4321-4321-4321-210987654321",
+          "attributes": {
+            "template_options": {
+              "id": "123456"
+            },
+            "consent_type": "remarketing"
+          },
+          "triggers": "__unchanged__"
+        }
+      }
+    }
+  },
+  "common_mistakes": [
+    "Using wrong partner ID - copy from Insight tag setup (tag manager option)",
+    "Omitting template_options or id",
+    "Forgetting to attach page_view trigger"
+  ],
+  "troubleshooting": {
+    "conversions_not_tracking": [
+      "Verify partner ID is correct (LinkedIn Campaign Manager)",
+      "Ensure trigger fires (use page_view for base tag)",
+      "Check consent_type matches your consent form"
+    ],
+    "tag_not_firing": [
+      "Verify triggers are attached",
+      "Check consent_type is met",
+      "Ensure tag is_active is true"
+    ]
+  }
+}

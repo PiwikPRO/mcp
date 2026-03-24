@@ -405,6 +405,10 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
+        # JSON:API expects relationships and meta at data level, not inside attributes
+        relationships = kwargs.pop("relationships", None)
+        meta = kwargs.pop("meta", None)
+
         # Generate unique condition_id for each condition while creating the trigger
         conditions = kwargs.get("conditions")
         if conditions:
@@ -431,6 +435,10 @@ class TagManagerAPI:
                 "attributes": attributes.model_dump(by_alias=True, exclude_none=True),
             }
         }
+        if relationships is not None:
+            data["data"]["relationships"] = relationships
+        if meta is not None:
+            data["data"]["meta"] = meta
 
         return self.client.post(f"/api/tag/v1/{app_id}/triggers", data=data)
 
