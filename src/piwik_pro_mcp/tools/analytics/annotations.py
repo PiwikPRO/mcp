@@ -74,24 +74,23 @@ def register_annotations_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         date_to_list = [date_to] if date_to else None
 
         # Fetch annotations by source selection
-        user_resp = None
-        system_resp = None
+        user_data = []
+        system_data = []
 
         src = (source or "all").lower()
         if src in ("all", "user"):
             user_resp = client.analytics.list_user_annotations(
                 app_id=app_id, date_from=date_from_list, date_to=date_to_list, limit=limit, offset=offset
             )
+            user_data = user_resp.data
         if src in ("all", "system"):
             system_resp = client.analytics.list_system_annotations(
-                date_from=date_from_list, date_to=date_to_list, limit=limit, offset=offset
+                app_id=app_id, date_from=date_from_list, date_to=date_to_list, limit=limit, offset=offset
             )
-        combined = user_resp.data + system_resp.data
+            system_data = system_resp.data
+        combined = user_data + system_data
         combined.sort(key=lambda x: x.attributes.date)
-        # Compose meta: we won't perfectly normalize counts across sources; provide total
-        total = 0
-        total += len(user_resp.data)
-        total += len(system_resp.data)
+        total = len(user_data) + len(system_data)
 
         return AnnotationsList(data=combined, meta={"total": total})
 

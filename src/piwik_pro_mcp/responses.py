@@ -9,7 +9,9 @@ piwik_pro_api models without duplicating API response structures.
 
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
+
+from piwik_pro_mcp.api.methods.tracker_settings.models import AppTrackerSettings, GlobalTrackerSettings
 
 
 class OperationStatusResponse(BaseModel):
@@ -28,23 +30,11 @@ class UpdateStatusResponse(BaseModel):
 
 
 class TrackerSettingsResponse(BaseModel):
-    """Response model for tracker settings (supports both global and app-specific)."""
+    """Flat tracker settings response model."""
 
-    # Global tracker settings (V1) fields
-    anonymize_visitor_ip_level: Optional[int] = Field(None, description="Anonymize 'n' octets of visitor IP addresses")
-    excluded_ips: List[str] = Field(default_factory=list, description="IPs excluded from tracking")
-    excluded_url_params: List[str] = Field(default_factory=list, description="URL parameters excluded from tracking")
-    excluded_user_agents: List[str] = Field(
-        default_factory=list, description="User agent strings excluded from tracking"
-    )
-    site_search_query_params: List[str] = Field(default_factory=list, description="Site search query parameters")
-    site_search_category_params: List[str] = Field(default_factory=list, description="Site search category parameters")
-    visitor_geolocation_based_on_anonymized_ip: Optional[bool] = Field(
-        None, description="Visitor geolocation based on anonymized IP"
-    )
-
-    # App tracker settings (V2) fields
+    # Shared v2 tracker settings fields
     anonymize_visitor_geolocation_level: Optional[str] = Field(None, description="Geolocation anonymization level")
+    anonymize_visitor_ip_level: Optional[int] = Field(None, description="Anonymize 'n' octets of visitor IP addresses")
     campaign_content_params: List[str] = Field(default_factory=list, description="Campaign content parameters")
     campaign_id_params: List[str] = Field(default_factory=list, description="Campaign ID parameters")
     campaign_keyword_params: List[str] = Field(default_factory=list, description="Campaign keyword parameters")
@@ -63,6 +53,12 @@ class TrackerSettingsResponse(BaseModel):
     set_ip_tracking: Optional[bool] = Field(None, description="Enable IP tracking")
     exclude_crawlers: Optional[bool] = Field(None, description="Exclude crawler bots")
     exclude_unknown_urls: Optional[bool] = Field(None, description="Exclude unknown URLs")
+    excluded_ips: List[str] = Field(default_factory=list, description="IPs excluded from tracking")
+    excluded_user_agents: List[str] = Field(
+        default_factory=list, description="User agent strings excluded from tracking"
+    )
+    site_search_query_params: List[str] = Field(default_factory=list, description="Site search query parameters")
+    site_search_category_params: List[str] = Field(default_factory=list, description="Site search category parameters")
     fingerprint_based_on_anonymized_ip: Optional[bool] = Field(None, description="Fingerprint based on anonymized IP")
     keep_url_fragment: Optional[bool] = Field(None, description="Keep URL fragment in tracking")
     session_limit_exceeded_action: Optional[str] = Field(None, description="Session limit exceeded action")
@@ -79,6 +75,31 @@ class TrackerSettingsResponse(BaseModel):
 
     # Common field
     updated_at: Optional[str] = Field(None, description="Last modification timestamp")
+
+
+class TrackerSettingsAppGetResponse(BaseModel):
+    """Response model for app tracker settings with optional detailed breakdown."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    settings: TrackerSettingsResponse = Field(..., description="Resolved effective settings for the app")
+    app_settings: Optional[AppTrackerSettings] = Field(
+        None,
+        description="Raw app-specific settings as returned by the app tracker settings endpoint",
+    )
+    global_settings: Optional[GlobalTrackerSettings] = Field(
+        None, description="Raw global tracker settings used as defaults for the app"
+    )
+
+    @model_serializer(mode="plain")
+    def _serialize_without_none(self):
+        """Omit optional detailed sections when they are not populated."""
+        payload = {"settings": self.settings.model_dump(exclude_none=True)}
+        if self.app_settings is not None:
+            payload["app_settings"] = self.app_settings.model_dump()
+        if self.global_settings is not None:
+            payload["global_settings"] = self.global_settings.model_dump()
+        return payload
 
 
 class InstallationCodeMCPResponse(BaseModel):

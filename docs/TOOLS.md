@@ -172,8 +172,8 @@ This document provides a complete reference of all MCP tools available in the Pi
 
 ## Tracker Settings
 
-- `tracker_settings_global_get()` - Get global tracker settings
+- `tracker_settings_global_get()` - Get raw global tracker settings used as defaults across apps
 - `tracker_settings_global_update(attributes)` - Update global tracker settings using JSON attributes
-- `tracker_settings_app_get(app_id)` - Get app-specific tracker settings
+- `tracker_settings_app_get(app_id, detailed?)` - Get effective tracker settings for an app. Returns resolved `settings`; when `detailed=true`, also includes raw `app_settings` and `global_settings`
 - `tracker_settings_app_update(app_id, attributes)` - Update app tracker settings using JSON attributes
-- `tracker_settings_app_delete(app_id, setting)` - Delete specific tracker setting
+- `tracker_settings_app_delete(app_id, setting)` - Delete a specific app-level tracker setting override so the effective value can fall back to global settings

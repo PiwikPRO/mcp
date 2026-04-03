@@ -1,6 +1,4 @@
-"""
-Tracker Settings API for Piwik PRO.
-"""
+"""Tracker Settings API for Piwik PRO."""
 
 from typing import TYPE_CHECKING, Any, Dict, Union
 
@@ -33,7 +31,7 @@ class TrackerSettingsAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        return self.client.get("/api/tracker/v1/settings/app/global")
+        return self.client.get("/api/tracker/v2/settings/app/global")
 
     def update_global_settings(self, **kwargs) -> None:
         """
@@ -59,7 +57,7 @@ class TrackerSettingsAPI:
             }
         }
 
-        self.client.patch("/api/tracker/v1/settings/app/global", data=data)
+        self.client.patch("/api/tracker/v2/settings/app/global", data=data)
 
     # App Settings API
 

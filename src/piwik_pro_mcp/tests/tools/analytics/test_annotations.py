@@ -108,11 +108,13 @@ class TestAnnotationsCrudFunctional:
         assert isinstance(data["data"], list)
         assert data["meta"]["total"] == 2
 
-        # Verify client was called with lists for date params
+        # Verify client was called with lists for date params and app_id
         user_call = mock_piwik_client.analytics.list_user_annotations.call_args
         sys_call = mock_piwik_client.analytics.list_system_annotations.call_args
+        assert user_call[1]["app_id"] == "app-1"
         assert user_call[1]["date_from"] == ["2025-09-01"]
         assert user_call[1]["date_to"] == ["2025-09-30"]
+        assert sys_call[1]["app_id"] == "app-1"
         assert sys_call[1]["date_from"] == ["2025-09-01"]
         assert sys_call[1]["date_to"] == ["2025-09-30"]
 

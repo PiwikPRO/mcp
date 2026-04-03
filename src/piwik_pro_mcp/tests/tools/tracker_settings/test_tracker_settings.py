@@ -69,16 +69,87 @@ class TestUpdateAppTrackerSettingsFunctional:
     @pytest.mark.asyncio
     async def test_tracker_settings_app_get_happy_path(self, mcp_server, mock_piwik_client):
         mock_piwik_client.tracker_settings.get_app_settings.return_value = {
-            "data": {"attributes": {"excluded_ips": ["1.1.1.1"], "exclude_crawlers": True}}
+            "data": {
+                "attributes": {
+                    "excluded_ips": ["1.1.1.1"],
+                    "exclude_crawlers": None,
+                    "site_search_query_params": ["search", "query"],
+                }
+            }
+        }
+        mock_piwik_client.tracker_settings.get_global_settings.return_value = {
+            "data": {
+                "attributes": {
+                    "excluded_ips": ["2.2.2.2", "1.1.1.1"],
+                    "exclude_crawlers": True,
+                    "site_search_query_params": ["query", "keyword"],
+                }
+            }
         }
 
         result = await mcp_server.call_tool("tracker_settings_app_get", {"app_id": "app-1"})
 
         assert isinstance(result, tuple)
         _, data = result
-        assert data["excluded_ips"] == ["1.1.1.1"]
-        assert data["exclude_crawlers"] is True
+        assert "settings" in data
+        assert data["settings"]["excluded_ips"] == ["1.1.1.1", "2.2.2.2"]
+        assert data["settings"]["exclude_crawlers"] is True
+        assert data["settings"]["site_search_query_params"] == ["search", "query", "keyword"]
+        assert "app_settings" not in data
+        assert "global_settings" not in data
         mock_piwik_client.tracker_settings.get_app_settings.assert_called_once_with("app-1")
+        mock_piwik_client.tracker_settings.get_global_settings.assert_called_once_with()
+
+    @pytest.mark.asyncio
+    async def test_tracker_settings_app_get_uses_global_for_null_scalars(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tracker_settings.get_app_settings.return_value = {
+            "data": {"attributes": {"keep_url_fragment": None, "set_ip_tracking": False}}
+        }
+        mock_piwik_client.tracker_settings.get_global_settings.return_value = {
+            "data": {"attributes": {"keep_url_fragment": True, "set_ip_tracking": True}}
+        }
+
+        result = await mcp_server.call_tool("tracker_settings_app_get", {"app_id": "app-1"})
+
+        assert isinstance(result, tuple)
+        _, data = result
+        assert data["settings"]["keep_url_fragment"] is True
+        assert data["settings"]["set_ip_tracking"] is False
+
+    @pytest.mark.asyncio
+    async def test_tracker_settings_app_get_detailed_includes_raw_sources(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tracker_settings.get_app_settings.return_value = {
+            "data": {
+                "attributes": {
+                    "keep_url_fragment": None,
+                    "site_search_query_params": ["search", "query"],
+                    "urls": ["https://example.com"],
+                }
+            }
+        }
+        mock_piwik_client.tracker_settings.get_global_settings.return_value = {
+            "data": {
+                "attributes": {
+                    "keep_url_fragment": True,
+                    "site_search_query_params": ["query", "keyword"],
+                    "use_session_hash": True,
+                }
+            }
+        }
+
+        result = await mcp_server.call_tool("tracker_settings_app_get", {"app_id": "app-1", "detailed": True})
+
+        assert isinstance(result, tuple)
+        _, data = result
+        assert data["settings"]["keep_url_fragment"] is True
+        assert data["settings"]["site_search_query_params"] == ["search", "query", "keyword"]
+        assert data["settings"]["urls"] == ["https://example.com"]
+        assert data["app_settings"]["keep_url_fragment"] is None
+        assert data["app_settings"]["site_search_query_params"] == ["search", "query"]
+        assert data["app_settings"]["urls"] == ["https://example.com"]
+        assert data["global_settings"]["keep_url_fragment"] is True
+        assert data["global_settings"]["site_search_query_params"] == ["query", "keyword"]
+        assert data["global_settings"]["use_session_hash"] is True
 
     @pytest.mark.asyncio
     async def test_list_available_parameters_update_app_tracker_settings_functional(self, mcp_server):
@@ -149,8 +220,8 @@ class TestUpdateGlobalTrackerSettingsFunctional:
         attributes = {
             "anonymize_visitor_ip_level": 2,
             "excluded_ips": ["192.168.1.1", "10.0.0.1"],
-            "excluded_url_params": ["utm_source", "utm_medium"],
-            "visitor_geolocation_based_on_anonymized_ip": True,
+            "campaign_name_params": ["utm_campaign", "pk_campaign"],
+            "use_session_hash": True,
         }
 
         # Call the tool through MCP server
@@ -171,16 +242,16 @@ class TestUpdateGlobalTrackerSettingsFunctional:
         assert response["status"] == "success"
         assert "anonymize_visitor_ip_level" in response["updated_fields"]
         assert "excluded_ips" in response["updated_fields"]
-        assert "excluded_url_params" in response["updated_fields"]
-        assert "visitor_geolocation_based_on_anonymized_ip" in response["updated_fields"]
+        assert "campaign_name_params" in response["updated_fields"]
+        assert "use_session_hash" in response["updated_fields"]
 
         # Verify the client was called correctly
         mock_piwik_client.tracker_settings.update_global_settings.assert_called_once()
         call_args = mock_piwik_client.tracker_settings.update_global_settings.call_args
         assert call_args[1]["anonymize_visitor_ip_level"] == 2
         assert call_args[1]["excluded_ips"] == ["192.168.1.1", "10.0.0.1"]
-        assert call_args[1]["excluded_url_params"] == ["utm_source", "utm_medium"]
-        assert call_args[1]["visitor_geolocation_based_on_anonymized_ip"] is True
+        assert call_args[1]["campaign_name_params"] == ["utm_campaign", "pk_campaign"]
+        assert call_args[1]["use_session_hash"] is True
 
     @pytest.mark.asyncio
     async def test_list_available_parameters_update_global_tracker_settings_functional(self, mcp_server):
@@ -204,15 +275,19 @@ class TestUpdateGlobalTrackerSettingsFunctional:
         assert schema_dict["type"] == "object"
         assert schema_dict["title"] == "GlobalTrackerSettings"
 
-        # Check for specific expected fields from GlobalTrackerSettingsV1
+        # Check for specific expected fields from GlobalTrackerSettingsV2
         properties = schema_dict["properties"]
+        assert "anonymize_visitor_geolocation_level" in properties
         assert "anonymize_visitor_ip_level" in properties
+        assert "campaign_name_params" in properties
         assert "excluded_ips" in properties
-        assert "excluded_url_params" in properties
         assert "excluded_user_agents" in properties
         assert "site_search_query_params" in properties
         assert "site_search_category_params" in properties
-        assert "visitor_geolocation_based_on_anonymized_ip" in properties
+        assert "use_session_hash" in properties
+        assert "excluded_url_params" not in properties
+        assert "visitor_geolocation_based_on_anonymized_ip" not in properties
+        assert "trust_visitors_cookies" not in properties
 
         # Verify all fields are optional (use anyOf structure)
         for field_name, field_schema in properties.items():
@@ -222,20 +297,26 @@ class TestUpdateGlobalTrackerSettingsFunctional:
 
         # Verify specific field types
         assert properties["anonymize_visitor_ip_level"]["anyOf"][0]["type"] == "integer"
+        assert properties["campaign_name_params"]["anyOf"][0]["type"] == "array"
         assert properties["excluded_ips"]["anyOf"][0]["type"] == "array"
-        assert properties["excluded_url_params"]["anyOf"][0]["type"] == "array"
-        assert properties["visitor_geolocation_based_on_anonymized_ip"]["anyOf"][0]["type"] == "boolean"
+        assert properties["use_session_hash"]["anyOf"][0]["type"] == "boolean"
 
         # Verify field descriptions exist
         assert "description" in properties["anonymize_visitor_ip_level"]
+        assert "description" in properties["campaign_name_params"]
         assert "description" in properties["excluded_ips"]
-        assert "description" in properties["excluded_url_params"]
-        assert "description" in properties["visitor_geolocation_based_on_anonymized_ip"]
+        assert "description" in properties["use_session_hash"]
 
     @pytest.mark.asyncio
     async def test_tracker_settings_global_get_happy_path(self, mcp_server, mock_piwik_client):
         mock_piwik_client.tracker_settings.get_global_settings.return_value = {
-            "data": {"attributes": {"excluded_ips": ["2.2.2.2"], "excluded_url_params": ["utm_source"]}}
+            "data": {
+                "attributes": {
+                    "excluded_ips": ["2.2.2.2"],
+                    "campaign_name_params": ["utm_campaign"],
+                    "use_session_hash": False,
+                }
+            }
         }
 
         result = await mcp_server.call_tool("tracker_settings_global_get", {})
@@ -243,7 +324,8 @@ class TestUpdateGlobalTrackerSettingsFunctional:
         assert isinstance(result, tuple)
         _, data = result
         assert data["excluded_ips"] == ["2.2.2.2"]
-        assert data["excluded_url_params"] == ["utm_source"]
+        assert data["campaign_name_params"] == ["utm_campaign"]
+        assert data["use_session_hash"] is False
         mock_piwik_client.tracker_settings.get_global_settings.assert_called_once()
 
     @pytest.mark.asyncio

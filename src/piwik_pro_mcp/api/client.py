@@ -87,7 +87,7 @@ class PiwikProClient:
         headers = {
             "Content-Type": "application/vnd.api+json",
             "Accept": "application/vnd.api+json",
-            "User-Agent": "piwik-pro-api-python/0.2.0",
+            "User-Agent": "piwik-pro-api-python/0.3.1",
         }
 
         # Add authentication headers

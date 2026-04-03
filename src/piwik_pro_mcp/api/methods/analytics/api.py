@@ -118,6 +118,7 @@ class AnalyticsAPI:
 
     def list_system_annotations(
         self,
+        app_id: str,
         date_from: Optional[List[str]] = None,
         date_to: Optional[List[str]] = None,
         limit: Optional[int] = None,
@@ -126,12 +127,13 @@ class AnalyticsAPI:
         """List system annotations.
 
         Args:
+            app_id: App UUID (sent as website_id query param)
             date_from: Optional list of start dates (YYYY-MM-DD)
             date_to: Optional list of end dates (YYYY-MM-DD)
             limit: Max number of items
             offset: Number of items to skip
         """
-        params: Dict[str, Any] = {}
+        params: Dict[str, Any] = {"website_id": app_id}
 
         if limit is not None:
             params["limit"] = limit
