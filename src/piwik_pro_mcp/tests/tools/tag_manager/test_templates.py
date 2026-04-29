@@ -92,6 +92,74 @@ class TestTemplateDiscoveryFunctional:
             assert isinstance(tdata, dict) and tdata
 
     @pytest.mark.asyncio
+    async def test_tag_template_inherits_variable_reference_guide(self, mcp_server):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": "piwik_event"})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert "variables_list(app_id)" in data["variable_reference_guide"]["source_of_truth"]
+        assert "Do not use UUIDs" in data["variable_reference_guide"]["warning"]
+        assert "template_options.category" in data["variable_reference_fields"]
+
+    @pytest.mark.asyncio
+    async def test_tag_template_can_expose_variant_specific_variable_reference_fields(self, mcp_server):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": "doubleclick_floodlight"})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert isinstance(data["variable_reference_fields"], dict)
+        assert "template_options.session_id" in data["variable_reference_fields"]["type_variant_counter_session"]
+        assert (
+            "template_options.custom_variables[].value"
+            in data["variable_reference_fields"]["type_variant_sales_transactions"]
+        )
+
+    @pytest.mark.asyncio
+    async def test_tag_template_variant_specific_variable_references_can_include_required_fields(self, mcp_server):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": "google_adwords"})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert "template_options.conversion_id" in data["variable_reference_fields"]["type_variant_remarketing"]
+        assert (
+            "template_options.conversion_tracking.conversion_label"
+            in data["variable_reference_fields"]["type_variant_conversion_tracking"]
+        )
+
+    @pytest.mark.asyncio
+    async def test_tag_template_can_expose_direct_variable_reference_fields(self, mcp_server):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": "google_analytics"})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert "template_options.id" in data["variable_reference_fields"]
+        assert "template_options.optimize_setup.optimize_id" in data["variable_reference_fields"]
+
+    @pytest.mark.asyncio
+    async def test_tag_template_inherits_ecommerce_variable_reference_fields(self, mcp_server):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": "ecommerce_add_to_cart"})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert "template_options.currency" in data["variable_reference_fields"]
+        assert "template_options.custom_dimensions[].value" in data["variable_reference_fields"]
+
+    @pytest.mark.asyncio
     async def test_unknown_templates_list_suggestions(self, mcp_server):
         # unknown template names should produce error listing available ones
         with pytest.raises(Exception) as exc_info:

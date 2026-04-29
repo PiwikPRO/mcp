@@ -21,6 +21,11 @@
       "Step in a multi-step form"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.url",
+    "template_options.document_title",
+    "template_options.custom_dimensions[].value"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

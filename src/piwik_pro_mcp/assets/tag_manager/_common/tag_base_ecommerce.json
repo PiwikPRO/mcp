@@ -1,6 +1,10 @@
 {
   "_comment": "Shared base for ecommerce tag templates. Extends tag_base and adds product presets. Ecommerce tags extend this; order and cart_update tags add order/grand_total to presets.",
   "extends": "tag_base",
+  "variable_reference_fields": [
+    "template_options.currency",
+    "template_options.custom_dimensions[].value"
+  ],
   "presets": {
     "description": "Predefined template_options for common ecommerce setups (GA4, UA, data layer, gtag).",
     "dataLayerGA4": {

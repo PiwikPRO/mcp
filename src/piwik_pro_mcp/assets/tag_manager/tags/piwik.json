@@ -22,6 +22,13 @@
       "Privacy-conscious setups with consent and cookie controls"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.cookie_domain",
+    "template_options.user_id",
+    "template_options.piwik_custom_dimensions[].value",
+    "template_options.piwik_custom_variables[].name",
+    "template_options.piwik_custom_variables[].value"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

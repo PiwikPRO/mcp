@@ -5,7 +5,7 @@
 Our Tag Manager template system follows a **"pregenerated, AI-optimized documentation with field mutability"** approach rather than dynamic schema parsing. This provides:
 
 - **Better control** over documentation quality and consistency
-- **Clearer guidance** for both create and update operations  
+- **Clearer guidance** for both create and update operations
 - **Simpler maintenance** with single source of truth per template
 - **Field mutability awareness** - clearly distinguishing editable vs immutable fields
 - **Unified templates** - one template serves both creation and editing workflows
@@ -16,12 +16,12 @@ Our Tag Manager template system follows a **"pregenerated, AI-optimized document
 piwik_mcp/assets/tag_manager/
 ├── _common/
 │   ├── tag_base.json           # Base for all the tags templates assets
-│   ├── tag_base_ecommerce.json # Base for all the ecommerce tags templates assets 
+│   ├── tag_base_ecommerce.json # Base for all the ecommerce tags templates assets
 │   ├── trigger_base.json       # Base for all the triggers types assets
 │   └── variable_base.json     # Base for all the variables types assets
 ├── tags/
 │   ├── custom_tag.json         # Complete create/edit template
-│   ├── google_analytics.json   # (future template)  
+│   ├── google_analytics.json   # (future template)
 │   ├── piwik.json              # (future template)
 │   └── ...                     # (other templates)
 ├── triggers/
@@ -50,6 +50,7 @@ To avoid repeating the same sections across many tag templates, shared content l
 - **Base file**: `tag_manager/_common/tag_base.json` — contains `mcp_usage`, `required_attributes` (generic `name`, `template`), `optional_attributes` (e.g. `is_active`, `priority`, `consent_type`, `scheduler`), `read_only_attributes`, `trigger_management`, `field_mutability_guide`, `related_mcp_tools`, `triggers_troubleshooting`.
 - **In a template**: Add `"extends": "tag_base"`, then only add `template_name`, `name_aliases`, `description`, `ai_usage_guide`, template-specific `required_attributes` (e.g. `code`, `template_options`) and any overrides, template-specific `optional_attributes`, `complete_examples`, `common_mistakes`, `troubleshooting`, and optional overrides to `field_mutability_guide` or `related_mcp_tools`.
 - **Loader**: `get_tag_template()` uses `load_tag_template_with_extends()` so that extended templates are resolved before being returned; the `extends` key is removed from the result.
+- **Variable references**: `variable_reference_fields` can be either a flat array of field paths or a mapping keyed by variant identifier when variable support depends on template variants.
 
 The same pattern is used for **triggers** and **variables**:
 
@@ -138,14 +139,14 @@ def register_template_tools(mcp: FastMCP) -> None:
   "template_name": "custom_tag",
   "name_aliases": [
      "Human-Readable Name"
-  ], 
+  ],
   "description": "What this template does",
-  
+
   "ai_usage_guide": {
     "when_to_use": [...],
     "common_use_cases": [...]
   },
-  
+
   "mcp_usage": {
     "create_tag": {
       "tool_name": "tags_create",
@@ -154,13 +155,13 @@ def register_template_tools(mcp: FastMCP) -> None:
       "optional_parameters": {...}
     },
     "update_tag": {
-      "tool_name": "tags_update", 
+      "tool_name": "tags_update",
       "description": "Update existing resource - only editable fields processed",
       "required_parameters": {...},
       "optional_parameters": {...}
     }
   },
-  
+
   "required_attributes": {
     "attribute_name": {
       "type": "string|boolean|integer|object",
@@ -172,22 +173,22 @@ def register_template_tools(mcp: FastMCP) -> None:
       "edit_note": "⚠️ Mutability-specific notes"
     }
   },
-  
+
   "optional_attributes": {
     "attribute_name": {
       "mutability": "editable|create-only",
       /* ... same structure as required */
     }
   },
-  
+
   "read_only_attributes": {
     "attribute_name": {
-      "mutability": "read-only", 
+      "mutability": "read-only",
       "description": "API-generated field",
       "edit_note": "🚫 Cannot be modified"
     }
   },
-  
+
   "field_mutability_guide": {
     "description": "Understanding field editability after creation",
     "mutability_types": {
@@ -200,12 +201,12 @@ def register_template_tools(mcp: FastMCP) -> None:
         "examples": ["template", "tag_type"]
       },
       "read-only": {
-        "description": "🚫 Auto-generated, never user-modifiable", 
+        "description": "🚫 Auto-generated, never user-modifiable",
         "examples": ["created_at", "updated_at"]
       }
     }
   },
-  
+
   "complete_examples": {
     "create_example": {
       "description": "Creating new resource",
@@ -217,12 +218,12 @@ def register_template_tools(mcp: FastMCP) -> None:
     "update_example": {
       "description": "Updating existing resource",
       "mcp_call": {
-        "function": "update_tag", 
+        "function": "update_tag",
         "parameters": {...}
       }
     }
   },
-  
+
   "common_mistakes": [...],
   "troubleshooting": {...}
 }
@@ -235,12 +236,12 @@ def register_template_tools(mcp: FastMCP) -> None:
 ```python
 def get_available_tag_templates() -> Dict[str, Any]:
     # 1. Scan assets directory for .json files
-    # 2. Extract template names from filenames  
+    # 2. Extract template names from filenames
     # 3. Return sorted list + usage guidance
     # 4. Handle errors gracefully
 ```
 
-### **Template Details Function**  
+### **Template Details Function**
 
 ```python
 def get_tag_template(template_name: str) -> Dict[str, Any]:
@@ -276,7 +277,7 @@ register_all_tools(mcp)
 # In tags_create tool docstring:
 """
 💡 TIP: Use these tools to discover available templates:
-- templates_list_tags() - List all available templates  
+- templates_list_tags() - List all available templates
 - templates_get_tag(template_name='custom_tag') - Get complete create/update template info
 """
 
@@ -286,8 +287,8 @@ register_all_tools(mcp)
 fields and their mutability for any tag template.
 
 Field Mutability:
-✅ Editable: name, code, priority, is_active, consent_type, etc.
-⚠️ Create-only: template, tag_type (ignored in updates)  
+✅ Editable: name, code, priority, consent_type, etc.
+⚠️ Create-only: template, tag_type (ignored in updates)
 🚫 Read-only: created_at, updated_at, is_published (filtered out automatically)
 """
 ```
@@ -300,7 +301,7 @@ Field Mutability:
 # File structure
 piwik_mcp/assets/tag_manager/triggers/
 ├── page_view.json          # Complete create/update template
-├── click.json              # Complete create/update template  
+├── click.json              # Complete create/update template
 ├── form_submission.json    # Complete create/update template
 
 # MCP tools with unified discovery pattern; create is implemented; update is planned
@@ -328,7 +329,7 @@ templates_get_trigger(template_name: str)  # Includes mcp_usage.update_trigger i
 ### **For Variables System**
 
 ```python
-# File structure  
+# File structure
 piwik_mcp/assets/tag_manager/variables/
 ├── constant.json           # Complete create/update template
 ├── custom_javascript.json  # Complete create/update template
@@ -403,7 +404,7 @@ templates_get_variable(template_name: str)  # Includes mcp_usage.update_variable
 ### **Phase 1: Setup**
 
 1. **Create directory structure** (`assets/tag_manager/{component}/`)
-2. **Implement core functions** (get_available_X_templates, get_X_template)  
+2. **Implement core functions** (get_available_X_templates, get_X_template)
 3. **Ensure** `register_template_tools(mcp)` is included in tool registration via `register_all_tools(mcp)`
 
 ### **Phase 2: Template Creation**

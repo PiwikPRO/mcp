@@ -19,6 +19,16 @@
       "Campaign ROI measurement"
     ]
   },
+  "variable_reference_fields": {
+    "type_variant_remarketing": [
+      "template_options.conversion_id"
+    ],
+    "type_variant_conversion_tracking": [
+      "template_options.conversion_id",
+      "template_options.conversion_tracking.conversion_label",
+      "template_options.conversion_tracking.conversion_value"
+    ]
+  },
   "variants": {
     "template_options.type": {
       "description": "Selects remarketing or conversion tracking. Required.",

@@ -6,7 +6,7 @@ This module provides MCP tools for managing both standard custom dimensions
 that uses scope-specific attributes dictionaries.
 """
 
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 
@@ -36,9 +36,9 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         website_id: str,
         name: str,
         scope: Literal["session", "event", "product"],
-        attributes: Dict[str, Any],
-        description: Optional[str] = None,
-    ) -> Union[CustomDimensionItem, ProductCustomDimensionItem]:
+        attributes: dict[str, Any],
+        description: str | None = None,
+    ) -> CustomDimensionItem | ProductCustomDimensionItem:
         """
         Create a custom dimension with scope-specific configuration.
 
@@ -231,10 +231,10 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
     @mcp.tool(annotations={"title": "Piwik PRO: List Custom Dimensions", "readOnlyHint": True})
     def analytics_custom_dimensions_list(
         website_id: str,
-        scope: Optional[Literal["session", "event", "product"]] = None,
+        scope: Literal["session", "event", "product"] | None = None,
         limit: int = 10,
         offset: int = 0,
-    ) -> Union[CustomDimensionsList, ProductCustomDimensionsList, UnifiedCustomDimensionsList]:
+    ) -> CustomDimensionsList | ProductCustomDimensionsList | UnifiedCustomDimensionsList:
         """
         List custom dimensions, optionally filtered by scope.
 
@@ -311,7 +311,7 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         dimension_id: str,
         website_id: str,
         scope: Literal["session", "event", "product"],
-    ) -> Union[CustomDimensionItem, ProductCustomDimensionItem]:
+    ) -> CustomDimensionItem | ProductCustomDimensionItem:
         """
         Get a specific custom dimension by ID.
 
@@ -364,9 +364,9 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         website_id: str,
         name: str,
         scope: Literal["session", "event", "product"],
-        attributes: Optional[Dict[str, Any]] = None,
-        description: Optional[str] = None,
-    ) -> Union[CustomDimensionItem, ProductCustomDimensionItem]:
+        attributes: dict[str, Any] | None = None,
+        description: str | None = None,
+    ) -> CustomDimensionItem | ProductCustomDimensionItem:
         """
         Update an existing custom dimension with scope-specific configuration.
 

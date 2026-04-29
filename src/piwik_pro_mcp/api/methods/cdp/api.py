@@ -2,7 +2,7 @@
 CDP API for Piwik PRO.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ...client import PiwikProClient
@@ -25,7 +25,7 @@ class CdpAPI:
     def list_audiences(
         self,
         app_id: str,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Get list of audiences for a specific app.
 
@@ -44,7 +44,7 @@ class CdpAPI:
         self,
         app_id: str,
         audience_id: str,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Get audience details by ID.
 
@@ -64,7 +64,7 @@ class CdpAPI:
     def list_attributes(
         self,
         app_id: str,
-    ) -> Union[List[Dict[str, Any]], None]:
+    ) -> list[dict[str, Any]] | None:
         """
         Get list of all profile attributes available in CDP for a specific app.
 
@@ -90,10 +90,10 @@ class CdpAPI:
         app_id: str,
         name: str,
         description: str,
-        definition: Dict[str, Any],
+        definition: dict[str, Any],
         membership_duration_days: int,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Create a new audience.
 
@@ -129,10 +129,10 @@ class CdpAPI:
         audience_id: str,
         name: str,
         description: str,
-        definition: Dict[str, Any],
+        definition: dict[str, Any],
         membership_duration_days: int,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Update an existing audience.
 

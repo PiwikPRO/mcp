@@ -2,8 +2,6 @@
 Analytics goals tools.
 """
 
-from typing import Optional
-
 from mcp.server.fastmcp import FastMCP
 
 from ...common import create_piwik_client
@@ -22,9 +20,9 @@ def register_goals_tools(mcp: FastMCP) -> None:
         name: str,
         trigger: str,
         revenue: str,
-        description: Optional[str] = None,
-        pattern_type: Optional[str] = None,
-        pattern: Optional[str] = None,
+        description: str | None = None,
+        pattern_type: str | None = None,
+        pattern: str | None = None,
         allow_multiple: bool = False,
         case_sensitive: bool = False,
     ) -> GoalItem:
@@ -109,9 +107,9 @@ def register_goals_tools(mcp: FastMCP) -> None:
         name: str,
         trigger: str,
         revenue: str,
-        description: Optional[str] = None,
-        pattern_type: Optional[str] = None,
-        pattern: Optional[str] = None,
+        description: str | None = None,
+        pattern_type: str | None = None,
+        pattern: str | None = None,
         allow_multiple: bool = False,
         case_sensitive: bool = False,
     ) -> GoalItem:

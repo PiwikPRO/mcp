@@ -7,7 +7,7 @@ the piwik_pro_api.api.cdp.models module.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -20,15 +20,15 @@ class AudienceSummary(BaseModel):
     description: str = Field(..., description="Audience description")
     membership_duration_days: int = Field(..., description="Membership duration in days")
     version: int = Field(..., description="Audience version")
-    created_at: Optional[datetime] = Field(None, description="Creation timestamp")
-    updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
+    created_at: datetime | None = Field(None, description="Creation timestamp")
+    updated_at: datetime | None = Field(None, description="Last update timestamp")
     is_author: bool = Field(..., description="Whether current user is the author")
 
 
 class AudienceListMCPResponse(BaseModel):
     """MCP-specific audience list response that matches documented schema."""
 
-    audiences: List[AudienceSummary] = Field(..., description="List of audiences")
+    audiences: list[AudienceSummary] = Field(..., description="List of audiences")
     total: int = Field(..., description="Total number of audiences available")
 
 
@@ -40,11 +40,11 @@ class AudienceDetailsMCPResponse(BaseModel):
     description: str = Field(..., description="Audience description")
     membership_duration_days: int = Field(..., description="Membership duration in days")
     version: int = Field(..., description="Audience version")
-    definition: Dict[str, Any] = Field(..., description="Audience definition with conditions")
+    definition: dict[str, Any] = Field(..., description="Audience definition with conditions")
     author_email: str = Field(..., description="Email of the audience author")
     is_author: bool = Field(..., description="Whether current user is the author")
-    created_at: Optional[datetime] = Field(None, description="Creation timestamp")
-    updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
+    created_at: datetime | None = Field(None, description="Creation timestamp")
+    updated_at: datetime | None = Field(None, description="Last update timestamp")
 
 
 class AudienceCreateMCPResponse(BaseModel):
@@ -52,8 +52,8 @@ class AudienceCreateMCPResponse(BaseModel):
 
     status: str = Field(..., description="Creation status (success, error)")
     message: str = Field(..., description="Descriptive message about the creation")
-    audience_id: Optional[str] = Field(None, description="ID of the created audience")
-    audience_name: Optional[str] = Field(None, description="Name of the created audience")
+    audience_id: str | None = Field(None, description="ID of the created audience")
+    audience_name: str | None = Field(None, description="Name of the created audience")
 
 
 class AudienceUpdateMCPResponse(BaseModel):
@@ -61,9 +61,9 @@ class AudienceUpdateMCPResponse(BaseModel):
 
     status: str = Field(..., description="Update status (success, error)")
     message: str = Field(..., description="Descriptive message about the update")
-    audience_id: Optional[str] = Field(None, description="ID of the updated audience")
-    audience_name: Optional[str] = Field(None, description="Name of the updated audience")
-    updated_fields: List[str] = Field(default_factory=list, description="List of fields that were updated")
+    audience_id: str | None = Field(None, description="ID of the updated audience")
+    audience_name: str | None = Field(None, description="Name of the updated audience")
+    updated_fields: list[str] = Field(default_factory=list, description="List of fields that were updated")
 
 
 class AttributeSummary(BaseModel):
@@ -74,14 +74,14 @@ class AttributeSummary(BaseModel):
     immutable: bool = Field(..., description="Whether the attribute is read-only")
     column_name: str = Field(..., description="Human-readable attribute name")
     column_type: str = Field(..., description="Data type (string, number, datetime, etc.)")
-    column_category: List[str] = Field(..., description="Categories the attribute belongs to")
-    value_selectors: List[str] = Field(..., description="Supported value selectors (first, last, any)")
+    column_category: list[str] = Field(..., description="Categories the attribute belongs to")
+    value_selectors: list[str] = Field(..., description="Supported value selectors (first, last, any)")
     scope: str = Field(..., description="Scope of the attribute (event or profile)")
-    column_unit: Optional[str] = Field(None, description="Unit of measurement")
-    supported_operators: List[str] = Field(
+    column_unit: str | None = Field(None, description="Unit of measurement")
+    supported_operators: list[str] = Field(
         default_factory=list, description="Supported filtering operators for this column type"
     )
-    value_format: Dict[str, Any] = Field(
+    value_format: dict[str, Any] = Field(
         default_factory=dict, description="Value format requirements and examples for this column type"
     )
 
@@ -89,5 +89,5 @@ class AttributeSummary(BaseModel):
 class AttributeListMCPResponse(BaseModel):
     """MCP-specific response for listing CDP attributes."""
 
-    attributes: List[AttributeSummary] = Field(..., description="List of CDP attributes with metadata")
+    attributes: list[AttributeSummary] = Field(..., description="List of CDP attributes with metadata")
     total: int = Field(..., description="Total number of attributes available")

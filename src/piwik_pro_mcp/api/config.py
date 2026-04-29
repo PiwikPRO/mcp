@@ -3,7 +3,6 @@ Configuration management for Piwik PRO API client.
 """
 
 import os
-from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -16,9 +15,9 @@ class Config:
 
     def __init__(
         self,
-        host: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        host: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
     ):
         """
         Initialize configuration.
@@ -29,9 +28,9 @@ class Config:
             client_secret: OAuth2 client secret
         """
         # Initialize as Optional, but validation will ensure they're not None
-        self.host: Optional[str] = host or os.getenv("PIWIK_PRO_HOST")
-        self.client_id: Optional[str] = client_id or os.getenv("PIWIK_PRO_CLIENT_ID")
-        self.client_secret: Optional[str] = client_secret or os.getenv("PIWIK_PRO_CLIENT_SECRET")
+        self.host: str | None = host or os.getenv("PIWIK_PRO_HOST")
+        self.client_id: str | None = client_id or os.getenv("PIWIK_PRO_CLIENT_ID")
+        self.client_secret: str | None = client_secret or os.getenv("PIWIK_PRO_CLIENT_SECRET")
 
         # Validate required configuration
         self._validate()

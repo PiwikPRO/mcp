@@ -7,7 +7,7 @@ module-name = "piwik_pro_mcp"
 
 [project]
 name = "piwik-pro-mcp"
-version = "0.3.1"
+version = "0.4.0"
 description = "Piwik PRO MCP server"
 readme = "README.md"
 authors = [
@@ -55,6 +55,7 @@ dev = [
 
 [tool.uv]
 package = true
+exclude-newer = "2 weeks"
 
 [tool.uv.workspace]
 members = ["."]
@@ -72,7 +73,8 @@ select = [
     "I",  # Imports
     "A",  # Builtins
     "ERA", # Commented-out code
-    "PL" # Pylint
+    "PL", # Pylint
+    "UP", # Pyupgrade
 ]
 ignore = [
     "PLR2004", # Magic value used in comparison

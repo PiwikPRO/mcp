@@ -7,8 +7,6 @@ like create/update/delete status responses. It complements the existing
 piwik_pro_api models without duplicating API response structures.
 """
 
-from typing import List, Optional
-
 from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 from piwik_pro_mcp.api.methods.tracker_settings.models import AppTrackerSettings, GlobalTrackerSettings
@@ -26,55 +24,55 @@ class UpdateStatusResponse(BaseModel):
 
     status: str = Field(..., description="Update status")
     message: str = Field(..., description="Descriptive message about the update")
-    updated_fields: List[str] = Field(..., description="List of fields that were updated")
+    updated_fields: list[str] = Field(..., description="List of fields that were updated")
 
 
 class TrackerSettingsResponse(BaseModel):
     """Flat tracker settings response model."""
 
     # Shared v2 tracker settings fields
-    anonymize_visitor_geolocation_level: Optional[str] = Field(None, description="Geolocation anonymization level")
-    anonymize_visitor_ip_level: Optional[int] = Field(None, description="Anonymize 'n' octets of visitor IP addresses")
-    campaign_content_params: List[str] = Field(default_factory=list, description="Campaign content parameters")
-    campaign_id_params: List[str] = Field(default_factory=list, description="Campaign ID parameters")
-    campaign_keyword_params: List[str] = Field(default_factory=list, description="Campaign keyword parameters")
-    campaign_medium_params: List[str] = Field(default_factory=list, description="Campaign medium parameters")
-    campaign_name_params: List[str] = Field(default_factory=list, description="Campaign name parameters")
-    campaign_source_params: List[str] = Field(default_factory=list, description="Campaign source parameters")
-    create_new_visit_when_campaign_changes: Optional[bool] = Field(
+    anonymize_visitor_geolocation_level: str | None = Field(None, description="Geolocation anonymization level")
+    anonymize_visitor_ip_level: int | None = Field(None, description="Anonymize 'n' octets of visitor IP addresses")
+    campaign_content_params: list[str] = Field(default_factory=list, description="Campaign content parameters")
+    campaign_id_params: list[str] = Field(default_factory=list, description="Campaign ID parameters")
+    campaign_keyword_params: list[str] = Field(default_factory=list, description="Campaign keyword parameters")
+    campaign_medium_params: list[str] = Field(default_factory=list, description="Campaign medium parameters")
+    campaign_name_params: list[str] = Field(default_factory=list, description="Campaign name parameters")
+    campaign_source_params: list[str] = Field(default_factory=list, description="Campaign source parameters")
+    create_new_visit_when_campaign_changes: bool | None = Field(
         None, description="Create new visit when campaign changes"
     )
-    create_new_visit_when_website_referrer_changes: Optional[bool] = Field(
+    create_new_visit_when_website_referrer_changes: bool | None = Field(
         None, description="Create new visit when referrer changes"
     )
-    enable_fingerprinting_across_websites: Optional[bool] = Field(
+    enable_fingerprinting_across_websites: bool | None = Field(
         None, description="Enable fingerprinting across websites"
     )
-    set_ip_tracking: Optional[bool] = Field(None, description="Enable IP tracking")
-    exclude_crawlers: Optional[bool] = Field(None, description="Exclude crawler bots")
-    exclude_unknown_urls: Optional[bool] = Field(None, description="Exclude unknown URLs")
-    excluded_ips: List[str] = Field(default_factory=list, description="IPs excluded from tracking")
-    excluded_user_agents: List[str] = Field(
+    set_ip_tracking: bool | None = Field(None, description="Enable IP tracking")
+    exclude_crawlers: bool | None = Field(None, description="Exclude crawler bots")
+    exclude_unknown_urls: bool | None = Field(None, description="Exclude unknown URLs")
+    excluded_ips: list[str] = Field(default_factory=list, description="IPs excluded from tracking")
+    excluded_user_agents: list[str] = Field(
         default_factory=list, description="User agent strings excluded from tracking"
     )
-    site_search_query_params: List[str] = Field(default_factory=list, description="Site search query parameters")
-    site_search_category_params: List[str] = Field(default_factory=list, description="Site search category parameters")
-    fingerprint_based_on_anonymized_ip: Optional[bool] = Field(None, description="Fingerprint based on anonymized IP")
-    keep_url_fragment: Optional[bool] = Field(None, description="Keep URL fragment in tracking")
-    session_limit_exceeded_action: Optional[str] = Field(None, description="Session limit exceeded action")
-    session_max_duration_seconds: Optional[int] = Field(None, description="Maximum session duration in seconds")
-    session_max_event_count: Optional[int] = Field(None, description="Maximum events per session")
-    strip_site_search_query_parameters: Optional[bool] = Field(None, description="Strip site search query parameters")
-    tracking_fingerprint_disabled: Optional[bool] = Field(None, description="Disable tracking fingerprint")
-    use_session_hash: Optional[bool] = Field(None, description="Use session hash for non-anonymous events")
-    use_anonymous_session_hash: Optional[bool] = Field(None, description="Use session hash for anonymous events")
-    url_query_parameter_to_exclude_from_url: List[str] = Field(
+    site_search_query_params: list[str] = Field(default_factory=list, description="Site search query parameters")
+    site_search_category_params: list[str] = Field(default_factory=list, description="Site search category parameters")
+    fingerprint_based_on_anonymized_ip: bool | None = Field(None, description="Fingerprint based on anonymized IP")
+    keep_url_fragment: bool | None = Field(None, description="Keep URL fragment in tracking")
+    session_limit_exceeded_action: str | None = Field(None, description="Session limit exceeded action")
+    session_max_duration_seconds: int | None = Field(None, description="Maximum session duration in seconds")
+    session_max_event_count: int | None = Field(None, description="Maximum events per session")
+    strip_site_search_query_parameters: bool | None = Field(None, description="Strip site search query parameters")
+    tracking_fingerprint_disabled: bool | None = Field(None, description="Disable tracking fingerprint")
+    use_session_hash: bool | None = Field(None, description="Use session hash for non-anonymous events")
+    use_anonymous_session_hash: bool | None = Field(None, description="Use session hash for anonymous events")
+    url_query_parameter_to_exclude_from_url: list[str] = Field(
         default_factory=list, description="URL query parameters to exclude"
     )
-    urls: List[str] = Field(default_factory=list, description="Valid URLs for the app")
+    urls: list[str] = Field(default_factory=list, description="Valid URLs for the app")
 
     # Common field
-    updated_at: Optional[str] = Field(None, description="Last modification timestamp")
+    updated_at: str | None = Field(None, description="Last modification timestamp")
 
 
 class TrackerSettingsAppGetResponse(BaseModel):
@@ -83,11 +81,11 @@ class TrackerSettingsAppGetResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     settings: TrackerSettingsResponse = Field(..., description="Resolved effective settings for the app")
-    app_settings: Optional[AppTrackerSettings] = Field(
+    app_settings: AppTrackerSettings | None = Field(
         None,
         description="Raw app-specific settings as returned by the app tracker settings endpoint",
     )
-    global_settings: Optional[GlobalTrackerSettings] = Field(
+    global_settings: GlobalTrackerSettings | None = Field(
         None, description="Raw global tracker settings used as defaults for the app"
     )
 
@@ -128,5 +126,5 @@ class CopyResourceResponse(BaseModel):
     resource_type: str = Field(..., description="Resource type")
     operation_id: str = Field(..., description="Operation UUID created by the copy call")
     copied_into_app_id: str = Field(..., description="Target app UUID")
-    name: Optional[str] = Field(None, description="Name of the copied resource if available")
-    with_triggers: Optional[bool] = Field(None, description="Whether triggers were copied (tags only)")
+    name: str | None = Field(None, description="Name of the copied resource if available")
+    with_triggers: bool | None = Field(None, description="Whether triggers were copied (tags only)")

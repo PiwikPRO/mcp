@@ -5,7 +5,7 @@ This module provides a simple mapping of tool names to their parameter models,
 following Python's principle of explicit over implicit.
 """
 
-from typing import Any, Dict, Type
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -22,7 +22,7 @@ from ..tools.tag_manager.models import (
     VariableUpdateAttributes,
 )
 
-TOOL_PARAMETER_MODELS: Dict[str, Type[BaseModel]] = {
+TOOL_PARAMETER_MODELS: dict[str, type[BaseModel]] = {
     "apps_create": NewAppAttributes,
     "apps_update": AppEditableAttributes,
     "audiences_create": NewAudienceAttributes,
@@ -41,7 +41,7 @@ TOOL_PARAMETER_MODELS: Dict[str, Type[BaseModel]] = {
 }
 
 
-def get_tool_schema(tool_name: str) -> Dict[str, Any]:
+def get_tool_schema(tool_name: str) -> dict[str, Any]:
     """
     Get JSON schema for a tool's parameters.
 

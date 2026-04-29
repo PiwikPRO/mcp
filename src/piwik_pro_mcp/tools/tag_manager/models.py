@@ -5,7 +5,7 @@ This module provides Pydantic models used specifically by the MCP Tag Manager to
 for validation and schema generation.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -20,17 +20,17 @@ class TagManagerCreateAttributes(BaseModel):
 
     name: str = Field(..., description="Resource name")
     template: str = Field(..., description="Resource template")
-    is_active: Optional[bool] = Field(None, description="Whether resource is active")
+    is_active: bool | None = Field(None, description="Whether resource is active")
 
     # Common template-specific fields that many templates use
-    code: Optional[str] = Field(None, description="Tag code (HTML, script, or CSS)")
-    consent_type: Optional[str] = Field(None, description="Consent type for privacy compliance")
-    tag_type: Optional[str] = Field(None, description="Tag execution type (sync/async)")
-    document_write: Optional[bool] = Field(None, description="Whether tag uses document.write")
-    disable_in_debug_mode: Optional[bool] = Field(None, description="Disable in debug mode")
-    respect_visitors_privacy: Optional[bool] = Field(None, description="Respect visitor privacy settings")
-    priority: Optional[int] = Field(None, description="Tag firing priority")
-    template_options: Optional[Dict[str, Any]] = Field(None, description="Template-specific options")
+    code: str | None = Field(None, description="Tag code (HTML, script, or CSS)")
+    consent_type: str | None = Field(None, description="Consent type for privacy compliance")
+    tag_type: str | None = Field(None, description="Tag execution type (sync/async)")
+    document_write: bool | None = Field(None, description="Whether tag uses document.write")
+    disable_in_debug_mode: bool | None = Field(None, description="Disable in debug mode")
+    respect_visitors_privacy: bool | None = Field(None, description="Respect visitor privacy settings")
+    priority: int | None = Field(None, description="Tag firing priority")
+    template_options: dict[str, Any] | None = Field(None, description="Template-specific options")
 
     @field_validator("template")
     @classmethod
@@ -48,19 +48,19 @@ class TagManagerUpdateAttributes(BaseModel):
 
     model_config = {"extra": "allow"}  # Allow additional fields for template-specific attributes
 
-    name: Optional[str] = Field(None, description="Resource name")
-    template: Optional[str] = Field(None, description="Resource template")
-    is_active: Optional[bool] = Field(None, description="Whether resource is active")
+    name: str | None = Field(None, description="Resource name")
+    template: str | None = Field(None, description="Resource template")
+    is_active: bool | None = Field(None, description="Whether resource is active")
 
     # Common template-specific fields that many templates use
-    code: Optional[str] = Field(None, description="Tag code (HTML, script, or CSS)")
-    consent_type: Optional[str] = Field(None, description="Consent type for privacy compliance")
-    tag_type: Optional[str] = Field(None, description="Tag execution type (sync/async)")
-    document_write: Optional[bool] = Field(None, description="Whether tag uses document.write")
-    disable_in_debug_mode: Optional[bool] = Field(None, description="Disable in debug mode")
-    respect_visitors_privacy: Optional[bool] = Field(None, description="Respect visitor privacy settings")
-    priority: Optional[int] = Field(None, description="Tag firing priority")
-    template_options: Optional[Dict[str, Any]] = Field(None, description="Template-specific options")
+    code: str | None = Field(None, description="Tag code (HTML, script, or CSS)")
+    consent_type: str | None = Field(None, description="Consent type for privacy compliance")
+    tag_type: str | None = Field(None, description="Tag execution type (sync/async)")
+    document_write: bool | None = Field(None, description="Whether tag uses document.write")
+    disable_in_debug_mode: bool | None = Field(None, description="Disable in debug mode")
+    respect_visitors_privacy: bool | None = Field(None, description="Respect visitor privacy settings")
+    priority: int | None = Field(None, description="Tag firing priority")
+    template_options: dict[str, Any] | None = Field(None, description="Template-specific options")
 
 
 class VariableCreateAttributes(BaseModel):
@@ -70,9 +70,8 @@ class VariableCreateAttributes(BaseModel):
 
     variable_type: str = Field(..., description="Variable type")
     name: str = Field(..., description="Variable name")
-    is_active: Optional[bool] = Field(None, description="Whether variable is active")
-    value: Optional[str] = Field(None, description="Value differs based on variable type")
-    options: Optional[Dict[str, Any]] = Field(None, description="Template-specific options.")
+    value: str | None = Field(None, description="Value differs based on variable type")
+    options: dict[str, Any] | None = Field(None, description="Template-specific options.")
 
     @field_validator("variable_type")
     @classmethod
@@ -92,7 +91,6 @@ class TriggerCreateAttributes(BaseModel):
 
     name: str = Field(..., description="Trigger name")
     trigger_type: str = Field(..., description="Trigger type (must match assets)")
-    is_active: Optional[bool] = Field(None, description="Whether trigger is active")
 
     @field_validator("trigger_type")
     @classmethod
@@ -110,10 +108,9 @@ class VariableUpdateAttributes(BaseModel):
 
     model_config = {"extra": "allow"}  # Allow additional fields for template-specific attributes
 
-    name: Optional[str] = Field(None, description="Variable name")
-    is_active: Optional[bool] = Field(None, description="Whether variable is active")
-    value: Optional[str] = Field(None, description="Value differs based on variable type")
-    options: Optional[Dict[str, Any]] = Field(None, description="Template-specific options.")
+    name: str | None = Field(None, description="Variable name")
+    value: str | None = Field(None, description="Value differs based on variable type")
+    options: dict[str, Any] | None = Field(None, description="Template-specific options.")
 
 
 class PublishStatusResponse(BaseModel):
@@ -121,4 +118,4 @@ class PublishStatusResponse(BaseModel):
 
     status: str = Field(..., description="Operation status")
     message: str = Field(..., description="Operation details")
-    version_info: Dict[str, Any] = Field(default_factory=dict, description="Information about the published version")
+    version_info: dict[str, Any] = Field(default_factory=dict, description="Information about the published version")

@@ -3,7 +3,6 @@ OAuth2 authentication for Piwik PRO API client.
 """
 
 import time
-from typing import Dict, Optional
 
 import jwt
 import requests
@@ -15,7 +14,7 @@ from .exceptions import AuthenticationError
 class OAuth2Handler:
     """Handles OAuth2 client credentials authentication."""
 
-    _cached_org_name: Optional[str] = None
+    _cached_org_name: str | None = None
 
     def __init__(self, config: Config):
         """
@@ -25,10 +24,10 @@ class OAuth2Handler:
             config: Configuration instance
         """
         self.config = config
-        self._access_token: Optional[str] = None
+        self._access_token: str | None = None
         self._token_expires_at: float = 0
         self._token_buffer = 60  # Refresh token 60 seconds before expiry
-        self._org_name: Optional[str] = None
+        self._org_name: str | None = None
 
     def get_access_token(self) -> str:
         """
@@ -106,22 +105,22 @@ class OAuth2Handler:
             raise AuthenticationError(f"Invalid token response format: missing {str(e)}")
 
     @property
-    def org_name(self) -> Optional[str]:
+    def org_name(self) -> str | None:
         return self._org_name
 
     @classmethod
-    def get_cached_org_name(cls) -> Optional[str]:
+    def get_cached_org_name(cls) -> str | None:
         return cls._cached_org_name
 
     @staticmethod
-    def _extract_org_from_jwt(token: str) -> Optional[str]:
+    def _extract_org_from_jwt(token: str) -> str | None:
         try:
             payload = jwt.decode(token, options={"verify_signature": False})
             return payload.get("org")
         except Exception:
             return None
 
-    def get_auth_headers(self) -> Dict[str, str]:
+    def get_auth_headers(self) -> dict[str, str]:
         """
         Get authentication headers for API requests.
 

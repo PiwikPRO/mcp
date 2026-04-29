@@ -18,6 +18,9 @@
       "Marketing automation workflows"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.instance_url"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "marketing_automation",

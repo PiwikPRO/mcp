@@ -20,6 +20,54 @@
       "Display campaign performance"
     ]
   },
+  "variable_reference_fields": {
+    "type_variant_counter_standard_method": [
+      "template_options.advertiser_id",
+      "template_options.group_tag_string",
+      "template_options.activity_tag_string",
+      "template_options.u",
+      "template_options.tran",
+      "template_options.custom_variables[].value"
+    ],
+    "type_variant_counter_session": [
+      "template_options.advertiser_id",
+      "template_options.group_tag_string",
+      "template_options.activity_tag_string",
+      "template_options.session_id",
+      "template_options.u",
+      "template_options.tran",
+      "template_options.custom_variables[].value"
+    ],
+    "type_variant_counter_unique_method": [
+      "template_options.advertiser_id",
+      "template_options.group_tag_string",
+      "template_options.activity_tag_string",
+      "template_options.u",
+      "template_options.tran",
+      "template_options.custom_variables[].value"
+    ],
+    "type_variant_sales_item_sold": [
+      "template_options.advertiser_id",
+      "template_options.group_tag_string",
+      "template_options.activity_tag_string",
+      "template_options.revenue",
+      "template_options.order_id",
+      "template_options.quantity",
+      "template_options.u",
+      "template_options.tran",
+      "template_options.custom_variables[].value"
+    ],
+    "type_variant_sales_transactions": [
+      "template_options.advertiser_id",
+      "template_options.group_tag_string",
+      "template_options.activity_tag_string",
+      "template_options.revenue",
+      "template_options.order_id",
+      "template_options.u",
+      "template_options.tran",
+      "template_options.custom_variables[].value"
+    ]
+  },
   "variants": {
     "template_options.type": {
       "description": "Selects Counter or Sales. Required.",

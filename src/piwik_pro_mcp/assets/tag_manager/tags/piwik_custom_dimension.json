@@ -21,6 +21,9 @@
       "Campaign or traffic source"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.custom_dimensions[].value"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

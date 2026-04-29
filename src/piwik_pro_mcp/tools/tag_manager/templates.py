@@ -6,7 +6,7 @@ about available templates for tags, triggers, and variables.
 """
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -19,7 +19,7 @@ from piwik_pro_mcp.common.templates import (
 )
 
 
-def get_tag_template(template_name: str) -> Dict[str, Any]:
+def get_tag_template(template_name: str) -> dict[str, Any]:
     try:
         assets_dir: Path = get_assets_base_path() / "tag_manager" / "tags"
         template_file: Path = assets_dir / f"{template_name}.json"
@@ -35,7 +35,7 @@ def get_tag_template(template_name: str) -> Dict[str, Any]:
         raise RuntimeError(f"Failed to get tag template information: {str(e)}")
 
 
-def get_available_tag_templates() -> Dict[str, Any]:
+def get_available_tag_templates() -> dict[str, Any]:
     try:
         available_assets = list_available_assets("tag_manager/tags")
 
@@ -46,12 +46,12 @@ def get_available_tag_templates() -> Dict[str, Any]:
                 "next_steps": [
                     "Use get_tag_template(template_name='TEMPLATE_NAME') to get detailed information "
                     "about a specific template",
-                    "Use create_tag() with the template information to create tags",
+                    "Use tags_create() with the template information to create tags",
                 ],
                 "example_workflow": {
                     "step_1": "get_available_tag_templates() - See all available templates",
                     "step_2": "get_tag_template(template_name='custom_tag') - Get details for a specific template",
-                    "step_3": "create_tag(app_id='...', attributes={...}) - Create the tag with proper attributes",
+                    "step_3": "tags_create(app_id='...', attributes={...}) - Create the tag with proper attributes",
                 },
             },
             "note": "Each template provides comprehensive documentation including required attributes, "
@@ -62,7 +62,7 @@ def get_available_tag_templates() -> Dict[str, Any]:
         raise RuntimeError(f"Failed to list available templates: {str(e)}")
 
 
-def get_trigger_template(template_name: str) -> Dict[str, Any]:
+def get_trigger_template(template_name: str) -> dict[str, Any]:
     try:
         assets_dir: Path = get_assets_base_path() / "tag_manager" / "triggers"
         template_file: Path = assets_dir / f"{template_name}.json"
@@ -80,7 +80,7 @@ def get_trigger_template(template_name: str) -> Dict[str, Any]:
         raise RuntimeError(f"Failed to get trigger template information: {str(e)}")
 
 
-def get_available_trigger_templates() -> Dict[str, Any]:
+def get_available_trigger_templates() -> dict[str, Any]:
     try:
         available_assets = list_available_assets("tag_manager/triggers")
 
@@ -91,13 +91,13 @@ def get_available_trigger_templates() -> Dict[str, Any]:
                 "next_steps": [
                     "Use get_trigger_template(template_name='TEMPLATE_NAME') to get detailed information "
                     "about a specific trigger template",
-                    "Use create_trigger() with the template information to create triggers",
+                    "Use triggers_create() with the template information to create triggers",
                 ],
                 "example_workflow": {
                     "step_1": "get_available_trigger_templates() - See all available trigger templates",
                     "step_2": "get_trigger_template(template_name='page_view') - "
                     "Get details for a specific trigger template",
-                    "step_3": "create_trigger(app_id='...', attributes={...}) - "
+                    "step_3": "triggers_create(app_id='...', attributes={...}) - "
                     "Create the trigger with proper attributes",
                 },
             },
@@ -109,7 +109,7 @@ def get_available_trigger_templates() -> Dict[str, Any]:
         raise RuntimeError(f"Failed to list available trigger templates: {str(e)}")
 
 
-def get_variable_template(template_name: str) -> Dict[str, Any]:
+def get_variable_template(template_name: str) -> dict[str, Any]:
     try:
         assets_dir: Path = get_assets_base_path() / "tag_manager" / "variables"
         template_file: Path = assets_dir / f"{template_name}.json"
@@ -127,7 +127,7 @@ def get_variable_template(template_name: str) -> Dict[str, Any]:
         raise RuntimeError(f"Failed to get variable template information: {str(e)}")
 
 
-def get_available_variable_templates() -> Dict[str, Any]:
+def get_available_variable_templates() -> dict[str, Any]:
     try:
         available_assets = list_available_assets("tag_manager/variables")
 
@@ -138,21 +138,21 @@ def get_available_variable_templates() -> Dict[str, Any]:
                 "discovery_workflow": [
                     "Use get_variable_template(template_name='TEMPLATE_NAME') to get detailed information "
                     "about a specific variable template with field mutability guidance",
-                    "Use create_variable() with the template information to create variables",
-                    "Use update_variable() with the template information to update variables "
+                    "Use variables_create() with the template information to create variables",
+                    "Use variables_update() with the template information to update variables "
                     "(only editable fields processed)",
                 ],
                 "create_update_workflow": {
                     "step_1": "get_available_variable_templates() - See all available variable templates",
                     "step_2": "get_variable_template(template_name='data_layer') - "
                     "Get complete create/update template info",
-                    "step_3": "create_variable(app_id='...', attributes={...}) - "
+                    "step_3": "variables_create(app_id='...', attributes={...}) - "
                     "Create variable with proper attributes",
-                    "step_4": "update_variable(app_id='...', variable_id='...', attributes={...}) - "
+                    "step_4": "variables_update(app_id='...', variable_id='...', attributes={...}) - "
                     "Update with editable fields only",
                 },
                 "field_mutability": {
-                    "editable": "✅ Can be updated anytime (name, is_active, template options)",
+                    "editable": "✅ For variables_update only (e.g., name, is_active, template options). Do NOT include in variables_create.",  # noqa: E501
                     "create_only": "⚠️ Set during creation, immutable after (variable_type)",
                     "read_only": "🚫 Auto-generated, never user-modifiable (created_at, updated_at)",
                 },
@@ -171,215 +171,93 @@ def register_template_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Tag Templates", "readOnlyHint": True})
     def templates_list_tags() -> dict:
-        """List all available Piwik PRO Tag Manager templates.
+        """List all available tag templates for use with tags_create.
 
-        This tool returns a list of all available tag templates that can be used with tags_create.
-        Each template has detailed documentation available via templates_get_tag.
-
-        Returns:
-            Dictionary containing:
-            - available_templates: Mapping of template names to metadata (name_aliases, description)
-            - total_count: Number of available templates
-            - usage_guide: Instructions on how to use templates
-            - note: Information about template documentation
-
-        Examples:
-            # Get list of all available templates
-            templates = templates_list_tags()
-
-            # Then get details for a specific template
-            details = templates_get_tag(template_name='custom_tag')
+        ⚠️ IMPORTANT: You MUST call this tool before calling templates_get_tag() or tags_create()
+        to discover exact template names. Do NOT guess template names.
 
         Workflow:
-            1. Use templates_list_tags() to see all available templates
-            2. Use templates_get_tag(template_name='NAME') to get specific requirements
-            3. Use tags_create() with the template information to create the tag
+            1. templates_list_tags() → get exact template names
+            2. templates_get_tag(template_name='...') → get requirements for chosen template
+            3. tags_create() → create the tag
         """
         return get_available_tag_templates()
 
     @mcp.tool(annotations={"title": "Piwik PRO: Get Tag Template", "readOnlyHint": True})
     def templates_get_tag(template_name: str) -> dict:
-        """Get detailed information about a specific Piwik PRO Tag Manager template.
+        """Get requirements and usage details for a specific tag template.
 
-        This tool provides comprehensive guidance on how to use tag templates with tags_create,
-        including required attributes, examples, and best practices optimized for AI understanding.
+        ⚠️ IMPORTANT: You MUST call templates_list_tags() first to get exact template names.
+        Do NOT guess template names — use only names returned by templates_list_tags().
 
         Args:
-            template_name: Name of the template to get details for (e.g., 'custom_tag', 'piwik', 'google_analytics')
-
-        Returns:
-            Dictionary containing complete template information including:
-            - Template description and use cases
-            - Required and optional attributes with detailed explanations
-            - Complete MCP tool usage examples
-            - Best practices and common mistakes
-            - Troubleshooting guide
-
-        Examples:
-            # Get detailed info for custom tag template
-            custom_tag_info = templates_get_tag(template_name='custom_tag')
-
-            # Get info for Piwik PRO analytics template
-            piwik_info = templates_get_tag(template_name='piwik')
-
-            # Get info for Google Analytics template
-            ga_info = templates_get_tag(template_name='google_analytics')
+            template_name: Exact template name as returned by templates_list_tags()
 
         Workflow:
-            1. Use templates_list_tags() to see all available templates
-            2. Use this tool to get specific requirements for your chosen template
-            3. Use tags_create() with the template information to create the tag
+            1. templates_list_tags() → get exact template names
+            2. templates_get_tag(template_name='...') → get requirements (this tool)
+            3. tags_create() → create the tag
         """
         return get_tag_template(template_name)
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Trigger Templates", "readOnlyHint": True})
     def templates_list_triggers() -> dict:
-        """List all available Piwik PRO Tag Manager trigger templates.
+        """List all available trigger templates for use with triggers_create.
 
-        This tool returns a list of all available trigger templates that can be used with triggers_create.
-        Each template has detailed documentation available via templates_get_trigger.
-
-        Returns:
-            Dictionary containing:
-            - available_templates: Mapping of trigger template names to metadata (name_aliases, description)
-            - total_count: Number of available trigger templates
-            - usage_guide: Instructions on how to use trigger templates
-            - note: Information about trigger template documentation
-
-        Examples:
-            # Get list of all available trigger templates
-            templates = templates_list_triggers()
-
-            # Then get details for a specific trigger template
-            details = templates_get_trigger(template_name='page_view')
+        ⚠️ IMPORTANT: You MUST call this tool before calling templates_get_trigger() or triggers_create()
+        to discover exact trigger type names. Do NOT guess trigger type names.
 
         Workflow:
-            1. Use templates_list_triggers() to see all available trigger templates
-            2. Use templates_get_trigger(template_name='NAME') to get specific requirements
-            3. Use triggers_create() with the template information to create the trigger
+            1. templates_list_triggers() → get exact trigger type names
+            2. templates_get_trigger(template_name='...') → get requirements for chosen type
+            3. triggers_create() → create the trigger
         """
         return get_available_trigger_templates()
 
     @mcp.tool(annotations={"title": "Piwik PRO: Get Trigger Template", "readOnlyHint": True})
     def templates_get_trigger(template_name: str) -> dict:
-        """Get detailed information about a specific Piwik PRO Tag Manager trigger template.
+        """Get requirements and usage details for a specific trigger template.
 
-        This tool provides comprehensive guidance on how to use trigger templates with triggers_create,
-        including required attributes, examples, and best practices optimized for AI understanding.
+        ⚠️ IMPORTANT: You MUST call templates_list_triggers() first to get exact trigger type names.
+        Do NOT guess trigger type names — use only names returned by templates_list_triggers().
 
         Args:
-            template_name: Name of the trigger template to get details for
-                (e.g., 'page_view', 'click', 'form_submission')
-
-        Returns:
-            Dictionary containing complete trigger template information including:
-            - Template description and use cases
-            - Required and optional attributes with detailed explanations
-            - Complete MCP tool usage examples
-            - Best practices and common mistakes
-            - Troubleshooting guide
-
-        Examples:
-            # Get detailed info for page view trigger template
-            page_view_info = templates_get_trigger(template_name='page_view')
-
-            # Get info for click trigger template
-            click_info = templates_get_trigger(template_name='click')
-
-            # Get info for form submission trigger template
-            form_info = templates_get_trigger(template_name='form_submission')
+            template_name: Exact trigger type name as returned by templates_list_triggers()
 
         Workflow:
-            1. Use templates_list_triggers() to see all available trigger templates
-            2. Use this tool to get specific requirements for your chosen trigger template
-            3. Use triggers_create() with the template information to create the trigger
+            1. templates_list_triggers() → get exact trigger type names
+            2. templates_get_trigger(template_name='...') → get requirements (this tool)
+            3. triggers_create() → create the trigger
         """
         return get_trigger_template(template_name)
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Variable Templates", "readOnlyHint": True})
     def templates_list_variables() -> dict:
-        """List all available Piwik PRO Tag Manager variable templates.
+        """List all available variable templates for use with variables_create and variables_update.
 
-        This tool provides discovery of all available variable templates that can be used with
-        variables_create and variables_update operations. Each template includes comprehensive
-        documentation with field mutability guidance for both create and update scenarios.
-
-        Returns:
-            Dictionary containing:
-            - available_templates: Mapping of template names to metadata (name_aliases, description)
-            - total_count: Number of available templates
-            - usage_guide: Workflow instructions for template discovery and usage
-            - field_mutability: Overview of editable, create-only, and read-only fields
-
-        Examples:
-            # Get all available variable templates
-            templates = templates_list_variables()
-
-            # Example response structure:
-            {
-                "available_templates": {
-                    "data_layer": {
-                        "name_aliases": ["Data Layer Variable"],
-                        "description": "Reads values from the data layer object."
-                    },
-                    "custom_javascript": {
-                        "name_aliases": ["Custom JavaScript Variable"],
-                        "description": "Computes a value by executing user-defined JavaScript."
-                    }
-                },
-                "total_count": 3,
-                "usage_guide": {
-                    "discovery_workflow": [...],
-                    "create_update_workflow": {...},
-                    "field_mutability": {...}
-                }
-            }
+        ⚠️ IMPORTANT: You MUST call this tool before calling templates_get_variable() or variables_create()
+        to discover exact variable type names. Do NOT guess variable type names.
 
         Workflow:
-            1. Use this tool to see all available variable templates
-            2. Use templates_get_variable() to get specific requirements and mutability info
-            3. Use variables_create() or variables_update() with template information
+            1. templates_list_variables() → get exact variable type names
+            2. templates_get_variable(template_name='...') → get requirements for chosen type
+            3. variables_create() or variables_update() → create/update the variable
         """
         return get_available_variable_templates()
 
     @mcp.tool(annotations={"title": "Piwik PRO: Get Variable Template", "readOnlyHint": True})
     def templates_get_variable(template_name: str) -> dict:
-        """Get detailed information about a specific Piwik PRO Tag Manager variable template.
+        """Get requirements, field mutability, and usage details for a specific variable template.
 
-        This tool provides comprehensive guidance for using variable templates with both create_variable
-        and update_variable operations. It includes complete field mutability information to help you
-        understand which fields can be modified after creation.
+        ⚠️ IMPORTANT: You MUST call templates_list_variables() first to get exact variable type names.
+        Do NOT guess variable type names — use only names returned by templates_list_variables().
 
         Args:
-            template_name: Name of the variable template to get details for
-                          Available templates include: 'data_layer', 'custom_javascript', 'constant'
-
-        Returns:
-            Dictionary containing complete variable template information including:
-            - template_name and display_name
-            - description and ai_usage_guide
-            - mcp_usage: Separate guidance for create_variable and update_variable
-            - required_attributes, optional_attributes, read_only_attributes
-            - field_mutability_guide: Detailed explanation of field editability
-            - complete_examples: Working examples for both create and update operations
-            - troubleshooting and best practices
-
-        Examples:
-            # Get dataLayer variable template info
-            template = templates_get_variable(template_name='data_layer')
-
-            # Get custom JavaScript variable template info
-            template = templates_get_variable(template_name='custom_javascript')
-
-        Field Mutability Overview:
-            ✅ Editable: name, is_active, template-specific options (can be updated anytime)
-            ⚠️ Create-only: variable_type (set during creation, immutable after)
-            🚫 Read-only: created_at, updated_at (auto-generated, never user-modifiable)
+            template_name: Exact variable type name as returned by templates_list_variables()
 
         Workflow:
-            1. Use templates_list_variables() to see all available templates
-            2. Use this tool to get specific requirements and mutability info for your chosen template
-            3. Use variables_create() with the template information to create variables
-            4. Use variables_update() with editable fields only to update variables
+            1. templates_list_variables() → get exact variable type names
+            2. templates_get_variable(template_name='...') → get requirements (this tool)
+            3. variables_create() or variables_update() → create/update the variable
         """
         return get_variable_template(template_name)

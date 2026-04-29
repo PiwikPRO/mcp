@@ -5,8 +5,6 @@ This module provides MCP tool functions for managing Piwik PRO apps,
 including creation, updating, and listing of apps.
 """
 
-from typing import Optional
-
 from mcp.server.fastmcp import FastMCP
 
 from piwik_pro_mcp.api.exceptions import BadRequestError, NotFoundError
@@ -22,7 +20,7 @@ from .models import (
 )
 
 
-def list_apps(limit: int = 100, offset: int = 0, search: Optional[str] = None) -> AppListMCPResponse:
+def list_apps(limit: int = 100, offset: int = 0, search: str | None = None) -> AppListMCPResponse:
     try:
         client = create_piwik_client()
         response = client.apps.list_apps(limit=limit, offset=offset, search=search)
@@ -146,7 +144,7 @@ def register_app_tools(mcp: FastMCP) -> None:
     """Register all app management tools with the MCP server."""
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Apps", "readOnlyHint": True})
-    def apps_list(limit: int = 100, offset: int = 0, search: Optional[str] = None) -> AppListMCPResponse:
+    def apps_list(limit: int = 100, offset: int = 0, search: str | None = None) -> AppListMCPResponse:
         """List apps from Piwik PRO analytics.
 
         Retrieves a list of applications (websites/apps) that are being tracked

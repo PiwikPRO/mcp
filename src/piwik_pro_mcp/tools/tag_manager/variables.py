@@ -5,7 +5,7 @@ This module provides MCP tools for managing variables, including creation,
 updating, listing, and detailed information retrieval.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -26,7 +26,7 @@ def list_variables(
     app_id: str,
     limit: int = 10,
     offset: int = 0,
-    filters: Optional[Dict[str, Any]] = None,
+    filters: dict[str, Any] | None = None,
 ) -> TagManagerListResponse:
     if filters is not None:
         filters = validate_data_against_model(filters, VariableFilters, invalid_item_label="filter")
@@ -123,8 +123,8 @@ def update_variable(app_id: str, variable_id: str, attributes: dict) -> TagManag
 def copy_variable(
     app_id: str,
     variable_id: str,
-    target_app_id: Optional[str] = None,
-    name: Optional[str] = None,
+    target_app_id: str | None = None,
+    name: str | None = None,
 ) -> CopyResourceResponse:
     try:
         client = create_piwik_client()
@@ -138,8 +138,8 @@ def copy_variable(
         if response is None:
             raise RuntimeError("Empty response from API while copying variable")
 
-        data: Dict[str, Any] = response.get("data", {})
-        relationships: Dict[str, Any] = data.get("relationships", {})
+        data: dict[str, Any] = response.get("data", {})
+        relationships: dict[str, Any] = data.get("relationships", {})
         operation = relationships.get("operation", {}).get("data", {})
 
         resp_name = name
@@ -169,7 +169,7 @@ def register_variable_tools(mcp: FastMCP) -> None:
         app_id: str,
         limit: int = 10,
         offset: int = 0,
-        filters: Optional[Dict[str, Any]] = None,
+        filters: dict[str, Any] | None = None,
     ) -> TagManagerListResponse:
         """List variables for an app in Piwik PRO Tag Manager.
 
@@ -177,12 +177,7 @@ def register_variable_tools(mcp: FastMCP) -> None:
             app_id: UUID of the app
             limit: Maximum number of variables to return (default: 10)
             offset: Number of variables to skip (default: 0)
-            filters: Filter by variable name, type, and builtin status
-
-        Returns:
-            Dictionary containing variable list and metadata including:
-            - data: List of variable objects with id, name, template, and attributes
-            - meta: Metadata with pagination information
+            filters: Optional filter keys: `name`, `variable_type`, and `builtin`
         """
         return list_variables(
             app_id=app_id,
@@ -193,73 +188,23 @@ def register_variable_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(annotations={"title": "Piwik PRO: Get Variable", "readOnlyHint": True})
     def variables_get(app_id: str, variable_id: str) -> TagManagerSingleResponse:
-        """Get detailed information about a specific variable.
-
-        Args:
-            app_id: UUID of the app
-            variable_id: UUID of the variable
-
-        Returns:
-            Dictionary containing variable details including:
-            - data: Variable object with id, name, template, and all attributes
-            - Variable configuration and value settings
-        """
+        """Get detailed information about a specific variable."""
         return get_variable(app_id, variable_id)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Create Variable"})
     def variables_create(app_id: str, attributes: dict) -> TagManagerSingleResponse:
         """Create a new variable in Piwik PRO Tag Manager using JSON attributes.
 
-        Only variable types listed by `templates_list_variables()` are supported. Any other type will be refused.
+        Before calling this tool, always check both:
+        - `templates_list_variables()` and `templates_get_variable(template_name)` for variable type requirements
+        - `tools_parameters_get("variables_create")` for the runtime JSON schema of the `attributes` object
 
-        This tool uses a simplified interface with 2 parameters: app_id and attributes.
-        Use tools_parameters_get("variables_create") to get the complete JSON schema
-        with all available fields, types, and validation rules.
+        Only variable types listed by `templates_list_variables()` are supported.
 
-        💡 TIP: Use these tools to discover available templates and their requirements:
-        - templates_list_variables() - List all available variable templates
-        - templates_get_variable(template_name='data_layer') - Get complete template info with field mutability
-
-        Args:
-            app_id: UUID of the app
-            attributes: Dictionary containing variable attributes for creation. Required fields are
-                       'name' and 'variable_type'. Field 'is_active' is optional.
-
-        Returns:
-            Dictionary containing created variable information including:
-            - data: Created variable object with id, name, template, and attributes
-            - Variable configuration and value settings
-
-        Parameter Discovery:
-            Use tools_parameters_get("variables_create") to get the complete JSON schema
-            for all available fields. This returns validation rules, field types, and examples.
-
-        Template Discovery:
-            Use templates_list_variables() to see all available templates, then
-            use templates_get_variable(template_name) for detailed template information.
-
-        Examples:
-            # Get available parameters first
-            schema = tools_parameters_get("variables_create")
-
-            # Discover available templates
-            templates = templates_list_variables()
-            template_info = templates_get_variable(template_name='data_layer')
-
-            # Create data layer variable
-            attributes = {
-                "name": "Order Total",
-                "variable_type": "data_layer",
-                "data_layer_variable_name": "ecommerce.purchase.value",
-                "default_value": "0"
-            }
-
-            # Create custom JavaScript variable
-            attributes = {
-                "name": "User Status",
-                "variable_type": "custom_javascript",
-                "value": "return localStorage.getItem('userId') ? 'logged_in' : 'guest';"
-            }
+        Required workflow:
+            1. templates_list_variables() → get exact variable type names
+            2. templates_get_variable(template_name='...') → get requirements for your chosen type
+            3. variables_create() → create the variable with verified type name
         """
         return create_variable(app_id, attributes)
 
@@ -267,51 +212,11 @@ def register_variable_tools(mcp: FastMCP) -> None:
     def variables_update(app_id: str, variable_id: str, attributes: dict) -> TagManagerSingleResponse:
         """Update an existing variable in Piwik PRO Tag Manager using JSON attributes.
 
-        This tool updates only editable fields and automatically filters out create-only and read-only fields.
-        Use the variable template tools to understand field mutability before updating.
+        Only editable fields are processed — create-only fields (variable_type) are ignored,
+        read-only fields (created_at, updated_at) are filtered out automatically.
 
-        💡 TIP: Use these tools to understand field mutability and available options:
-        - templates_list_variables() - List all available variable templates
-        - templates_get_variable(template_name) - Get detailed field mutability information
-
-        Args:
-            app_id: UUID of the app
-            variable_id: UUID of the variable to update
-            attributes: Dictionary containing variable attributes to update. Only editable fields will be processed.
-                       Create-only fields (variable_type) will be ignored.
-                       Read-only fields (created_at, updated_at) will be filtered out automatically.
-
-        Returns:
-            Dictionary containing updated variable information including:
-            - data: Updated variable object with id, name, template, and attributes
-            - Variable configuration and updated settings
-
-        Field Mutability:
-            ✅ Editable: name, is_active, template-specific options (can be updated anytime)
-            ⚠️ Create-only: variable_type (ignored in updates)
-            🚫 Read-only: created_at, updated_at (filtered out automatically)
-
-        Examples:
-            # Get template information to understand editable fields
-            template_info = templates_get_variable(template_name='data_layer')
-
-            # Update variable name and settings
-            attributes = {
-                "name": "Updated Order Total",
-                "is_active": True,
-                "data_layer_variable_name": "ecommerce.transaction_value",
-                "default_value": "0.00"
-            }
-
-            # Update custom JavaScript variable code
-            attributes = {
-                "name": "Enhanced User Status",
-                "value": "return localStorage.getItem('userId') ? 'premium' : 'free';"
-            }
-
-        Parameter Discovery:
-            Use tools_parameters_get("variables_update") to get the complete JSON schema
-            for all available fields, then consult the variable template for mutability information.
+        Use templates_get_variable(template_name) to understand field mutability before updating.
+        Use tools_parameters_get("variables_update") to get the complete JSON schema.
         """
         return update_variable(app_id, variable_id, attributes)
 
@@ -319,18 +224,12 @@ def register_variable_tools(mcp: FastMCP) -> None:
     def variables_copy(
         app_id: str,
         variable_id: str,
-        target_app_id: Optional[str] = None,
-        name: Optional[str] = None,
+        target_app_id: str | None = None,
+        name: str | None = None,
     ) -> CopyResourceResponse:
         """Copy a variable, optionally to another app.
 
         Args:
-            app_id: UUID of the source app
-            variable_id: UUID of the variable to copy
             target_app_id: Optional UUID of the target app. If omitted, copies within the same app.
-            name: Optional new name for the copied variable
-
-        Returns:
-            Normalized copy response including new resource id and operation id.
         """
         return copy_variable(app_id, variable_id, target_app_id, name)

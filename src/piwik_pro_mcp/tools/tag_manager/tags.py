@@ -5,7 +5,7 @@ This module provides MCP tools for managing tags, including creation,
 updating, listing, deletion, and relationship management with triggers.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -22,7 +22,7 @@ def list_tags(
     app_id: str,
     limit: int = 10,
     offset: int = 0,
-    filters: Optional[Dict[str, Any]] = None,
+    filters: dict[str, Any] | None = None,
 ) -> TagManagerListResponse:
     if filters is not None:
         filters = validate_data_against_model(filters, TagFilters, invalid_item_label="filter")
@@ -48,11 +48,11 @@ def get_tag(app_id: str, tag_id: str) -> TagManagerSingleResponse:
 def get_tag_triggers(
     app_id: str,
     tag_id: str,
-    limit: Optional[int] = None,
-    offset: Optional[int] = None,
-    sort: Optional[str] = None,
-    name: Optional[str] = None,
-    trigger_type: Optional[str] = None,
+    limit: int | None = None,
+    offset: int | None = None,
+    sort: str | None = None,
+    name: str | None = None,
+    trigger_type: str | None = None,
 ) -> TagManagerListResponse:
     try:
         client = create_piwik_client()
@@ -170,8 +170,8 @@ def delete_tag(app_id: str, tag_id: str) -> OperationStatusResponse:
 def copy_tag(
     app_id: str,
     tag_id: str,
-    target_app_id: Optional[str] = None,
-    name: Optional[str] = None,
+    target_app_id: str | None = None,
+    name: str | None = None,
     with_triggers: bool = False,
 ) -> CopyResourceResponse:
     try:
@@ -187,8 +187,8 @@ def copy_tag(
         if response is None:
             raise RuntimeError("Empty response from API while copying tag")
 
-        data: Dict[str, Any] = response.get("data", {})
-        relationships: Dict[str, Any] = data.get("relationships", {})
+        data: dict[str, Any] = response.get("data", {})
+        relationships: dict[str, Any] = data.get("relationships", {})
         operation = relationships.get("operation", {}).get("data", {})
 
         return CopyResourceResponse(
@@ -208,12 +208,14 @@ def copy_tag(
 
 
 def register_tag_tools(mcp: FastMCP) -> None:
+    """Register all tag management tools with the MCP server."""
+
     @mcp.tool(annotations={"title": "Piwik PRO: List Tags", "readOnlyHint": True})
     def tags_list(
         app_id: str,
         limit: int = 10,
         offset: int = 0,
-        filters: Optional[Dict[str, Any]] = None,
+        filters: dict[str, Any] | None = None,
     ) -> TagManagerListResponse:
         """List tags for an app in Piwik PRO Tag Manager.
 
@@ -221,12 +223,7 @@ def register_tag_tools(mcp: FastMCP) -> None:
             app_id: UUID of the app
             limit: Maximum number of tags to return (default: 10)
             offset: Number of tags to skip (default: 0)
-            filters: Filter by tag name, is_active, template, consent_type, is_prioritized, has_any_triggers, tag_type
-
-        Returns:
-            Dictionary containing tag list and metadata including:
-            - data: List of tag objects with id, name, template, and attributes
-            - meta: Metadata with pagination information
+            filters: Filter by tag name, is_active, template, consent_type, is_prioritized, has_any_triggers
         """
         return list_tags(app_id=app_id, limit=limit, offset=offset, filters=filters)
 
@@ -234,19 +231,9 @@ def register_tag_tools(mcp: FastMCP) -> None:
     def tags_get(app_id: str, tag_id: str) -> TagManagerSingleResponse:
         """Get detailed information about a specific tag.
 
-        Args:
-            app_id: UUID of the app
-            tag_id: UUID of the tag
-
-        Returns:
-            Dictionary containing tag details including:
-            - data: Tag object with id, name, template, and all attributes
-            - Tag configuration and settings
-
         Related Tools:
             - tags_list_triggers(app_id, tag_id) - Get triggers attached to this tag
-            - templates_get_tag(template_name) - Get template info for tag's template
-            - tags_update(app_id, tag_id, attributes) - Update this tag
+            - variables_list(app_id) - Discover valid variable names used by tag fields
         """
         return get_tag(app_id, tag_id)
 
@@ -254,50 +241,22 @@ def register_tag_tools(mcp: FastMCP) -> None:
     def tags_list_triggers(
         app_id: str,
         tag_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[str] = None,
-        name: Optional[str] = None,
-        trigger_type: Optional[str] = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: str | None = None,
+        name: str | None = None,
+        trigger_type: str | None = None,
     ) -> dict:
         """Get list of triggers attached to a specific tag.
 
-        This tool helps you understand what triggers are configured to fire a specific tag,
-        which is essential for debugging and managing tag behavior.
-
         Args:
             app_id: UUID of the app
-            tag_id: UUID of the tag to get triggers for
-            limit: Maximum number of triggers to return (optional)
-            offset: Number of triggers to skip for pagination (optional)
-            sort: Sort order - 'name', '-name', 'created_at', '-created_at', etc. (optional)
-            name: Filter by trigger name (partial match, optional)
-            trigger_type: Filter by trigger type like 'page_view', 'click', 'custom_event' (optional)
-
-        Returns:
-            Dictionary containing list of triggers attached to the tag including:
-            - data: Array of trigger objects with id, type, and attributes
-            - meta: Pagination metadata with total count
-            - links: Pagination links for navigation
-
-        Examples:
-            # Get all triggers for a tag
-            tags_list_triggers("app-id", "tag-id")
-
-            # Get triggers with pagination
-            tags_list_triggers("app-id", "tag-id", limit=10, offset=0)
-
-            # Filter by trigger type
-            tags_list_triggers("app-id", "tag-id", trigger_type="click")
-
-            # Sort by name descending
-            tags_list_triggers("app-id", "tag-id", sort="-name")
-
-        Use Cases:
-            - Debug why a tag is not firing (check if triggers are attached)
-            - Understand tag behavior by seeing all its triggers
-            - Audit tag configuration for compliance or optimization
-            - Manage trigger-tag relationships in complex setups
+            tag_id: UUID of the tag
+            limit: Maximum number of triggers to return
+            offset: Number of triggers to skip
+            sort: Sort order - 'name', '-name', 'created_at', '-created_at', etc.
+            name: Filter by trigger name (partial match)
+            trigger_type: Filter by trigger type
         """
         return get_tag_triggers(app_id, tag_id, limit, offset, sort, name, trigger_type)
 
@@ -305,72 +264,27 @@ def register_tag_tools(mcp: FastMCP) -> None:
     def tags_create(app_id: str, attributes: dict, triggers: str = "") -> TagManagerSingleResponse:
         """Create a new tag in Piwik PRO Tag Manager using JSON attributes.
 
-        Only templates listed by `templates_list_tags()` are supported. Any other template will be refused.
+        Before calling this tool, always check both:
+        - `templates_get_tag(template_name)` for template-specific requirements, examples,
+          and variable-reference guidance
+        - `tools_parameters_get("tags_create")` for the runtime JSON schema of the `attributes` object
 
-        💡 TIP: Use these tools to discover available templates and their requirements:
-        - templates_list_tags() - List all available tag templates
-        - templates_get_tag(template_name='custom_tag') - Get detailed requirements
+        Only templates listed by `templates_list_tags()` are supported.
 
-        This tool uses a simplified interface with 3 parameters: app_id, attributes, and triggers.
-        Use tools_parameters_get("tags_create") to get the complete JSON schema
-        with all available fields, types, and validation rules.
+        Required workflow:
+            1. templates_list_tags() → get exact template names
+            2. templates_get_tag(template_name='...') → get requirements for your chosen template
+            3. tags_create() → create the tag with verified template name
 
         Args:
-            app_id: UUID of the app
-            attributes: Dictionary containing tag attributes for creation. Required fields vary by template:
-                       - name: Tag name (always required)
-                       - template: Template type (use templates_get_tag() to see options)
-                       - consent_type: Consent type (e.g., 'not_require_consent', 'analytics')
-                       - Additional required fields depend on the template
-            triggers: Comma-separated list of trigger UUIDs to attach to this tag (optional)
-                     e.g., "trigger-uuid-1,trigger-uuid-2" or "trigger-uuid-1"
+            triggers: Optional comma-separated trigger UUIDs to attach during creation.
+                Use an empty string to create the tag without triggers.
+                Use triggers_list() to discover available triggers and their UUIDs.
+                Use variables_list() to discover available variables used in trigger conditions.
 
         Returns:
-            Dictionary containing created tag information including:
-            - data: Created tag object with id, name, template, and attributes
-            - Tag configuration details
-
-        Template Discovery:
-            Use templates_list_tags() to see all available templates, or
-            templates_get_tag(template_name='TEMPLATE') for specific requirements.
-
-        Trigger Management:
-            - Use triggers_list() to discover available triggers
-            - Use triggers_get() to understand trigger conditions
-            - Use tags_list_triggers() after creation to verify relationships
-
-        Parameter Discovery:
-            Use tools_parameters_get("tags_create") to get the complete JSON schema
-            for all available fields. This returns validation rules, field types, and examples.
-
-        Examples:
-            # Get available templates first
-            templates = templates_list_tags()
-
-            # Get specific template requirements
-            piwik_info = templates_get_tag(template_name='piwik')
-
-            # Create custom tag
-            attributes = {
-                "name": "My Custom Tag",
-                "template": "custom_tag",
-                "consent_type": "not_require_consent",
-                "code": "<script>console.log('Hello World');</script>"
-            }
-
-            # Create tag with triggers attached
-            tags_create(app_id, attributes, triggers="trigger-uuid-1,trigger-uuid-2")
-
-            # Create Piwik PRO analytics tag
-            attributes = {
-                "name": "Piwik Analytics",
-                "template": "piwik",
-                "consent_type": "analytics",
-                "template_options": {
-                    "track_page_view": True,
-                    "link_tracking": True
-                }
-            }
+            Created tag resource. The response may include `data.relationships.unrecognized_variables`
+            when the backend detects unresolved variable references.
         """
         return create_tag(app_id, attributes, triggers)
 
@@ -380,54 +294,15 @@ def register_tag_tools(mcp: FastMCP) -> None:
     ) -> TagManagerSingleResponse:
         """Update an existing tag using JSON attributes.
 
-        This tool uses a simplified interface with 4 parameters: app_id, tag_id, attributes, and triggers.
-        Use tools_parameters_get("tags_update") to get the complete JSON schema
-        with all available fields, types, and validation rules.
+        Before calling this tool, always check both:
+        - `templates_get_tag(template_name)` for template-specific editable fields, examples,
+          and variable-reference guidance
+        - `tools_parameters_get("tags_update")` for the runtime JSON schema of the `attributes` object
 
         Args:
-            app_id: UUID of the app
-            tag_id: UUID of the tag
-            attributes: Dictionary containing tag attributes to update. All fields are optional.
-                      Supported fields include name, template, and is_active.
-            triggers: Comma-separated list of trigger UUIDs to attach to this tag (optional)
-                     If provided, replaces all existing triggers. If not provided, existing triggers remain unchanged.
-                     Use empty string to remove all triggers.
-                     e.g., "trigger-uuid-1,trigger-uuid-2" or "trigger-uuid-1"
-
-        Returns:
-            Dictionary containing updated tag information including:
-            - data: Updated tag object with all current attributes
-            - Updated configuration details
-
-        Trigger Management:
-            - Use triggers_list() to discover available triggers
-            - Use tags_list_triggers() to see current trigger relationships
-            - Use triggers_list_tags() to understand trigger impact
-            - Don't pass triggers parameter to leave existing triggers unchanged
-            - Pass empty string to triggers parameter to remove all triggers
-
-        Parameter Discovery:
-            Use tools_parameters_get("tags_update") to get the complete JSON schema
-            for all available fields. This returns validation rules, field types, and examples.
-
-        Examples:
-            # Get available parameters first
-            schema = tools_parameters_get("tags_update")
-
-            # Update tag name only (existing triggers remain unchanged)
-            attributes = {"name": "Updated Tag Name"}
-
-            # Update tag and set triggers
-            tags_update(app_id, tag_id, {"name": "New Name"}, triggers="trigger-uuid-1,trigger-uuid-2")
-
-            # Remove all triggers from a tag
-            tags_update(app_id, tag_id, {}, triggers="")
-
-            # Update multiple fields
-            attributes = {
-                "name": "Updated Tag",
-                "is_active": False
-            }
+            triggers: Optional comma-separated trigger UUIDs replacing current triggers.
+                Use `__unchanged__` to keep triggers as-is.
+                Use an empty string to remove all triggers.
         """
         return update_tag(app_id, tag_id, attributes, triggers)
 
@@ -435,16 +310,7 @@ def register_tag_tools(mcp: FastMCP) -> None:
     def tags_delete(app_id: str, tag_id: str) -> OperationStatusResponse:
         """Delete a tag from Piwik PRO Tag Manager.
 
-        Warning: This action is irreversible and will permanently delete the tag.
-
-        Args:
-            app_id: UUID of the app
-            tag_id: UUID of the tag
-
-        Returns:
-            Dictionary containing deletion status:
-            - status: "success" if deletion was successful
-            - message: Descriptive message about the deletion
+        Warning: This action is irreversible.
         """
         return delete_tag(app_id, tag_id)
 
@@ -452,20 +318,14 @@ def register_tag_tools(mcp: FastMCP) -> None:
     def tags_copy(
         app_id: str,
         tag_id: str,
-        target_app_id: Optional[str] = None,
-        name: Optional[str] = None,
+        target_app_id: str | None = None,
+        name: str | None = None,
         with_triggers: bool = False,
     ) -> CopyResourceResponse:
         """Copy a tag, optionally to another app and with triggers.
 
         Args:
-            app_id: UUID of the source app
-            tag_id: UUID of the tag to copy
             target_app_id: Optional UUID of the target app. If omitted, copies within the same app.
-            name: Optional new name for the copied tag
             with_triggers: Whether to copy triggers attached to the tag (tag-only option)
-
-        Returns:
-            Normalized copy response including new resource id and operation id.
         """
         return copy_tag(app_id, tag_id, target_app_id, name, with_triggers)

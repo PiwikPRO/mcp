@@ -2,7 +2,7 @@
 Analytics API for Piwik PRO - User Annotations, Goals, and Custom Dimensions.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal
 
 from piwik_pro_mcp.api.methods.analytics.models import (
     CustomDimensionListResponse,
@@ -54,7 +54,7 @@ class AnalyticsAPI:
         app_id: str,
         content: str,
         date: str,
-        visibility: Optional[str] = "private",
+        visibility: str | None = "private",
     ) -> UserAnnotationSingleResponse:
         """
         Create a new user annotation.
@@ -68,7 +68,7 @@ class AnalyticsAPI:
         Returns:
             Dictionary with created annotation
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": app_id,
             "content": content,
             "date": date,
@@ -83,10 +83,10 @@ class AnalyticsAPI:
     def list_user_annotations(
         self,
         app_id: str,
-        date_from: Optional[List[str]] = None,
-        date_to: Optional[List[str]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        date_from: list[str] | None = None,
+        date_to: list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> UserAnnotationListResponse:
         """
         List user annotations for a website with optional date ranges.
@@ -101,7 +101,7 @@ class AnalyticsAPI:
         Returns:
             Dictionary with annotations list and meta
         """
-        params: Dict[str, Any] = {"website_id": app_id}
+        params: dict[str, Any] = {"website_id": app_id}
 
         if limit is not None:
             params["limit"] = limit
@@ -119,10 +119,10 @@ class AnalyticsAPI:
     def list_system_annotations(
         self,
         app_id: str,
-        date_from: Optional[List[str]] = None,
-        date_to: Optional[List[str]] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        date_from: list[str] | None = None,
+        date_to: list[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> SystemAnnotationListResponse:
         """List system annotations.
 
@@ -133,7 +133,7 @@ class AnalyticsAPI:
             limit: Max number of items
             offset: Number of items to skip
         """
-        params: Dict[str, Any] = {"website_id": app_id}
+        params: dict[str, Any] = {"website_id": app_id}
 
         if limit is not None:
             params["limit"] = limit
@@ -182,7 +182,7 @@ class AnalyticsAPI:
         app_id: str,
         content: str,
         date: str,
-        visibility: Optional[str] = "private",
+        visibility: str | None = "private",
     ) -> UserAnnotationSingleResponse:
         """
         Update an existing user annotation.
@@ -197,7 +197,7 @@ class AnalyticsAPI:
         Returns:
             Dictionary with updated annotation
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": app_id,
             "content": content,
             "date": date,
@@ -217,11 +217,11 @@ class AnalyticsAPI:
         name: str,
         trigger: str,
         revenue: str,
-        description: Optional[str] = None,
-        pattern_type: Optional[str] = None,
-        pattern: Optional[str] = None,
-        allow_multiple: Optional[bool] = None,
-        case_sensitive: Optional[bool] = None,
+        description: str | None = None,
+        pattern_type: str | None = None,
+        pattern: str | None = None,
+        allow_multiple: bool | None = None,
+        case_sensitive: bool | None = None,
     ) -> GoalSingleResponse:
         """
         Create a new goal for a website.
@@ -243,7 +243,7 @@ class AnalyticsAPI:
         Returns:
             GoalSingleResponse with created goal
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": website_id,
             "name": name,
             "trigger": trigger,
@@ -268,8 +268,8 @@ class AnalyticsAPI:
     def list_goals(
         self,
         website_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> GoalListResponse:
         """
         List all goals for a website.
@@ -282,7 +282,7 @@ class AnalyticsAPI:
         Returns:
             GoalListResponse with goals list and meta
         """
-        params: Dict[str, Any] = {"website_id": website_id}
+        params: dict[str, Any] = {"website_id": website_id}
 
         if limit is not None:
             params["limit"] = limit
@@ -314,11 +314,11 @@ class AnalyticsAPI:
         name: str,
         trigger: str,
         revenue: str,
-        description: Optional[str] = None,
-        pattern_type: Optional[str] = None,
-        pattern: Optional[str] = None,
-        allow_multiple: Optional[bool] = None,
-        case_sensitive: Optional[bool] = None,
+        description: str | None = None,
+        pattern_type: str | None = None,
+        pattern: str | None = None,
+        allow_multiple: bool | None = None,
+        case_sensitive: bool | None = None,
     ) -> GoalSingleResponse:
         """
         Update an existing goal.
@@ -341,7 +341,7 @@ class AnalyticsAPI:
         Returns:
             GoalSingleResponse with updated goal
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": website_id,
             "name": name,
             "trigger": trigger,
@@ -454,9 +454,9 @@ class AnalyticsAPI:
         active: bool,
         case_sensitive: bool,
         scope: str,
-        description: Optional[str] = None,
-        slot: Optional[int] = None,
-        extractions: Optional[List[Dict[str, str]]] = None,
+        description: str | None = None,
+        slot: int | None = None,
+        extractions: list[dict[str, str]] | None = None,
     ) -> CustomDimensionSingleResponse:
         """
         Create a new standard custom dimension.
@@ -475,7 +475,7 @@ class AnalyticsAPI:
         Returns:
             CustomDimensionSingleResponse with created dimension
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": website_id,
             "name": name,
             "active": active,
@@ -497,8 +497,8 @@ class AnalyticsAPI:
     def list_custom_dimensions(
         self,
         website_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
+        limit: int | None = None,
+        offset: int | None = None,
     ) -> CustomDimensionListResponse:
         """
         List all standard custom dimensions for a website.
@@ -511,7 +511,7 @@ class AnalyticsAPI:
         Returns:
             CustomDimensionListResponse with dimensions list and meta
         """
-        params: Dict[str, Any] = {"website_id": website_id}
+        params: dict[str, Any] = {"website_id": website_id}
 
         params["limit"] = limit if limit is not None else 400  # max is 200 per scope type
         params["offset"] = offset if offset is not None else 0
@@ -541,8 +541,8 @@ class AnalyticsAPI:
         name: str,
         active: bool,
         case_sensitive: bool,
-        description: Optional[str] = None,
-        extractions: Optional[List[Dict[str, str]]] = None,
+        description: str | None = None,
+        extractions: list[dict[str, str]] | None = None,
     ) -> CustomDimensionSingleResponse:
         """
         Update an existing standard custom dimension.
@@ -561,7 +561,7 @@ class AnalyticsAPI:
         Returns:
             CustomDimensionSingleResponse with updated dimension
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": website_id,
             "name": name,
             "active": active,
@@ -599,7 +599,7 @@ class AnalyticsAPI:
         website_id: str,
         name: str,
         slot: int,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> ProductCustomDimensionSingleResponse:
         """
         Create a new product custom dimension.
@@ -613,7 +613,7 @@ class AnalyticsAPI:
         Returns:
             ProductCustomDimensionSingleResponse with created dimension
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": website_id,
             "name": name,
             "slot": slot,
@@ -639,7 +639,7 @@ class AnalyticsAPI:
         Returns:
             ProductCustomDimensionListResponse with dimensions list and meta
         """
-        params: Dict[str, Any] = {"website_id": website_id}
+        params: dict[str, Any] = {"website_id": website_id}
         response = self.client.get(f"{self._PRODUCT_CUSTOM_DIMENSIONS_BASE}/", params=params)
         return ProductCustomDimensionListResponse(**(response or {}))
 
@@ -663,7 +663,7 @@ class AnalyticsAPI:
         dimension_id: str,
         website_id: str,
         name: str,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> ProductCustomDimensionSingleResponse:
         """
         Update an existing product custom dimension.
@@ -680,7 +680,7 @@ class AnalyticsAPI:
         Returns:
             ProductCustomDimensionSingleResponse with updated dimension
         """
-        attributes: Dict[str, Any] = {
+        attributes: dict[str, Any] = {
             "website_id": website_id,
             "name": name,
         }

@@ -14,9 +14,10 @@ import inspect
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any
 from urllib.parse import quote_plus
 
 import httpx
@@ -50,7 +51,7 @@ class TelemetryEvent(BaseModel):
     tool_name: str = Field(alias="dimension1")
     status: TelemetryStatus = Field(alias="dimension2")
     duration_ms: int = Field(ge=0, alias="dimension3")
-    error_message: Optional[str] = Field(alias="dimension4")
+    error_message: str | None = Field(alias="dimension4")
     rec: int = Field(alias="rec", default=1)
     client_name: str = Field(alias="dimension5")
     client_version: str = Field(alias="dimension6")
@@ -60,7 +61,7 @@ class TelemetryEvent(BaseModel):
     event_action: str = Field(alias="e_a", default="mcp_tool_call")
     event_name: str = Field(alias="e_n")
     event_value: int = Field(alias="e_v", default=1)
-    org_name: Optional[str] = Field(alias="dimension7", default=None)
+    org_name: str | None = Field(alias="dimension7", default=None)
     visitor_id: str = Field(alias="_id")
 
     # Allow population by field names while keeping aliases for serialization
@@ -76,7 +77,7 @@ class TelemetrySender:
 
     def __init__(
         self,
-        endpoint_url: Optional[str],
+        endpoint_url: str | None,
         timeout_seconds: float = 2.0,
         enabled: bool = True,
     ) -> None:

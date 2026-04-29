@@ -19,6 +19,12 @@
       "Audience building for retargeting"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.advertiser_id",
+    "template_options.pixel_id",
+    "template_options.conversion_data.conversion_value",
+    "template_options.conversion_data.currency"
+  ],
   "required_attributes": {
     "template": {
       "description": "Must be 'adroll' for this template",

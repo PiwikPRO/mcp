@@ -17,6 +17,9 @@
       "Popup campaigns"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.smid"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "marketing_automation",

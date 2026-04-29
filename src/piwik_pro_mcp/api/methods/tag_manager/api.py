@@ -2,7 +2,7 @@
 Tag Manager API for Piwik PRO.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 if TYPE_CHECKING:
@@ -36,11 +36,11 @@ class TagManagerAPI:
     def list_tags(
         self,
         app_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[TagManagerSortOrder] = None,
-        filters: Optional[TagFilters] = None,
-    ) -> Union[Dict[str, Any], None]:
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: TagManagerSortOrder | None = None,
+        filters: TagFilters | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get list of tags for an app.
 
@@ -57,7 +57,7 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         if limit is not None:
             params["page[limit]"] = limit
@@ -80,9 +80,9 @@ class TagManagerAPI:
         app_id: str,
         name: str,
         template: str,
-        trigger_ids: Optional[List[str]] = None,
+        trigger_ids: list[str] | None = None,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Create a new tag.
 
@@ -120,7 +120,7 @@ class TagManagerAPI:
 
         return self.client.post(f"/api/tag/v1/{app_id}/tags", data=data)
 
-    def get_tag(self, app_id: str, tag_id: str) -> Union[Dict[str, Any], None]:
+    def get_tag(self, app_id: str, tag_id: str) -> dict[str, Any] | None:
         """
         Get tag details by ID.
 
@@ -141,11 +141,11 @@ class TagManagerAPI:
         self,
         app_id: str,
         tag_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[str] = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: str | None = None,
         **filters,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Get list of triggers attached to a specific tag.
 
@@ -184,11 +184,11 @@ class TagManagerAPI:
         self,
         app_id: str,
         trigger_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[str] = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: str | None = None,
         **filters,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Get list of tags assigned to a specific trigger.
 
@@ -227,9 +227,9 @@ class TagManagerAPI:
         self,
         app_id: str,
         tag_id: str,
-        trigger_ids: Optional[List[str]] = None,
+        trigger_ids: list[str] | None = None,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Update an existing tag.
 
@@ -306,10 +306,10 @@ class TagManagerAPI:
         self,
         app_id: str,
         tag_id: str,
-        name: Optional[str] = None,
-        target_app_id: Optional[str] = None,
+        name: str | None = None,
+        target_app_id: str | None = None,
         with_triggers: bool = False,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Copy a tag.
 
@@ -327,11 +327,11 @@ class TagManagerAPI:
             NotFoundError: If tag is not found
             PiwikProAPIError: If the request fails
         """
-        attributes: Dict[str, Any] = {"with_triggers": with_triggers}
+        attributes: dict[str, Any] = {"with_triggers": with_triggers}
         if name is not None:
             attributes["name"] = name
 
-        data: Dict[str, Any] = {"data": {"type": "tag", "attributes": attributes}}
+        data: dict[str, Any] = {"data": {"type": "tag", "attributes": attributes}}
 
         if target_app_id is not None:
             data["data"]["relationships"] = {"target_app": {"data": {"id": target_app_id, "type": "app"}}}
@@ -343,11 +343,11 @@ class TagManagerAPI:
     def list_triggers(
         self,
         app_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[TagManagerSortOrder] = None,
-        filters: Optional[TriggerFilters] = None,
-    ) -> Union[Dict[str, Any], None]:
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: TagManagerSortOrder | None = None,
+        filters: TriggerFilters | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get list of triggers for an app.
 
@@ -365,7 +365,7 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         if limit is not None:
             params["page[limit]"] = limit
@@ -389,7 +389,7 @@ class TagManagerAPI:
         name: str,
         trigger_type: str,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Create a new trigger.
 
@@ -442,7 +442,7 @@ class TagManagerAPI:
 
         return self.client.post(f"/api/tag/v1/{app_id}/triggers", data=data)
 
-    def get_trigger(self, app_id: str, trigger_id: str) -> Union[Dict[str, Any], None]:
+    def get_trigger(self, app_id: str, trigger_id: str) -> dict[str, Any] | None:
         """
         Get trigger details by ID.
 
@@ -464,7 +464,7 @@ class TagManagerAPI:
         app_id: str,
         trigger_id: str,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Update an existing trigger.
 
@@ -515,9 +515,9 @@ class TagManagerAPI:
         self,
         app_id: str,
         trigger_id: str,
-        name: Optional[str] = None,
-        target_app_id: Optional[str] = None,
-    ) -> Union[Dict[str, Any], None]:
+        name: str | None = None,
+        target_app_id: str | None = None,
+    ) -> dict[str, Any] | None:
         """
         Copy a trigger.
 
@@ -534,7 +534,7 @@ class TagManagerAPI:
             NotFoundError: If trigger is not found
             PiwikProAPIError: If the request fails
         """
-        data: Dict[str, Any] = {"data": {"type": "trigger"}}
+        data: dict[str, Any] = {"data": {"type": "trigger"}}
 
         if name is not None:
             data["data"]["attributes"] = {"name": name}
@@ -549,11 +549,11 @@ class TagManagerAPI:
     def list_variables(
         self,
         app_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[TagManagerSortOrder] = None,
-        filters: Optional[VariableFilters] = None,
-    ) -> Union[Dict[str, Any], None]:
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: TagManagerSortOrder | None = None,
+        filters: VariableFilters | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get list of variables for an app.
 
@@ -571,7 +571,7 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         if limit is not None:
             params["page[limit]"] = limit
@@ -595,7 +595,7 @@ class TagManagerAPI:
         name: str,
         variable_type: str,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Create a new variable.
 
@@ -622,7 +622,7 @@ class TagManagerAPI:
 
         return self.client.post(f"/api/tag/v1/{app_id}/variables", data=data)
 
-    def get_variable(self, app_id: str, variable_id: str) -> Union[Dict[str, Any], None]:
+    def get_variable(self, app_id: str, variable_id: str) -> dict[str, Any] | None:
         """
         Get variable details by ID.
 
@@ -644,7 +644,7 @@ class TagManagerAPI:
         app_id: str,
         variable_id: str,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Update an existing variable.
 
@@ -695,9 +695,9 @@ class TagManagerAPI:
         self,
         app_id: str,
         variable_id: str,
-        name: Optional[str] = None,
-        target_app_id: Optional[str] = None,
-    ) -> Union[Dict[str, Any], None]:
+        name: str | None = None,
+        target_app_id: str | None = None,
+    ) -> dict[str, Any] | None:
         """
         Copy a variable.
 
@@ -714,7 +714,7 @@ class TagManagerAPI:
             NotFoundError: If variable is not found
             PiwikProAPIError: If the request fails
         """
-        data: Dict[str, Any] = {"data": {"type": "variable"}}
+        data: dict[str, Any] = {"data": {"type": "variable"}}
 
         if name is not None:
             data["data"]["attributes"] = {"name": name}
@@ -729,11 +729,11 @@ class TagManagerAPI:
     def list_versions(
         self,
         app_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        sort: Optional[TagManagerSortOrder] = None,
-        filter_version_type: Optional[VersionType] = None,
-    ) -> Union[Dict[str, Any], None]:
+        limit: int | None = None,
+        offset: int | None = None,
+        sort: TagManagerSortOrder | None = None,
+        filter_version_type: VersionType | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get list of versions for an app.
 
@@ -750,7 +750,7 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         if limit is not None:
             params["page[limit]"] = limit
@@ -763,7 +763,7 @@ class TagManagerAPI:
 
         return self.client.get(f"/api/tag/v1/{app_id}/versions", params=params)
 
-    def get_version(self, app_id: str, version_id: str) -> Union[Dict[str, Any], None]:
+    def get_version(self, app_id: str, version_id: str) -> dict[str, Any] | None:
         """
         Get version details by ID.
 
@@ -780,7 +780,7 @@ class TagManagerAPI:
         """
         return self.client.get(f"/api/tag/v1/{app_id}/versions/{version_id}")
 
-    def get_draft_version(self, app_id: str) -> Union[Dict[str, Any], None]:
+    def get_draft_version(self, app_id: str) -> dict[str, Any] | None:
         """
         Get draft version for an app.
 
@@ -796,7 +796,7 @@ class TagManagerAPI:
         """
         return self.client.get(f"/api/tag/v1/{app_id}/versions/draft")
 
-    def get_published_version(self, app_id: str) -> Union[Dict[str, Any], None]:
+    def get_published_version(self, app_id: str) -> dict[str, Any] | None:
         """
         Get published version for an app.
 
@@ -812,7 +812,7 @@ class TagManagerAPI:
         """
         return self.client.get(f"/api/tag/v1/{app_id}/versions/published")
 
-    def publish_draft_version(self, app_id: str) -> Union[Dict[str, Any], None]:
+    def publish_draft_version(self, app_id: str) -> dict[str, Any] | None:
         """
         Publish the draft version.
 
@@ -828,7 +828,7 @@ class TagManagerAPI:
         """
         return self.client.post(f"/api/tag/v1/{app_id}/versions/draft/publish")
 
-    def publish_version(self, app_id: str, version_id: str) -> Union[Dict[str, Any], None]:
+    def publish_version(self, app_id: str, version_id: str) -> dict[str, Any] | None:
         """
         Publish a specific version.
 
@@ -846,7 +846,7 @@ class TagManagerAPI:
         """
         return self.client.post(f"/api/tag/v1/{app_id}/versions/{version_id}/publish")
 
-    def restore_published_version(self, app_id: str) -> Union[Dict[str, Any], None]:
+    def restore_published_version(self, app_id: str) -> dict[str, Any] | None:
         """
         Restore the published version to draft.
 
@@ -862,7 +862,7 @@ class TagManagerAPI:
         """
         return self.client.post(f"/api/tag/v1/{app_id}/versions/published/restore")
 
-    def restore_version(self, app_id: str, version_id: str) -> Union[Dict[str, Any], None]:
+    def restore_version(self, app_id: str, version_id: str) -> dict[str, Any] | None:
         """
         Restore a specific version to draft.
 
@@ -880,7 +880,7 @@ class TagManagerAPI:
         """
         return self.client.post(f"/api/tag/v1/{app_id}/versions/{version_id}/restore")
 
-    def create_draft_snapshot(self, app_id: str, name: str) -> Union[Dict[str, Any], None]:
+    def create_draft_snapshot(self, app_id: str, name: str) -> dict[str, Any] | None:
         """
         Create a snapshot of the draft version.
 
@@ -905,9 +905,9 @@ class TagManagerAPI:
         self,
         app_id: str,
         version_id: str,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> Union[Dict[str, Any], None]:
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get list of debug links for a version.
 
@@ -923,7 +923,7 @@ class TagManagerAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         if limit is not None:
             params["page[limit]"] = limit
@@ -939,7 +939,7 @@ class TagManagerAPI:
         name: str,
         url: str,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Create a debug link for a version.
 
@@ -967,7 +967,7 @@ class TagManagerAPI:
 
         return self.client.post(f"/api/tag/v1/{app_id}/versions/{version_id}/debug-links", data=data)
 
-    def get_debug_link(self, app_id: str, version_id: str, debug_link_id: str) -> Union[Dict[str, Any], None]:
+    def get_debug_link(self, app_id: str, version_id: str, debug_link_id: str) -> dict[str, Any] | None:
         """
         Get debug link details by ID.
 
@@ -1005,7 +1005,7 @@ class TagManagerAPI:
 
     # Operations API
 
-    def get_operation(self, app_id: str, operation_id: str) -> Union[Dict[str, Any], None]:
+    def get_operation(self, app_id: str, operation_id: str) -> dict[str, Any] | None:
         """
         Get operation details by ID.
 
@@ -1024,7 +1024,7 @@ class TagManagerAPI:
 
     # Import/Export API
 
-    def import_version(self, app_id: str, import_data: Dict[str, Any]) -> Union[Dict[str, Any], None]:
+    def import_version(self, app_id: str, import_data: dict[str, Any]) -> dict[str, Any] | None:
         """
         Import version data.
 
@@ -1041,7 +1041,7 @@ class TagManagerAPI:
         """
         return self.client.post(f"/api/tag/v1/{app_id}/versions/import", data=import_data)
 
-    def export_version_files(self, app_id: str, version_id: str) -> Union[Dict[str, Any], None]:
+    def export_version_files(self, app_id: str, version_id: str) -> dict[str, Any] | None:
         """
         Export version files.
 
@@ -1058,7 +1058,7 @@ class TagManagerAPI:
         """
         return self.client.post(f"/api/tag/v1/{app_id}/versions/{version_id}/export-files")
 
-    def get_export_file(self, app_id: str, version_id: str, export_file_id: str) -> Union[Dict[str, Any], None]:
+    def get_export_file(self, app_id: str, version_id: str, export_file_id: str) -> dict[str, Any] | None:
         """
         Get export file details.
 

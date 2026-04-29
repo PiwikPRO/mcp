@@ -21,11 +21,13 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from piwik_pro_mcp.common.settings import http_allowed_hosts, safe_mode_enabled, telemetry_enabled
 from piwik_pro_mcp.common.telemetry import TelemetrySender
@@ -47,6 +49,11 @@ def create_mcp_server() -> FastMCP:
     # Instrument MCP with telemetry before registering any tools
     if telemetry_enabled():
         mcp_telemetry_wrapper(mcp, TelemetrySender(endpoint_url="https://success.piwik.pro/ppms.php"))
+
+    @mcp.custom_route("/health", methods=["GET"])
+    async def health_check(request: Request) -> JSONResponse:
+        """Health check endpoint for HTTP transport."""
+        return JSONResponse({"status": "ok"})
 
     # Register all tool modules
     register_all_tools(mcp)
@@ -139,9 +146,9 @@ def _normalize_path(path_value: str) -> str:
 
 def start_server(
     transport: CliTransport = "stdio",
-    host: Optional[str] = None,
-    port: Optional[int] = None,
-    path: Optional[str] = None,
+    host: str | None = None,
+    port: int | None = None,
+    path: str | None = None,
 ) -> None:
     """Start the MCP server using the requested transport."""
     logger.info("Starting MCP Piwik PRO Analytics Server... 🚀")

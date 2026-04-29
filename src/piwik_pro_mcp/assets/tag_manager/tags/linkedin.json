@@ -17,6 +17,9 @@
       "Measure campaign ROI"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.id"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "remarketing",

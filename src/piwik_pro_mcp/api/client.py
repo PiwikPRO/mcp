@@ -3,7 +3,7 @@ Main HTTP client for Piwik PRO API.
 """
 
 import json
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -32,9 +32,9 @@ class PiwikProClient:
 
     def __init__(
         self,
-        host: Optional[str] = None,
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None,
+        host: str | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
         timeout: int = 30,
         max_retries: int = 3,
     ):
@@ -74,7 +74,7 @@ class PiwikProClient:
         self.tracker_settings = TrackerSettingsAPI(self)
         self.analytics = AnalyticsAPI(self)
 
-    def _get_headers(self, extra_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    def _get_headers(self, extra_headers: dict[str, str] | None = None) -> dict[str, str]:
         """
         Get request headers including authentication.
 
@@ -87,7 +87,7 @@ class PiwikProClient:
         headers = {
             "Content-Type": "application/vnd.api+json",
             "Accept": "application/vnd.api+json",
-            "User-Agent": "piwik-pro-api-python/0.3.1",
+            "User-Agent": "piwik-pro-api-python/0.2.0",
         }
 
         # Add authentication headers
@@ -138,10 +138,10 @@ class PiwikProClient:
         self,
         method: str,
         endpoint: str,
-        params: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-    ) -> Union[Dict[str, Any], None]:
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         """
         Make an authenticated API request.
 
@@ -197,8 +197,8 @@ class PiwikProClient:
     def get(
         self,
         endpoint: str,
-        params: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
+        params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
     ) -> dict[str, Any] | list | None:
         """Make a GET request."""
         return self.request("GET", endpoint, params=params, extra_headers=extra_headers)
@@ -206,38 +206,38 @@ class PiwikProClient:
     def post(
         self,
         endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-    ) -> Union[Dict[str, Any], None]:
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         """Make a POST request."""
         return self.request("POST", endpoint, params=params, data=data, extra_headers=extra_headers)
 
     def put(
         self,
         endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-    ) -> Union[Dict[str, Any], None]:
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         """Make a PUT request."""
         return self.request("PUT", endpoint, params=params, data=data, extra_headers=extra_headers)
 
     def patch(
         self,
         endpoint: str,
-        data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-    ) -> Union[Dict[str, Any], None]:
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         """Make a PATCH request."""
         return self.request("PATCH", endpoint, params=params, data=data, extra_headers=extra_headers)
 
     def delete(
         self,
         endpoint: str,
-        params: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-    ) -> Union[Dict[str, Any], None]:
+        params: dict[str, Any] | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> dict[str, Any] | None:
         """Make a DELETE request."""
         return self.request("DELETE", endpoint, params=params, extra_headers=extra_headers)

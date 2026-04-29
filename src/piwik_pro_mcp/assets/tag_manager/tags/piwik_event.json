@@ -21,6 +21,13 @@
       "Video started/paused/finished"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.category",
+    "template_options.action",
+    "template_options.name",
+    "template_options.value",
+    "template_options.custom_dimensions[].value"
+  ],
   "mcp_usage": {
     "create_tag": {
       "description": "Create a new Piwik PRO Event tag using this template.",

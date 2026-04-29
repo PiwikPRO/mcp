@@ -18,6 +18,10 @@
       "In-page feedback widgets"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.customer_id",
+    "template_options.site_token"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "user_feedback",

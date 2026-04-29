@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from mcp.server.fastmcp import FastMCP
+from starlette.testclient import TestClient
 
 from piwik_pro_mcp import server as server_module
 from piwik_pro_mcp.server import create_mcp_server
@@ -55,6 +56,22 @@ class TestServerEnvValidation:
                 await mcp.call_tool("apps_list", {"limit": 1, "offset": 0})
             message = str(exc_info.value).lower()
             assert "client" in message or "credentials" in message
+
+
+class TestHealthEndpoint:
+    """Test the /health endpoint."""
+
+    def test_health_route_registered(self, mcp_server):
+        """Test that the /health route is registered on the server."""
+        route_paths = [route.path for route in mcp_server._custom_starlette_routes]
+        assert "/health" in route_paths
+
+    def test_health_returns_ok(self, mcp_server):
+        """Test that the /health endpoint returns 200 with status ok."""
+        client = TestClient(mcp_server.streamable_http_app())
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
 
 
 class TestServerCli:

@@ -1,6 +1,6 @@
 """Tracker Settings API for Piwik PRO."""
 
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ...client import PiwikProClient
@@ -21,7 +21,7 @@ class TrackerSettingsAPI:
 
     # Global Settings API
 
-    def get_global_settings(self) -> Union[Dict[str, Any], None]:
+    def get_global_settings(self) -> dict[str, Any] | None:
         """
         Get global tracker settings.
 
@@ -61,7 +61,7 @@ class TrackerSettingsAPI:
 
     # App Settings API
 
-    def get_app_settings(self, app_id: str) -> Union[Dict[str, Any], None]:
+    def get_app_settings(self, app_id: str) -> dict[str, Any] | None:
         """
         Get tracker settings for a specific app.
 

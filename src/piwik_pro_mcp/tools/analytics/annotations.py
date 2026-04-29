@@ -2,8 +2,6 @@
 Analytics user annotations tools.
 """
 
-from typing import Optional
-
 from mcp.server.fastmcp import FastMCP
 
 from ...common import create_piwik_client
@@ -48,8 +46,8 @@ def register_annotations_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
     @mcp.tool(annotations={"title": "Piwik PRO: List Annotations", "readOnlyHint": True})
     def analytics_annotations_list(
         app_id: str,
-        date_from: Optional[str] = None,
-        date_to: Optional[str] = None,
+        date_from: str | None = None,
+        date_to: str | None = None,
         source: str = "all",
         limit: int = 10,
         offset: int = 0,

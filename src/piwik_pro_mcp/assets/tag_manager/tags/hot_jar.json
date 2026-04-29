@@ -19,6 +19,9 @@
       "Conversion funnel visualization"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.id"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

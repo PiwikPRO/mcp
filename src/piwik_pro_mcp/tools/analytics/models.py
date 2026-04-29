@@ -2,7 +2,7 @@
 Pydantic models for MCP Analytics tool responses (Annotations, Goals, and Custom Dimensions).
 """
 
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -18,14 +18,14 @@ from piwik_pro_mcp.api.methods.analytics.models import (
     UserAnnotationResource,
 )
 
-AnnotationResource = Union[UserAnnotationResource, SystemAnnotationResource]
+AnnotationResource = UserAnnotationResource | SystemAnnotationResource
 
 
 class AnnotationsList(BaseModel):
     """Combined list output for annotations_list tool."""
 
-    data: List[AnnotationResource] = Field(..., description="List of annotations")
-    meta: Dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
+    data: list[AnnotationResource] = Field(..., description="List of annotations")
+    meta: dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
 
 
 class AnnotationItem(BaseModel):
@@ -37,8 +37,8 @@ class AnnotationItem(BaseModel):
 class GoalsList(BaseModel):
     """List output for goals_list tool."""
 
-    data: List[GoalResource] = Field(..., description="List of goals")
-    meta: Dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
+    data: list[GoalResource] = Field(..., description="List of goals")
+    meta: dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
 
 
 class GoalItem(BaseModel):
@@ -89,8 +89,8 @@ class MetricsDetailsList(BaseModel):
 class CustomDimensionsList(BaseModel):
     """List output for custom_dimensions_list tool (standard dimensions)."""
 
-    data: List[CustomDimensionResource] = Field(..., description="List of custom dimensions")
-    meta: Dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
+    data: list[CustomDimensionResource] = Field(..., description="List of custom dimensions")
+    meta: dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
 
 
 class CustomDimensionItem(BaseModel):
@@ -102,8 +102,8 @@ class CustomDimensionItem(BaseModel):
 class ProductCustomDimensionsList(BaseModel):
     """List output for custom_dimensions_list tool (product dimensions)."""
 
-    data: List[ProductCustomDimensionResource] = Field(..., description="List of product custom dimensions")
-    meta: Dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
+    data: list[ProductCustomDimensionResource] = Field(..., description="List of product custom dimensions")
+    meta: dict[str, Any] = Field(default_factory=dict, description="Metadata such as total count")
 
 
 class ProductCustomDimensionItem(BaseModel):

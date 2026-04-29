@@ -17,6 +17,9 @@
       "Marketing attribution and lead tracking"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.id"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "marketing_automation",

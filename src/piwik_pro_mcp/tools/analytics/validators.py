@@ -6,7 +6,7 @@ They provide type safety and clear error messages at runtime.
 """
 
 import re
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -103,12 +103,12 @@ class StandardDimensionAttrs(BaseModel):
         ...,
         description="Whether dimension values are case-sensitive (e.g., 'User' vs 'user')",
     )
-    slot: Optional[int] = Field(
+    slot: int | None = Field(
         None,
         ge=1,
         description="Slot number. Optional - auto-assigned by API if not provided. Cannot be changed after creation.",
     )
-    extractions: Optional[List[ExtractionConfigDict]] = Field(
+    extractions: list[ExtractionConfigDict] | None = Field(
         None,
         description="Value extraction rules to automatically populate dimension from page data",
     )
@@ -156,7 +156,7 @@ class StandardDimensionUpdateAttrs(BaseModel):
         ...,
         description="Whether dimension values are case-sensitive",
     )
-    extractions: Optional[List[ExtractionConfigDict]] = Field(
+    extractions: list[ExtractionConfigDict] | None = Field(
         None,
         description="Updated value extraction rules",
     )

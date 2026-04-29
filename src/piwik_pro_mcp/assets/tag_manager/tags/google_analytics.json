@@ -17,6 +17,10 @@
       "A/B testing with Google Optimize"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.id",
+    "template_options.optimize_setup.optimize_id"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

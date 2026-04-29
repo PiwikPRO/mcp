@@ -6,7 +6,7 @@ including client creation and data validation.
 """
 
 import os
-from typing import Any, Dict, Optional, Type
+from typing import Any
 
 import requests
 from pydantic import BaseModel, ValidationError
@@ -62,10 +62,10 @@ def create_piwik_client() -> PiwikProClient:
 
 
 def validate_data_against_model(
-    data: Optional[Dict[str, Any]],
-    model_class: Type[BaseModel],
+    data: dict[str, Any] | None,
+    model_class: type[BaseModel],
     invalid_item_label: str = "attribute",
-) -> Optional[BaseModel]:
+) -> BaseModel | None:
     """
     Validate a dictionary against a Pydantic model with configurable behavior.
 

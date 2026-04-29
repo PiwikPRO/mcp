@@ -19,6 +19,9 @@
       "Inline CTAs or announcements"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.target_element_id"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "ab_testing_and_personalization",

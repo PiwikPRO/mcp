@@ -3,7 +3,7 @@ Pydantic models for Piwik PRO CDP API data structures.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,10 +18,10 @@ class ConditionFilter(BaseModel):
     """Filtering criteria for audience conditions."""
 
     operator: str = Field(..., description="Filtering operator (eq, neq, gt, gte, lt, lte, contains, etc.)")
-    value: Union[str, int, float, Dict[str, Any]] = Field(
+    value: str | int | float | dict[str, Any] = Field(
         ..., description="Filtering value (string, number, or object with unit/value)"
     )
-    label: Optional[str] = Field(None, description="Filtering value to display")
+    label: str | None = Field(None, description="Filtering value to display")
 
 
 class EventTimes(BaseModel):
@@ -43,14 +43,14 @@ class EventSubCondition(BaseModel):
 
     column_id: str = Field(..., description="Event attribute column ID")
     condition: ConditionFilter = Field(..., description="Filtering criteria for this attribute")
-    column_meta: Optional[Dict[str, Any]] = Field(None, description="Column metadata (readonly)")
+    column_meta: dict[str, Any] | None = Field(None, description="Column metadata (readonly)")
 
 
 class EventConditionFilter(BaseModel):
     """Event condition filtering structure (behavioral conditions)."""
 
     operator: str = Field("and", description="Logical operator (must be 'and')")
-    conditions: List[EventSubCondition] = Field(
+    conditions: list[EventSubCondition] = Field(
         ..., description="List of event sub-conditions", min_length=1, max_length=5
     )
 
@@ -62,7 +62,7 @@ class ProfileCondition(BaseModel):
     column_id: str = Field(..., description="Profile attribute column ID")
     value_selector: str = Field(..., description="Value selector (first, last, any, none, none_of)")
     condition: ConditionFilter = Field(..., description="Filtering criteria")
-    column_meta: Optional[Dict[str, Any]] = Field(None, description="Column metadata (readonly)")
+    column_meta: dict[str, Any] | None = Field(None, description="Column metadata (readonly)")
 
 
 class EventCondition(BaseModel):
@@ -70,7 +70,7 @@ class EventCondition(BaseModel):
 
     condition_type: str = Field("event", description="Condition type (must be 'event')")
     times: EventTimes = Field(..., description="Event occurrence criteria")
-    during: Optional[EventDuring] = Field(None, description="Optional time window for the behavioral condition")
+    during: EventDuring | None = Field(None, description="Optional time window for the behavioral condition")
     condition: EventConditionFilter = Field(..., description="Event behavioral filtering criteria")
 
 
@@ -78,16 +78,14 @@ class AudienceCondition(BaseModel):
     """Audience condition definition with properly typed conditions."""
 
     operator: str = Field("or", description="Logical operator (must be 'or')")
-    conditions: List[Union[ProfileCondition, EventCondition]] = Field(
-        ..., description="List of profile or event conditions"
-    )
+    conditions: list[ProfileCondition | EventCondition] = Field(..., description="List of profile or event conditions")
 
 
 class AudienceDefinition(BaseModel):
     """Audience definition with conditions."""
 
     operator: str = Field("and", description="Logical operator (must be 'and')")
-    conditions: List[AudienceCondition] = Field(..., description="List of condition groups")
+    conditions: list[AudienceCondition] = Field(..., description="List of condition groups")
 
 
 class AudienceListItem(BaseModel):
@@ -144,7 +142,7 @@ class EditableAudienceAttributes(BaseModel):
 class AudienceListResponse(BaseModel):
     """Response for audience list endpoint."""
 
-    audiences: List[AudienceListItem] = Field(..., description="List of audiences")
+    audiences: list[AudienceListItem] = Field(..., description="List of audiences")
 
 
 class AudienceResponse(BaseModel):

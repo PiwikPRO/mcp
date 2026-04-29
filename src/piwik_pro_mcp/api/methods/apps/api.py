@@ -2,7 +2,7 @@
 Apps API for Piwik PRO.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ...client import PiwikProClient
@@ -29,13 +29,13 @@ class AppsAPI:
 
     def list_apps(
         self,
-        offset: Optional[int] = None,
-        limit: Optional[int] = None,
-        search: Optional[str] = None,
-        search_query: Optional[str] = None,  # deprecated
-        sort: Optional[SortOrder] = None,
-        permission: Optional[Permission] = None,
-    ) -> Union[Dict[str, Any], None]:
+        offset: int | None = None,
+        limit: int | None = None,
+        search: str | None = None,
+        search_query: str | None = None,  # deprecated
+        sort: SortOrder | None = None,
+        permission: Permission | None = None,
+    ) -> dict[str, Any] | None:
         """
         Get list of apps.
 
@@ -53,7 +53,7 @@ class AppsAPI:
         Raises:
             PiwikProAPIError: If the request fails
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
 
         if offset is not None:
             params["offset"] = offset
@@ -73,11 +73,11 @@ class AppsAPI:
     def create_app(
         self,
         name: str,
-        urls: List[str],
-        app_id: Optional[str] = None,
-        app_type: Optional[AppType] = None,
+        urls: list[str],
+        app_id: str | None = None,
+        app_type: AppType | None = None,
         **kwargs,
-    ) -> Union[Dict[str, Any], None]:
+    ) -> dict[str, Any] | None:
         """
         Create a new app.
 
@@ -111,7 +111,7 @@ class AppsAPI:
 
         return self.client.post("/api/apps/v2", data=data)
 
-    def get_app(self, app_id: str) -> Union[Dict[str, Any], None]:
+    def get_app(self, app_id: str) -> dict[str, Any] | None:
         """
         Get app details by ID.
 

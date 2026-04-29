@@ -58,6 +58,39 @@ class TestTagCreateFunctional:
         assert call_args[1]["template"] == "custom_tag"
         assert call_args[1]["is_active"] is True
 
+    @pytest.mark.asyncio
+    async def test_tags_create_preserves_optional_unrecognized_variables_relationship(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.tags.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.create_tag.return_value = {
+                "data": {
+                    "id": "tag-123",
+                    "type": "tag",
+                    "attributes": {"name": "Event Tag", "template": "piwik_event"},
+                    "relationships": {
+                        "unrecognized_variables": {
+                            "data": [{"type": "unrecognized_variable", "id": "Not existing tag"}]
+                        }
+                    },
+                }
+            }
+
+            attributes = {
+                "name": "Event Tag",
+                "template": "piwik_event",
+                "template_options": {
+                    "category": "{{ Not existing tag }}",
+                    "action": "signup",
+                },
+            }
+
+            result = await mcp_server.call_tool("tags_create", {"app_id": "app-123", "attributes": attributes})
+
+            assert isinstance(result, tuple) and len(result) == 2
+            _, response = result
+            assert response["data"]["relationships"]["unrecognized_variables"]["data"][0]["id"] == "Not existing tag"
+
 
 class TestTagUpdateFunctional:
     """Functional tests for tag update tools through MCP."""
@@ -113,6 +146,32 @@ class TestTagUpdateFunctional:
         assert call_args[1]["name"] == "Updated Tag"
         assert call_args[1]["is_active"] is True
         assert call_args[1].get("template") is None  # Not provided in attributes
+
+    @pytest.mark.asyncio
+    async def test_tags_update_preserves_optional_unrecognized_variables_relationship(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.tags.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.update_tag.return_value = {
+                "data": {
+                    "id": "tag-123",
+                    "type": "tag",
+                    "attributes": {"name": "Event Tag", "template": "piwik_event"},
+                    "relationships": {
+                        "unrecognized_variables": {"data": [{"type": "unrecognized_variable", "id": "Unknown Revenue"}]}
+                    },
+                }
+            }
+
+            attributes = {"template_options": {"value": "{{ Unknown Revenue }}"}}
+
+            result = await mcp_server.call_tool(
+                "tags_update", {"app_id": "app-123", "tag_id": "tag-123", "attributes": attributes}
+            )
+
+            assert isinstance(result, tuple) and len(result) == 2
+            _, response = result
+            assert response["data"]["relationships"]["unrecognized_variables"]["data"][0]["id"] == "Unknown Revenue"
 
 
 class TestTagCopyFunctional:
@@ -249,7 +308,16 @@ class TestTagCrudListGetDelete:
             mock_instance = Mock()
             mock_client.return_value = mock_instance
             mock_instance.tag_manager.get_tag.return_value = {
-                "data": {"id": "t1", "type": "tag", "attributes": {"name": "Tag 1"}}
+                "data": {
+                    "id": "t1",
+                    "type": "tag",
+                    "attributes": {"name": "Tag 1"},
+                    "relationships": {
+                        "unrecognized_variables": {
+                            "data": [{"type": "unrecognized_variable", "id": "Missing Variable"}]
+                        }
+                    },
+                }
             }
 
             result = await mcp_server.call_tool("tags_get", {"app_id": "app-1", "tag_id": "t1"})
@@ -257,6 +325,7 @@ class TestTagCrudListGetDelete:
             assert isinstance(result, tuple) and len(result) == 2
             _, data = result
             assert data["data"]["id"] == "t1"
+            assert data["data"]["relationships"]["unrecognized_variables"]["data"][0]["id"] == "Missing Variable"
             mock_instance.tag_manager.get_tag.assert_called_once_with("app-1", "t1")
 
     @pytest.mark.asyncio

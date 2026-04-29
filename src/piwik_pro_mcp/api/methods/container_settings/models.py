@@ -2,8 +2,6 @@
 Pydantic models for Container Settings API responses.
 """
 
-from typing import List
-
 from pydantic import BaseModel, Field
 
 from ..common import JsonApiResource
@@ -24,4 +22,4 @@ class ContainerSettingsListResponse(BaseModel):
     Response for container settings list endpoint.
     """
 
-    data: List[JsonApiResource] = Field(..., description="List of settings resources")
+    data: list[JsonApiResource] = Field(..., description="List of settings resources")

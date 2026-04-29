@@ -8,14 +8,13 @@ used across the project, keeping parsing logic and defaults in one place.
 from __future__ import annotations
 
 import os
-from functools import lru_cache
-from typing import Optional
+from functools import cache
 
 _TRUTHY_VALUES = {"1", "true", "yes", "on"}
 _FALSY_VALUES = {"0", "false", "no", "off"}
 
 
-def _get_env(name: str) -> Optional[str]:
+def _get_env(name: str) -> str | None:
     """Return environment variable value or None when unset."""
 
     return os.getenv(name)
@@ -41,21 +40,21 @@ def _get_bool(name: str, *, default: bool) -> bool:
     return default
 
 
-@lru_cache(maxsize=None)
+@cache
 def telemetry_enabled() -> bool:
     """Return whether telemetry should be enabled."""
 
     return _get_bool("PIWIK_PRO_TELEMETRY", default=True)
 
 
-@lru_cache(maxsize=None)
+@cache
 def tag_manager_resource_check_enabled() -> bool:
     """Return whether Tag Manager resource validation should run."""
 
     return _get_bool("PIWIK_PRO_TM_RESOURCE_CHECK", default=True)
 
 
-@lru_cache(maxsize=None)
+@cache
 def safe_mode_enabled() -> bool:
     """Return whether safe mode (read-only) is enabled.
 
@@ -78,7 +77,7 @@ _DEFAULT_HTTP_ALLOWED_HOSTS: list[str] = [
 ]
 
 
-@lru_cache(maxsize=None)
+@cache
 def http_allowed_hosts() -> list[str]:
     """Return the list of allowed hosts for HTTP transport DNS rebinding protection.
 

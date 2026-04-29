@@ -4,7 +4,7 @@ import asyncio
 import base64
 import json
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs
 
@@ -47,9 +47,9 @@ def test_server_instruments_telemetry_when_env_flag_is_one():
 class _FakeAsyncClient:
     """Minimal async httpx client stub capturing POST payloads."""
 
-    def __init__(self, *, timeout: Optional[float] = None) -> None:
+    def __init__(self, *, timeout: float | None = None) -> None:
         self.timeout = timeout
-        self.captured: Dict[str, Any] = {}
+        self.captured: dict[str, Any] = {}
 
     async def __aenter__(self) -> "_FakeAsyncClient":
         return self
@@ -57,7 +57,7 @@ class _FakeAsyncClient:
     async def __aexit__(self, exc_type, exc, tb) -> None:  # type: ignore[override]
         return None
 
-    async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+    async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:
         self.captured = {"url": url, "json": json, "headers": headers}
 
 
@@ -84,10 +84,10 @@ async def test_telemetry_sender_encodes_expected_query(monkeypatch):
 
     # Act
     # We need access to the instance used inside send_event; build a small shim to capture
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     class _CaptureClient(_FakeAsyncClient):
-        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:  # type: ignore[override]
+        async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:  # type: ignore[override]
             nonlocal captured
             captured = {"url": url, "json": json, "headers": headers}
 
@@ -147,10 +147,10 @@ async def test_telemetry_sender_encodes_expected_query(monkeypatch):
 @pytest.mark.asyncio
 async def test_mcp_wrapper_populates_event_fields_for_tool_success(monkeypatch):
     # Capture outgoing request payload
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     class _CaptureClient(_FakeAsyncClient):
-        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:  # type: ignore[override]
+        async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:  # type: ignore[override]
             nonlocal captured
             captured = {"url": url, "json": json, "headers": headers}
 
@@ -196,10 +196,10 @@ async def test_mcp_wrapper_populates_event_fields_for_tool_success(monkeypatch):
 @pytest.mark.asyncio
 async def test_mcp_wrapper_populates_event_fields_for_tool_error(monkeypatch):
     # Capture outgoing request payload
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     class _CaptureClient(_FakeAsyncClient):
-        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:  # type: ignore[override]
+        async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:  # type: ignore[override]
             nonlocal captured
             captured = {"url": url, "json": json, "headers": headers}
 
@@ -273,10 +273,10 @@ def test_extract_org_from_jwt_invalid_base64():
 
 @pytest.mark.asyncio
 async def test_telemetry_event_includes_dimension7_when_org_set(monkeypatch):
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     class _CaptureClient(_FakeAsyncClient):
-        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+        async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:
             nonlocal captured
             captured = {"url": url, "json": json, "headers": headers}
 
@@ -302,10 +302,10 @@ async def test_telemetry_event_includes_dimension7_when_org_set(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_telemetry_event_excludes_dimension7_when_org_none(monkeypatch):
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     class _CaptureClient(_FakeAsyncClient):
-        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+        async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:
             nonlocal captured
             captured = {"url": url, "json": json, "headers": headers}
 
@@ -331,10 +331,10 @@ async def test_telemetry_event_excludes_dimension7_when_org_none(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_mcp_wrapper_includes_org_name_from_cache(monkeypatch):
-    captured: Dict[str, Any] = {}
+    captured: dict[str, Any] = {}
 
     class _CaptureClient(_FakeAsyncClient):
-        async def post(self, url: str, *, json: Dict[str, Any], headers: Dict[str, str]) -> None:
+        async def post(self, url: str, *, json: dict[str, Any], headers: dict[str, str]) -> None:
             nonlocal captured
             captured = {"url": url, "json": json, "headers": headers}
 

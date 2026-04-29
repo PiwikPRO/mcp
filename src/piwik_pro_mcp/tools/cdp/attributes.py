@@ -5,7 +5,7 @@ This module provides functionality for listing and processing CDP attributes,
 including operator validation and value format handling.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from piwik_pro_mcp.api.exceptions import BadRequestError, NotFoundError
 
@@ -13,7 +13,7 @@ from ...common.utils import create_piwik_client
 from .models import AttributeListMCPResponse, AttributeSummary
 
 # Operator mappings based on Piwik PRO CDP API documentation
-OPERATOR_MAPPINGS: Dict[str, List[str]] = {
+OPERATOR_MAPPINGS: dict[str, list[str]] = {
     "number": ["eq", "neq", "gt", "gte", "lt", "lte"],
     "string": [
         "eq",
@@ -49,7 +49,7 @@ OPERATOR_MAPPINGS: Dict[str, List[str]] = {
 }
 
 # Value format mappings for different column types
-VALUE_FORMAT_MAPPINGS: Dict[str, Dict[str, Any]] = {
+VALUE_FORMAT_MAPPINGS: dict[str, dict[str, Any]] = {
     "number": {
         "format": "number",
         "description": "Plain numeric value",
@@ -112,7 +112,7 @@ VALUE_FORMAT_MAPPINGS: Dict[str, Dict[str, Any]] = {
 }
 
 # Default value format for unknown types
-DEFAULT_VALUE_FORMAT: Dict[str, Any] = {
+DEFAULT_VALUE_FORMAT: dict[str, Any] = {
     "format": "unknown",
     "description": "Unknown format - check API documentation",
     "example": None,
@@ -120,7 +120,7 @@ DEFAULT_VALUE_FORMAT: Dict[str, Any] = {
 }
 
 
-def get_supported_operators_for_column_type(column_type: str) -> List[str]:
+def get_supported_operators_for_column_type(column_type: str) -> list[str]:
     """
     Get supported operators for a specific column type.
 
@@ -133,7 +133,7 @@ def get_supported_operators_for_column_type(column_type: str) -> List[str]:
     return OPERATOR_MAPPINGS.get(column_type, [])
 
 
-def get_value_format_for_column_type(column_type: str) -> Dict[str, Any]:
+def get_value_format_for_column_type(column_type: str) -> dict[str, Any]:
     """
     Get value format specification for a specific column type.
 

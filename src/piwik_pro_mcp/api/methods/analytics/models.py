@@ -4,7 +4,7 @@ Pydantic models for Analytics API responses (Annotations, Goals, and Custom Dime
 
 import re
 from enum import StrEnum
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, RootModel, model_validator
 
@@ -22,10 +22,10 @@ class UserAnnotationAttributes(BaseModel):
 
     date: str = Field(..., description="Annotation date (YYYY-MM-DD)")
     content: str = Field(..., description="Annotation content")
-    visibility: Optional[str] = Field(None, description='"private" or "public"')
-    website_id: Optional[str] = Field(None, description="App UUID associated with the annotation")
-    author: Optional[AnnotationAuthor] = Field(None, description="Author info")
-    is_author: Optional[bool] = Field(None, description="Whether current user is the author")
+    visibility: str | None = Field(None, description='"private" or "public"')
+    website_id: str | None = Field(None, description="App UUID associated with the annotation")
+    author: AnnotationAuthor | None = Field(None, description="Author info")
+    is_author: bool | None = Field(None, description="Whether current user is the author")
 
 
 class SystemAnnotationAttributes(BaseModel):
@@ -64,7 +64,7 @@ class SystemAnnotationListResponse(BaseModel):
     Response model for system annotations list endpoints.
     """
 
-    data: List[SystemAnnotationResource] = Field(..., description="List of system annotation resources")
+    data: list[SystemAnnotationResource] = Field(..., description="List of system annotation resources")
     meta: Meta = Field(..., description="Pagination metadata with total count")
 
 
@@ -73,7 +73,7 @@ class UserAnnotationListResponse(BaseModel):
     Response model for user annotations list endpoints.
     """
 
-    data: List[UserAnnotationResource] = Field(..., description="List of user annotation resources")
+    data: list[UserAnnotationResource] = Field(..., description="List of user annotation resources")
     meta: Meta = Field(..., description="Pagination metadata with total count")
 
 
@@ -82,7 +82,7 @@ class GoalAttributes(BaseModel):
 
     website_id: str = Field(..., description="Website/App UUID")
     name: str = Field(..., description="Name of the goal")
-    description: Optional[str] = Field(None, description="Description of the goal (max 1024 chars)")
+    description: str | None = Field(None, description="Description of the goal (max 1024 chars)")
     trigger: Literal[
         "url",
         "title",
@@ -93,19 +93,19 @@ class GoalAttributes(BaseModel):
         "external_website",
         "manually",
     ] = Field(..., description="Trigger type for the goal")
-    pattern_type: Optional[Literal["contains", "exact", "regex"]] = Field(
+    pattern_type: Literal["contains", "exact", "regex"] | None = Field(
         None,
         description='Condition operator for pattern matching. Required for all triggers except "manually".',
     )
-    pattern: Optional[str] = Field(
+    pattern: str | None = Field(
         None,
         description='Condition value to match against. Required for all triggers except "manually".',
     )
-    allow_multiple: Optional[bool] = Field(
+    allow_multiple: bool | None = Field(
         None,
         description="Whether the goal can be converted more than once per visit",
     )
-    case_sensitive: Optional[bool] = Field(
+    case_sensitive: bool | None = Field(
         None,
         description="Whether pattern matching is case sensitive",
     )
@@ -129,7 +129,7 @@ class GoalSingleResponse(BaseModel):
 class GoalListResponse(BaseModel):
     """Response model for goals list endpoints."""
 
-    data: List[GoalResource] = Field(..., description="List of goal resources")
+    data: list[GoalResource] = Field(..., description="List of goal resources")
     meta: Meta = Field(..., description="Pagination metadata with total count")
 
 
@@ -248,7 +248,7 @@ class AvailableTransformations(BaseModel):
 class DimensionColumnDefinition(ColumnDefinition):
     """A dimension column definition."""
 
-    enum_values: Dict[str, Any] | None = None
+    enum_values: dict[str, Any] | None = None
     available_transformations: AvailableTransformations | None = None
 
 
@@ -398,13 +398,13 @@ class CustomDimensionAttributes(BaseModel):
 
     website_id: str = Field(..., description="Website/App UUID")
     name: str = Field(..., description="Name of the custom dimension")
-    description: Optional[str] = Field(None, max_length=300, description="Description (max 300 chars)")
+    description: str | None = Field(None, max_length=300, description="Description (max 300 chars)")
     active: bool = Field(..., description="Whether dimension is active")
     case_sensitive: bool = Field(..., description="Whether dimension is case sensitive")
     scope: Literal["session", "event"] = Field(..., description="Dimension scope (session or event level)")
-    tracking_id: Optional[int] = Field(None, ge=1, description="Tracking ID (readonly)")
-    slot: Optional[int] = Field(None, ge=1, description="Slot number (readonly after creation)")
-    extractions: Optional[List[ExtractionConfig]] = Field(
+    tracking_id: int | None = Field(None, ge=1, description="Tracking ID (readonly)")
+    slot: int | None = Field(None, ge=1, description="Slot number (readonly after creation)")
+    extractions: list[ExtractionConfig] | None = Field(
         None,
         description="Value extraction configurations",
     )
@@ -427,8 +427,8 @@ class CustomDimensionSingleResponse(BaseModel):
 class CustomDimensionListResponse(BaseModel):
     """Response for list custom dimensions."""
 
-    data: List[CustomDimensionResource]
-    meta: Optional[Meta] = None
+    data: list[CustomDimensionResource]
+    meta: Meta | None = None
 
 
 class ProductCustomDimensionAttributes(BaseModel):
@@ -436,10 +436,10 @@ class ProductCustomDimensionAttributes(BaseModel):
 
     website_id: str = Field(..., description="Website/App UUID")
     name: str = Field(..., description="Name of the product custom dimension")
-    description: Optional[str] = Field(None, max_length=300, description="Description (max 300 chars)")
+    description: str | None = Field(None, max_length=300, description="Description (max 300 chars)")
     slot: int = Field(..., ge=1, description="Slot number")
-    created_at: Optional[str] = Field(None, description="Creation datetime (readonly)")
-    updated_at: Optional[str] = Field(None, description="Last update datetime (readonly)")
+    created_at: str | None = Field(None, description="Creation datetime (readonly)")
+    updated_at: str | None = Field(None, description="Last update datetime (readonly)")
 
 
 class ProductCustomDimensionResource(BaseModel):
@@ -459,8 +459,8 @@ class ProductCustomDimensionSingleResponse(BaseModel):
 class ProductCustomDimensionListResponse(BaseModel):
     """Response for list product custom dimensions."""
 
-    data: List[ProductCustomDimensionResource]
-    meta: Optional[Meta] = None
+    data: list[ProductCustomDimensionResource]
+    meta: Meta | None = None
 
 
 class CustomDimensionSlotInfo(BaseModel):
@@ -474,9 +474,9 @@ class CustomDimensionSlotInfo(BaseModel):
 class CustomDimensionSlotsAttributes(BaseModel):
     """Slot statistics by scope."""
 
-    event: Optional[CustomDimensionSlotInfo] = Field(None, description="Event-scoped dimension slots")
-    session: Optional[CustomDimensionSlotInfo] = Field(None, description="Session-scoped dimension slots")
-    product: Optional[CustomDimensionSlotInfo] = Field(None, description="Product dimension slots")
+    event: CustomDimensionSlotInfo | None = Field(None, description="Event-scoped dimension slots")
+    session: CustomDimensionSlotInfo | None = Field(None, description="Session-scoped dimension slots")
+    product: CustomDimensionSlotInfo | None = Field(None, description="Product dimension slots")
 
 
 class CustomDimensionSlotsResource(BaseModel):

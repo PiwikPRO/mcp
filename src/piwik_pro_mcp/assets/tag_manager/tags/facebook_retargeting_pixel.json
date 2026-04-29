@@ -20,6 +20,9 @@
       "Custom events with event properties"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.pixel_id"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "remarketing",

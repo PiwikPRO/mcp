@@ -21,6 +21,12 @@
       "Download completed"
     ]
   },
+  "variable_reference_fields": [
+    "template_options.id",
+    "template_options.revenue",
+    "template_options.currency",
+    "template_options.custom_dimensions[].value"
+  ],
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

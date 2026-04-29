@@ -190,6 +190,35 @@
       "description": "Whether the tag is published (API-generated)"
     }
   },
+  "variable_reference_guide": {
+    "overview": "Some tag fields accept literal values or Tag Manager variable references. MCP forwards these values as provided.",
+    "source_of_truth": "Use variables_list(app_id) to discover existing variables and copy the exact existing variable name.",
+    "supported_guidance": {
+      "existing_variable_name": "An existing variable name returned by variables_list(app_id). Use the named reference form {{ Variable Name }}."
+    },
+    "warning": "Do not use UUIDs as variable references. Use only existing variable names in the form {{ Variable Name }}. {{ UUID }} is not a documented format and may appear later in data.relationships.unrecognized_variables instead of resolving correctly.",
+    "diagnostics": [
+      "Successful tags_create, tags_update, and tags_get responses may include data.relationships.unrecognized_variables.",
+      "That relationship is optional and appears only when the backend detected unresolved variable references.",
+      "Its presence is diagnostic only; it does not mean the API request failed."
+    ],
+    "workflow_use_existing_variable": {
+      "step_1": "Use variables_list(app_id) to discover available variables and their IDs.",
+      "step_2": "Copy the exact variable name from that response and use it as {{ Variable Name }}.",
+      "step_3": "After tags_create or tags_update, inspect data.relationships.unrecognized_variables if the tag does not resolve variables as expected."
+    },
+    "examples": {
+      "valid": [
+        "{{ User Role }}",
+        "/pricing/{{ Section ID }}"
+      ],
+      "invalid": [
+        "12345678-1234-1234-1234-123456789012",
+        "{{ 12345678-1234-1234-1234-123456789012 }}"
+      ]
+    }
+  },
+  "variable_reference_fields": [],
   "trigger_management": {
     "overview": "Triggers define when and under what conditions your tag will fire. Without triggers, a tag won't execute.",
     "workflow_use_existing_trigger": {
