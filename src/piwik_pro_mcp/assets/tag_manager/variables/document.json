@@ -27,20 +27,6 @@
       "Prefer standard names (title, location.pathname) over aliases where both exist"
     ]
   },
-  "mcp_usage": {
-    "create_variable": {
-      "description": "Create a document variable that returns the specified document property",
-      "required_parameters": {
-        "variable_type": {
-          "value": "document",
-          "description": "Must be 'document' for document variables"
-        },
-        "value": {
-          "description": "Document property to read (API: value). E.g. title, location.href, location.pathname, referrer."
-        }
-      }
-    }
-  },
   "required_attributes": {
     "name": {
       "examples": [

@@ -189,9 +189,11 @@ class TestParameterRegistryConsistency:
             "triggers_list",
             "triggers_get",
             "triggers_copy",
+            "triggers_delete",
             "variables_list",
             "variables_get",
             "variables_copy",
+            "variables_delete",
             # Tag Manager versions
             "versions_list",
             "versions_get_draft",

@@ -9,25 +9,146 @@
           "type": "string",
           "description": "UUID of your Piwik PRO app"
         },
-        "name": {
-          "type": "string",
-          "description": "Descriptive name for the trigger"
-        },
-        "trigger_type": {
-          "type": "string",
-          "description": "Must match this template (e.g. click, page_view, event)"
-        },
-        "conditions": {
-          "type": "array",
-          "description": "Array of condition objects that determine when the trigger fires"
+        "attributes": {
+          "type": "object",
+          "description": "Trigger configuration object. Must include name, trigger_type, and conditions as required by this template (see required_attributes). Use tools_parameters_get(\"triggers_create\") for the full runtime JSON schema. For each conditions[].variable_id: built-in variables → variable_base.json → builtin_variables_reference (match builtin_variable_name from conditions_reference); custom variables → variables_list(app_id, filters={\"builtin\": false})."
         }
       },
       "optional_parameters": {
         "relationships": {
           "type": "object",
-          "description": "Can include tags to associate with this trigger"
+          "description": "Optional MCP tool argument (top-level only; never nest under attributes). May include only ``triggers`` and/or ``tags``; other keys are rejected. Values are validated and expanded into JSON:API ``data`` arrays.",
+          "additionalProperties": false,
+          "properties": {
+            "triggers": {
+              "type": "array",
+              "description": "Optional. Related triggers (JSON:API triggers relationship). Each item is either a UUID string or an object with id (UUID) and optional meta.",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Related trigger UUID (no per-link meta)"
+                  },
+                  {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Related trigger UUID"
+                      },
+                      "meta": {
+                        "type": "object",
+                        "description": "Optional per-link metadata on the relationship member",
+                        "properties": {
+                          "firing_threshold": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Firing threshold for this linked trigger (>= 1)"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "Optional. Tag resource UUIDs to attach to this trigger (JSON:API tags relationship)."
+            }
+          },
+          "notes": [
+            "Omit relationships entirely if you do not need tag or trigger links at creation time.",
+            "Only the keys triggers and tags are allowed; use tools_parameters_get if your client needs the exact schema.",
+            "Use assets in favor of fetching resources when in need for references. Fetch only if you are stuck."
+          ]
         }
       }
+    },
+    "update_trigger": {
+      "tool_name": "triggers_update",
+      "description": "Update an existing trigger - only editable fields can be modified",
+      "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "The Piwik PRO app ID containing the trigger",
+          "example": "12345678-1234-1234-1234-123456789012"
+        },
+        "trigger_id": {
+          "type": "string",
+          "description": "The UUID of the trigger to update",
+          "example": "87654321-4321-4321-4321-210987654321"
+        }
+      },
+      "optional_parameters": {
+        "attributes": {
+          "type": "object",
+          "description": "Trigger fields to update (only editable fields are processed): optional name and conditions. Use tools_parameters_get(\"triggers_update\") for the runtime JSON schema. Do not put relationships here; use the top-level relationships parameter. When updating conditions[], resolve variable_id the same way as triggers_create (builtin → variable_base.json → builtin_variables_reference; custom → variables_list with builtin=false)."
+        },
+        "relationships": {
+          "type": "object",
+          "description": "Optional MCP tool argument (top-level only). Same as triggers_create: only optional ``triggers`` and/or ``tags``; other keys are rejected.",
+          "additionalProperties": false,
+          "properties": {
+            "triggers": {
+              "type": "array",
+              "description": "Optional. Same items as triggers_create: UUID strings and/or {id, meta?} objects with meta.firing_threshold >= 1 when meta is set. Use an empty array to clear the triggers relationship on a relationship-only update.",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "meta": {
+                        "type": "object",
+                        "properties": {
+                          "firing_threshold": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "Optional. Tag UUIDs. Use an empty array to clear the tags relationship when you are applying a relationship-only update."
+            }
+          }
+        }
+      },
+      "update_requirements": {
+        "description": "At least one of optional_parameters.attributes or optional_parameters.relationships must be provided with meaningful content (e.g. a non-empty attributes object, or relationships with at least one list key set, including an empty list to clear links)."
+      },
+      "notes": [
+        "Use assets in favor of fetching resources when in need for references. Fetch only if you are stuck."
+      ]
     }
   },
   "required_attributes": {
@@ -50,7 +171,7 @@
     "conditions": {
       "type": "array",
       "mutability": "editable",
-      "description": "Array of condition objects that define when the trigger should fire",
+      "description": "Array of condition objects that define when the trigger should fire. Look for definitions in: conditions_reference",
       "structure": {
         "condition_id": {
           "type": "string",
@@ -60,15 +181,23 @@
         "variable_id": {
           "type": "string",
           "format": "uuid",
-          "description": "UUID of the variable to check"
+          "description": "UUID of the variable to check. Built-in: copy variable_id from variable_base.json → builtin_variables_reference where display_name matches conditions_reference → builtin_variable_name. Custom: use id from variables_list(app_id, filters={\"builtin\": false})."
         },
         "condition_type": {
           "type": "string",
           "description": "Type of comparison to perform"
         },
         "value": {
-          "type": "string",
-          "description": "Value to compare against"
+          "description": "Operand for the comparison. Unary condition types (which are only: is_true, is_false, is_set, is_not_set, is_empty, is_not_empty), require JSON null.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null",
+              "description": "Only for condition types: is_true, is_false, is_set, is_not_set, is_empty, is_not_empty."
+            }
+          ]
         },
         "options": {
           "type": "object",
@@ -104,7 +233,7 @@
       "editable": {
         "description": "✅ Can be updated anytime after trigger creation",
         "examples": ["name", "conditions"],
-        "note": "These fields can be safely modified through update_trigger"
+        "note": "These fields can be safely modified through triggers_update (attributes) or relationship lists via the top-level relationships parameter"
       },
       "create-only": {
         "description": "⚠️ Can only be set during trigger creation, immutable afterward",
@@ -120,7 +249,7 @@
       }
     },
     "update_best_practices": [
-      "Only include editable fields in update_trigger attributes",
+      "Only include editable fields in triggers_update attributes; use the top-level relationships parameter for triggers/tags UUID lists",
       "Create-only and read-only fields are automatically filtered out",
       "Check field mutability before attempting updates",
       "Use templates_get_trigger() to see all available fields and their mutability",
@@ -128,33 +257,674 @@
     ]
   },
   "variable_reference_guide": {
-    "getting_variable_ids": {
-      "step_1": "Use variables_list() to see all available variables in your app",
-      "step_2": "Find the variable you need for your trigger conditions",
-      "step_3": "Copy the 'id' field from the variable object",
-      "step_4": "Use that UUID as the variable_id in your trigger conditions"
+    "description": "How to resolve conditions[].variable_id when creating or updating triggers.",
+    "builtin_variables": {
+      "where": "variable_base.json → builtin_variables_reference",
+      "how_to_load": "templates_get_variable() on any variable template (e.g. constant) — variable_base is merged via extends and includes builtin_variables_reference.",
+      "steps": [
+        "Read conditions_reference (below) or the trigger template's available_event_conditions / required_conditions to find the builtin_variable_name (e.g. Event, Page URL).",
+        "Find the same display_name in builtin_variables_reference.variables and copy its variable_id into conditions[].variable_id.",
+        "Built-in UUIDs are fixed platform-wide; do not use variables_list for them."
+      ]
+    },
+    "custom_variables": {
+      "where": "Tag Manager API — app-scoped user-created variables only",
+      "mcp_tool": "variables_list(app_id, filters={\"builtin\": false})",
+      "steps": [
+        "Call variables_list with builtin=false to list custom variables for the app.",
+        "Copy the resource id from the matching variable into conditions[].variable_id.",
+        "Use when the trigger allows custom_variable_based in conditions_reference or when the condition targets a user-defined variable (data layer, constant, etc.)."
+      ]
+    },
+    "conditions_reference_link": "conditions_reference.conditions[].builtin_variable_name names the built-in variable; always pair it with the variable_id from builtin_variables_reference, not a guessed UUID."
+  },
+  "condition_types_reference": {
+    "description": "Maps API `condition_type` values (object keys, snake_case) to metadata. Use the key string as `conditions[].condition_type`. Each entry includes `value` (same as the key), `display_name` (UI-oriented label), and documentation fields.",
+    "contains": {
+      "condition_type": "contains",
+      "display_name": "contains",
+      "description": "Met when the condition value is a substring of the variable value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL contains blog",
+      "operand_value_type": "string"
+    },
+    "does_not_contain": {
+      "condition_type": "does_not_contain",
+      "display_name": "doesn't contain",
+      "description": "Met when the condition value is not a substring of the variable value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL doesn't contain blog",
+      "operand_value_type": "string"
+    },
+    "starts_with": {
+      "condition_type": "starts_with",
+      "display_name": "starts with",
+      "description": "Met when the variable value starts with the condition value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page path starts with /pricing",
+      "operand_value_type": "string"
+    },
+    "ends_with": {
+      "condition_type": "ends_with",
+      "display_name": "ends with",
+      "description": "Met when the variable value ends with the condition value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL ends with /order",
+      "operand_value_type": "string"
+    },
+    "equals": {
+      "condition_type": "equals",
+      "display_name": "equals",
+      "description": "Met when the variable value equals the condition value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL equals https://example.com/blog",
+      "operand_value_type": "string",
+      "notes": [
+        "For a Traffic source variable, allowed condition values include: Direct, Referral, Social, Organic search, Campaign."
+      ]
+    },
+    "does_not_equal": {
+      "condition_type": "does_not_equal",
+      "display_name": "doesn't equal",
+      "description": "Met when the variable value does not equal the condition value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL doesn't equal https://example.com/blog",
+      "operand_value_type": "string",
+      "notes": [
+        "For a Traffic source variable, allowed condition values include: Direct, Referral, Social, Organic search, Campaign."
+      ]
+    },
+    "regexp": {
+      "condition_type": "regexp",
+      "display_name": "regexp",
+      "description": "Met when the variable value matches the given regular expression.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL regexp /product/[0-9]+/add-wishlist/",
+      "operand_value_type": "string"
+    },
+    "does_not_start_with": {
+      "condition_type": "does_not_start_with",
+      "display_name": "doesn't start with",
+      "description": "Met when the variable value does not start with the condition value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page path doesn't start with /pricing",
+      "operand_value_type": "string"
+    },
+    "does_not_end_with": {
+      "condition_type": "does_not_end_with",
+      "display_name": "doesn't end with",
+      "description": "Met when the variable value does not end with the condition value.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL doesn't end with /order",
+      "operand_value_type": "string"
+    },
+    "does_not_regexp": {
+      "condition_type": "does_not_regexp",
+      "display_name": "regexp doesn't equal",
+      "description": "Met when the variable value does not match the given regular expression.",
+      "variable_value_note": "The variable value must be a string, number, or boolean; otherwise this condition is never met.",
+      "example": "Page URL regexp doesn't equal /product/[0-9]+/add-wishlist/",
+      "operand_value_type": "string"
+    },
+    "is_true": {
+      "condition_type": "is_true",
+      "display_name": "is true",
+      "description": "Met when the variable value is boolean true.",
+      "variable_value_note": "If the variable value is the strings \"TRUE\" or \"true\", this condition is not met.",
+      "example": "Returning visitor is true",
+      "operand_value_type": "null"
+    },
+    "is_false": {
+      "condition_type": "is_false",
+      "display_name": "is false",
+      "description": "Met when the variable value is boolean false.",
+      "variable_value_note": "If the variable value is the strings \"FALSE\" or \"false\", this condition is not met.",
+      "example": "Returning visitor is false",
+      "operand_value_type": "null"
+    },
+    "is_set": {
+      "condition_type": "is_set",
+      "display_name": "is set",
+      "description": "Met when the variable value is defined: neither null nor undefined.",
+      "example": "Campaign is set",
+      "operand_value_type": "null"
+    },
+    "is_not_set": {
+      "condition_type": "is_not_set",
+      "display_name": "is not set",
+      "description": "Met when the variable value is undefined or null.",
+      "example": "Campaign is not set",
+      "operand_value_type": "null"
+    },
+    "is_empty": {
+      "condition_type": "is_empty",
+      "display_name": "is empty",
+      "description": "Met when the variable value is one of: null, undefined, empty string (\"\"), empty array ([]), empty object ({}).",
+      "example": "Campaign is empty",
+      "operand_value_type": "null"
+    },
+    "is_not_empty": {
+      "condition_type": "is_not_empty",
+      "display_name": "is not empty",
+      "description": "Met when the variable value is none of: null, undefined, empty string (\"\"), empty array ([]), empty object ({}).",
+      "example": "Campaign is not empty",
+      "operand_value_type": "null"
+    },
+    "matches": {
+      "condition_type": "matches",
+      "display_name": "matches",
+      "description": "Met when the clicked element matches the given selector (CSS or XPath).",
+      "example": "Click Element matches .cart > a",
+      "operand_value_type": "string",
+      "notes": ["Available only for the Click Element variable."]
+    },
+    "does_not_match": {
+      "condition_type": "does_not_match",
+      "display_name": "doesn't match",
+      "description": "Met when the clicked element does not match the given selector (CSS or XPath).",
+      "example": "Click Element doesn't match .cart > a",
+      "operand_value_type": "string",
+      "notes": ["Available only for the Click Element variable."]
+    },
+    "is_a_child_of": {
+      "condition_type": "is_a_child_of",
+      "display_name": "is a child of",
+      "description": "Met when the clicked element is a child of an element matched by the given selector (CSS or XPath). A parent element is checked recursively up to 100 elements in the DOM.",
+      "example": "Click Element is a child of .footer",
+      "operand_value_type": "string",
+      "notes": ["Available only for the Click Element variable."]
+    },
+    "is_not_a_child_of": {
+      "condition_type": "is_not_a_child_of",
+      "display_name": "isn't a child of",
+      "description": "Met when the clicked element is not a child of an element matched by the given selector (CSS or XPath). A parent element is checked recursively up to 100 elements in the DOM.",
+      "example": "Click Element isn't a child of .footer",
+      "operand_value_type": "string",
+      "notes": ["Available only for the Click Element variable."]
+    },
+    "is_first_visit": {
+      "condition_type": "is_first_visit",
+      "display_name": "is first visit",
+      "description": "Met when the visit qualifies as the visitor's first visit (per Tag Manager / cookie semantics for the configured variable).",
+      "operand_value_type": "numeric string",
+      "notes": [
+        "Typically used with variables related to first-time vs returning visitors; exact behaviour depends on the variable attached to the condition.",
+        "When used with 'View within session' variable it requires numeric string operand value, representing number of minutes."
+      ]
+    },
+    "is_not_first_visit": {
+      "value": "is_not_first_visit",
+      "display_name": "is not first visit",
+      "description": "Met when the visit does not qualify as the visitor's first visit.",
+      "operand_value_type": "numeric string",
+      "notes": [
+        "Typically used with variables related to first-time vs returning visitors; exact behaviour depends on the variable attached to the condition.",
+        "When used with 'View within session' variable it requires numeric string operand value, representing number of minutes."
+      ]
+    },
+    "each_time": {
+      "condition_type": "each_time",
+      "display_name": "each time",
+      "description": "Fire each time the condition is satisfied (e.g. each time a scroll or timer threshold is reached).",
+      "operand_value_type": "string",
+      "notes": [
+        "Used with built-in variables such as Time on Website (4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd) or Page Scroll (a9a87b7d-d565-433d-8090-df9d80bf91f5); set `value` to seconds (timer) or threshold (scroll) per variable documentation."
+      ]
+    },
+    "once_per_page_view": {
+      "condition_type": "once_per_page_view",
+      "display_name": "once per page view",
+      "description": "Fire at most once per page view when the condition is met.",
+      "operand_value_type": "string",
+      "notes": [
+        "Used with Time on Website or Page Scroll conditions; see trigger templates for required variable_id, value, and options."
+      ]
+    },
+    "once_per_session": {
+      "condition_type": "once_per_session",
+      "display_name": "once per session",
+      "description": "Fire at most once per session when the condition is met.",
+      "operand_value_type": "string",
+      "notes": [
+        "Used with Time on Website or Page Scroll conditions; see trigger templates for required variable_id, value, and options."
+      ]
+    },
+    "visitor_belongs_to": {
+      "condition_type": "visitor_belongs_to",
+      "display_name": "visitor belongs to",
+      "description": "Met when the visitor belongs to the specified audience.",
+      "operand_value_type": "string",
+      "notes": [
+        "Requires Data Activation (audiences). The condition `value` identifies the audience per your Tag Manager configuration."
+      ]
+    },
+    "visitor_not_belongs_to": {
+      "condition_type": "visitor_not_belongs_to",
+      "display_name": "visitor doesn't belong to",
+      "description": "Met when the visitor does not belong to the specified audience.",
+      "operand_value_type": "string",
+      "notes": [
+        "Requires Data Activation (audiences). The condition `value` identifies the audience per your Tag Manager configuration."
+      ]
+    }
+  },
+  "conditions_reference": {
+    "description": "Deduplicated union of optional trigger condition variables documented across trigger templates (`event_conditions_reference.conditions`), keyed by `builtin_variable_name`. Descriptions prefer page_view, then event, then form_submission, then other templates.",
+    "mcp_lookup_notes": [
+      "Each entry's builtin_variable_name is the human-readable built-in variable label — not the API variable_id.",
+      "When building conditions[] for triggers_create/triggers_update: set variable_id from variable_base.json → builtin_variables_reference (match display_name to builtin_variable_name), unless the condition uses a custom app variable (then use variables_list with builtin=false).",
+      "Trigger templates reference these keys via available_event_conditions.conditions and required_conditions.*.condition_reference."
+    ],
+    "default_allowed_condition_types": [
+      "contains",
+      "does_not_contain",
+      "starts_with",
+      "does_not_start_with",
+      "ends_with",
+      "does_not_end_with",
+      "equals",
+      "does_not_equal",
+      "regexp",
+      "does_not_regexp",
+      "is_true",
+      "is_false",
+      "is_set",
+      "is_not_set",
+      "is_empty",
+      "is_not_empty"
+    ],
+    "conditions": {
+      "campaign": {
+        "builtin_variable_name": "Campaign",
+        "description": "Fires when a visitor visits a page to which they were directed by the selected campaign (based on utm_campaign parameter).",
+        "example": "Campaign equals winter-promo",
+        "allowed_condition_types": [
+          "contains",
+          "does_not_contain",
+          "starts_with",
+          "does_not_start_with",
+          "ends_with",
+          "does_not_end_with",
+          "equals",
+          "does_not_equal",
+          "regexp",
+          "does_not_regexp",
+          "is_true",
+          "is_false",
+          "is_set",
+          "is_not_set",
+          "is_empty",
+          "is_not_empty",
+          "matches",
+          "does_not_match",
+          "is_a_child_of",
+          "is_not_a_child_of",
+          "is_first_visit",
+          "is_not_first_visit",
+          "each_time",
+          "once_per_page_view",
+          "once_per_session",
+          "visitor_belongs_to",
+          "visitor_not_belongs_to"
+        ]
+      },
+      "cdp_audience": {
+        "builtin_variable_name": "CDP Audience",
+        "description": "Fires a tag whenever it detects that the user is a member of any selected audience. Membership is checked at the beginning of a session and periodically during the session.",
+        "example": "CDP Audience visitor_belongs_to desktop users",
+        "allowed_condition_types": [
+          "visitor_belongs_to",
+          "visitor_not_belongs_to"
+        ]
+      },
+      "click_classes": {
+        "builtin_variable_name": "Click Classes",
+        "description": "Fires when the visitor clicks an element with the selected CSS class",
+        "example": "Click Classes contains primary_button"
+      },
+      "click_element": {
+        "builtin_variable_name": "Click Element",
+        "description": "Fires when the visitor clicks an element matching the selected CSS or XPath selector",
+        "example": "Click Element matches .promo_banner",
+        "allowed_condition_types": [
+          "matches",
+          "does_not_match",
+          "is_a_child_of",
+          "is_not_a_child_of"
+        ]
+      },
+      "click_id": {
+        "builtin_variable_name": "Click ID",
+        "description": "Fires when the visitor clicks an element with the selected ID",
+        "example": "Click ID equals item-123"
+      },
+      "click_url": {
+        "builtin_variable_name": "Click URL",
+        "description": "Fires when the visitor clicks a link with the selected URL",
+        "example": "Click URL equals https://example.com/big-promo/"
+      },
+      "consents": {
+        "builtin_variable_name": "Consents",
+        "description": "Fires when the visitor consents meets given conditions",
+        "example": "Consents is set",
+        "allowed_condition_types": [
+          "contains",
+          "does_not_contain",
+          "regexp",
+          "does_not_regexp",
+          "is_set",
+          "is_not_set",
+          "is_empty",
+          "is_not_empty"
+        ]
+      },
+      "custom_variable_based": {
+        "builtin_variable_name": "Custom variable based",
+        "description": "Any custom variable can be used to define trigger conditions",
+        "example": "{{ my custom variable }} is equal 123"
+      },
+      "event": {
+        "builtin_variable_name": "Event",
+        "description": "Fires a tag when a specific event occurs in the data layer",
+        "example": "Event contains exampleEventName",
+        "allowed_condition_types": [
+          "contains",
+          "does_not_contain",
+          "starts_with",
+          "does_not_start_with",
+          "ends_with",
+          "does_not_end_with",
+          "equals",
+          "does_not_equal",
+          "regexp",
+          "does_not_regexp",
+          "is_true",
+          "is_false",
+          "is_set",
+          "is_not_set",
+          "is_empty",
+          "is_not_empty",
+          "matches",
+          "does_not_match",
+          "is_a_child_of",
+          "is_not_a_child_of",
+          "is_first_visit",
+          "is_not_first_visit",
+          "each_time",
+          "once_per_page_view",
+          "once_per_session",
+          "visitor_belongs_to",
+          "visitor_not_belongs_to"
+        ],
+        "available_multiplicity": {
+          "many_times_during_a_session": {
+            "related_condition_type": "each_time"
+          },
+          "once_for_each_page_view": {
+            "related_condition_type": "once_per_page_view"
+          },
+          "once_in_a_session": {
+            "related_condition_type": "once_per_session"
+          }
+        }
+      },
+      "external_referrer": {
+        "builtin_variable_name": "External referrer",
+        "description": "Fires when a visitor visits a page to which they were directed by the selected external referrer (different domain).",
+        "example": "External referrer equals https://google.com"
+      },
+      "form_classes": {
+        "builtin_variable_name": "Form Classes",
+        "description": "Fires when a visitor submits a form with the selected CSS class",
+        "example": "Form Classes contains emergency-contact"
+      },
+      "form_id": {
+        "builtin_variable_name": "Form ID",
+        "description": "Fires when a visitor submits a form with the selected ID",
+        "example": "Form ID contains contact-form"
+      },
+      "form_name": {
+        "builtin_variable_name": "Form Name",
+        "description": "Fires when a visitor submits a form with the selected name",
+        "example": "Form Name equals emergencyContact",
+        "allowed_condition_types": [
+          "contains",
+          "does_not_contain",
+          "starts_with",
+          "does_not_start_with",
+          "ends_with",
+          "does_not_end_with",
+          "equals",
+          "does_not_equal",
+          "regexp",
+          "does_not_regexp",
+          "is_empty",
+          "is_not_empty"
+        ]
+      },
+      "form_url": {
+        "builtin_variable_name": "Form URL",
+        "description": "Fires when a visitor submits a form that sends a request to the selected page URL",
+        "example": "Form URL equals https://example.com/contact-requests"
+      },
+      "found_elements": {
+        "builtin_variable_name": "Found Elements",
+        "description": "Fires the tag when the selected element is present on a page. The condition's value is the CSS selector (e.g. .promo_banner or a class name)",
+        "example": "Found Elements each_time .promo_banner",
+        "allowed_condition_types": [
+          "each_time",
+          "once_per_page_view",
+          "once_per_session"
+        ],
+        "available_multiplicity": {
+          "each_time_new_elements_are_found": {
+            "related_condition_type": "each_time",
+            "note": "this is the default mode"
+          },
+          "once_for_each_page_view": {
+            "related_condition_type": "once_per_page_view"
+          },
+          "once_in_a_session": {
+            "related_condition_type": "once_per_session"
+          }
+        }
+      },
+      "history_fragment": {
+        "builtin_variable_name": "History fragment",
+        "description": "Fires when the URL hash matches the selected condition",
+        "example": "History fragment equals pricing"
+      },
+      "history_source": {
+        "builtin_variable_name": "History source",
+        "description": "Fires when a specific history event occurs (pushState, replaceState, popState or hashchange)",
+        "example": "History source equals pushState"
+      },
+      "history_state": {
+        "builtin_variable_name": "History state",
+        "description": "Fires when the history state matches the selected condition",
+        "example": "History state is set or History state equals my-state"
+      },
+      "leave_content": {
+        "builtin_variable_name": "Leave Content",
+        "description": "Fires the tag when a visitor moves the cursor in the selected direction. The condition's value must be one of: 'top' (upper page boundary / exit intent), 'any' (upper, bottom or side page boundary).",
+        "example": "Leave Content each_time top",
+        "allowed_condition_types": [
+          "each_time",
+          "once_per_page_view",
+          "once_per_session"
+        ],
+        "value": {
+          "enum": [
+            "top",
+            "any"
+          ],
+          "value_descriptions": {
+            "top": "fires when the cursor leaves via the top of the viewport",
+            "any": "fires when the cursor leaves via any edge"
+          }
+        },
+        "available_multiplicity": {
+          "many_times_during_a_session": {
+            "related_condition_type": "each_time",
+            "note": "this is the default mode"
+          },
+          "once_for_each_page_view": {
+            "related_condition_type": "once_per_page_view"
+          },
+          "once_in_a_session": {
+            "related_condition_type": "once_per_session"
+          }
+        }
+      },
+      "old_history_fragment": {
+        "builtin_variable_name": "Old history fragment",
+        "description": "Fires when the previous URL hash matches the selected condition",
+        "example": "Old history fragment equals about-us"
+      },
+      "old_history_state": {
+        "builtin_variable_name": "Old history state",
+        "description": "Fires when the previous history state matches the selected condition",
+        "example": "Old history state equals my-state"
+      },
+      "page_url": {
+        "builtin_variable_name": "Page URL",
+        "description": "Fires when a visitor visits a page with the selected page URL.",
+        "example": "Page Url equals https://clearbank.com/product-tour/"
+      },
+      "page_hostname": {
+        "builtin_variable_name": "Page hostname",
+        "description": "Fires when a visitor visits a page hosted on the selected domain.",
+        "example": "Page Hostname equals clearbank.com"
+      },
+      "page_path": {
+        "builtin_variable_name": "Page path",
+        "description": "Fires when a visitor visits a page with the selected page path.",
+        "example": "Page Path contains /product-tour"
+      },
+      "page_scroll": {
+        "builtin_variable_name": "Page Scroll",
+        "description": "Fires the tag when a visitor scrolls to the selected point on the page. For example, a visitor scrolls 50% of the page or scrolls down to 1440 px.",
+        "example": "Page Scroll once_per_page_view 35 (options: percentage)",
+        "allowed_condition_types": [
+          "each_time",
+          "once_per_page_view",
+          "once_per_session"
+        ],
+        "options": {
+          "unit": {
+            "required": true,
+            "enum": [
+              "percentage",
+              "pixels"
+            ],
+            "description": "Unit for the scroll threshold. 'percentage' = percent of page scrolled (value 0–100). 'pixels' = scroll depth in pixels."
+          }
+        },
+        "available_multiplicity": {
+          "many_times_during_a_session": {
+            "related_condition_type": "each_time",
+            "note": "this is the default mode"
+          },
+          "once_for_each_page_view": {
+            "related_condition_type": "once_per_page_view"
+          },
+          "once_in_a_session": {
+            "related_condition_type": "once_per_session"
+          }
+        }
+      },
+      "referrer": {
+        "builtin_variable_name": "Referrer",
+        "description": "Fires when a visitor visits a page to which they were directed by the selected referrer (internal, same domain).",
+        "example": "Referrer equals https://clearbank.com/blog"
+      },
+      "returning_visitor": {
+        "builtin_variable_name": "Returning visitor",
+        "description": "Fires when a visitor is a returning visitor and visits a page. Recognized by Tag Manager using the stg_returning_visitor cookie.",
+        "example": "Returning visitor is true",
+        "allowed_condition_types": [
+          "is_true",
+          "is_false"
+        ]
+      },
+      "time_on_website": {
+        "builtin_variable_name": "Time on website",
+        "description": "Fires the tag when a visitor stays on your site for the selected time (seconds).",
+        "example": "Time on website once_per_session 30",
+        "allowed_condition_types": [
+          "once_per_page_view",
+          "once_per_session"
+        ]
+      },
+      "traffic_source": {
+        "builtin_variable_name": "Traffic source",
+        "description": "Fires when a visitor visits a page to which they were directed by the selected traffic source. Possible values: campaign, organic search, social, referral, direct.",
+        "example": "Traffic source equals direct",
+        "allowed_condition_types": [
+          "equals",
+          "does_not_equal"
+        ],
+        "value": {
+          "enum": [
+            "social",
+            "organic_search",
+            "direct",
+            "website",
+            "campaign"
+          ],
+          "note": "Use values from enum. If copied from UI (not snake-cased, capitalized), they will not work properly."
+        }
+      },
+      "view_within_session": {
+        "builtin_variable_name": "View within session",
+        "description": "Fires when it is/isn't first visit within session",
+        "example": "View within session is_first_visit",
+        "allowed_condition_types": [
+          "is_first_visit",
+          "is_not_first_visit"
+        ],
+        "available_multiplicity": {
+          "once_in_a_session": {
+            "related_condition_type": "is_first_visit"
+          },
+          "many_times_during_a_session_but_skips_the_first_event": {
+            "related_condition_type": "is_not_first_visit"
+          }
+        }
+      }
     }
   },
   "workflow_example": {
     "complete_setup_process": {
       "step_1": {
-        "action": "Get available variables",
-        "mcp_call": "variables_list(app_id='your-app-id')",
-        "purpose": "Find the variable IDs for your conditions"
+        "action": "Get trigger type requirements",
+        "mcp_call": "templates_list_triggers() then templates_get_trigger(template_name='event')",
+        "purpose": "Confirm trigger_type, required_conditions, available_event_conditions, and which builtin_variable_name values apply (see conditions_reference in the merged template)."
       },
       "step_2": {
-        "action": "Create trigger",
-        "mcp_call": "triggers_create(app_id='your-app-id', name='...', trigger_type='...', conditions=[...])",
-        "purpose": "Create the trigger with appropriate conditions"
+        "action": "Resolve built-in variable UUIDs for conditions",
+        "where": "variable_base.json → builtin_variables_reference → variables[]",
+        "mcp_call": "templates_get_variable(template_name='constant')",
+        "purpose": "For each condition that uses a built-in variable: match conditions_reference.builtin_variable_name to builtin_variables_reference.display_name and copy the corresponding variable_id into conditions[].variable_id. Built-in UUIDs are fixed — do not use variables_list for them."
       },
       "step_3": {
-        "action": "Create or update tag",
-        "mcp_call": "tags_create(app_id='your-app-id', attributes={...}, triggers='trigger-uuid-from-step-2')",
-        "purpose": "Associate the trigger with a tag"
+        "action": "Resolve custom variable UUIDs (if needed)",
+        "mcp_call": "variables_list(app_id='your-app-id', filters={'builtin': false})",
+        "purpose": "When the trigger allows custom_variable_based or the condition targets a user-created variable, copy the resource id from the list into conditions[].variable_id."
       },
       "step_4": {
+        "action": "Create trigger",
+        "mcp_call": "triggers_create(app_id='your-app-id', attributes={'name': '...', 'trigger_type': '...', 'conditions': [{'variable_id': '<uuid-from-step-2-or-3>', 'condition_type': '...', 'value': '...'}]}, relationships={'tags': ['tag-uuid-if-known'], 'triggers': ['related-trigger-uuid-if-any']})",
+        "purpose": "Create the trigger with conditions that reference verified variable_id values."
+      },
+      "step_5": {
+        "action": "Create or update tag (if needed)",
+        "mcp_call": "tags_create(app_id='your-app-id', attributes={...}, relationships={'triggers': ['trigger-uuid-from-step-4']})",
+        "purpose": "Associate the trigger with a tag."
+      },
+      "step_6": {
         "action": "Test and publish",
-        "purpose": "Verify trigger works correctly before going live"
+        "purpose": "Verify trigger conditions fire as expected before going live."
       }
     }
   }

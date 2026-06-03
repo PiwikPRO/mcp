@@ -18,6 +18,7 @@ from .models import (
     VariableAttributes,
     VariableFilters,
     VersionType,
+    inject_explicit_null_trigger_condition_values,
 )
 
 
@@ -429,10 +430,13 @@ class TagManagerAPI:
 
         attributes = TriggerAttributes(name=name, trigger_type=trigger_type, **kwargs)
 
+        attributes_payload = attributes.model_dump(by_alias=True, exclude_none=True)
+        inject_explicit_null_trigger_condition_values(attributes_payload)
+
         data = {
             "data": {
                 "type": "trigger",
-                "attributes": attributes.model_dump(by_alias=True, exclude_none=True),
+                "attributes": attributes_payload,
             }
         }
         if relationships is not None:
@@ -481,15 +485,27 @@ class TagManagerAPI:
             BadRequestError: If request data is invalid
             PiwikProAPIError: If the request fails
         """
+        # JSON:API expects relationships and meta at data level, not inside attributes.
+        relationships = kwargs.pop("relationships", None)
+        meta = kwargs.pop("meta", None)
+
         attributes = TriggerAttributes(**kwargs)
+
+        attributes_payload = attributes.model_dump(by_alias=True, exclude_none=True)
+        inject_explicit_null_trigger_condition_values(attributes_payload)
 
         data = {
             "data": {
                 "type": "trigger",
                 "id": trigger_id,
-                "attributes": attributes.model_dump(by_alias=True, exclude_none=True),
             }
         }
+        if attributes_payload:
+            data["data"]["attributes"] = attributes_payload
+        if relationships is not None:
+            data["data"]["relationships"] = relationships
+        if meta is not None:
+            data["data"]["meta"] = meta
 
         return self.client.patch(f"/api/tag/v1/{app_id}/triggers/{trigger_id}", data=data)
 

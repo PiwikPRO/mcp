@@ -62,8 +62,20 @@ def get_app_details(app_id: str) -> AppDetailsMCPResponse:
             app_type=attrs.get("appType"),
             timezone=attrs.get("timezone"),
             currency=attrs.get("currency"),
+            e_commerce_tracking=attrs.get("eCommerceTracking"),
+            delay=attrs.get("delay"),
             gdpr_enabled=attrs.get("gdpr"),
+            gdpr_user_mode_enabled=attrs.get("gdprUserModeEnabled"),
+            privacy_cookie_domains_enabled=attrs.get("privacyCookieDomainsEnabled"),
+            privacy_cookie_expiration_period=attrs.get("privacyCookieExpirationPeriod"),
+            privacy_cookie_domains=attrs.get("privacyCookieDomains"),
             gdpr_data_anonymization=attrs.get("gdprDataAnonymization"),
+            sharepoint_integration=attrs.get("sharepointIntegration"),
+            gdpr_data_anonymization_mode=attrs.get("gdprDataAnonymizationMode"),
+            privacy_use_cookies=attrs.get("privacyUseCookies"),
+            privacy_use_fingerprinting=attrs.get("privacyUseFingerprinting"),
+            cnil=attrs.get("cnil"),
+            session_id_strict_privacy_mode=attrs.get("sessionIdStrictPrivacyMode"),
             real_time_dashboards=attrs.get("realTimeDashboards"),
             created_at=attrs.get("addedAt"),
             updated_at=attrs.get("updatedAt"),
@@ -179,13 +191,25 @@ def register_app_tools(mcp: FastMCP) -> None:
             - app_type: Type of application
             - timezone: App timezone
             - currency: App currency
+            - e_commerce_tracking: Whether e-commerce tracking is enabled
+            - delay: App delay in milliseconds
             - gdpr_enabled: Whether GDPR is enabled
+            - gdpr_user_mode_enabled: Whether GDPR user mode is enabled
+            - privacy_cookie_domains_enabled: Whether privacy cookie domains are enabled
+            - privacy_cookie_expiration_period: Privacy cookie expiration period in seconds
+            - privacy_cookie_domains: Privacy cookie domains list
             - gdpr_data_anonymization: Whether GDPR data anonymization is enabled
+            - sharepoint_integration: Whether SharePoint integration is enabled
+            - gdpr_data_anonymization_mode: GDPR data anonymization mode
+            - privacy_use_cookies: Whether privacy mode uses cookies
+            - privacy_use_fingerprinting: Whether privacy mode uses fingerprinting
+            - cnil: Whether CNIL integration is enabled
+            - session_id_strict_privacy_mode: Whether strict privacy mode is enabled
             - real_time_dashboards: Whether real-time dashboards are enabled
             - created_at: App creation datetime
             - updated_at: App last update datetime
 
-        For more details use also tracker_settings_app_get tool.
+        For more tracking details use `tracker_settings_app_get`.
         """
         return get_app_details(app_id)
 

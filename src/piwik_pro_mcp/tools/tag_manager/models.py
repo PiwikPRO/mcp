@@ -13,7 +13,7 @@ from ...common.settings import tag_manager_resource_check_enabled
 from ...common.templates import list_available_assets
 
 
-class TagManagerCreateAttributes(BaseModel):
+class TagCreateAttributes(BaseModel):
     """Base attributes for creating Tag Manager resources."""
 
     model_config = {"extra": "allow"}  # Allow additional fields for template-specific attributes
@@ -25,7 +25,7 @@ class TagManagerCreateAttributes(BaseModel):
     # Common template-specific fields that many templates use
     code: str | None = Field(None, description="Tag code (HTML, script, or CSS)")
     consent_type: str | None = Field(None, description="Consent type for privacy compliance")
-    tag_type: str | None = Field(None, description="Tag execution type (sync/async)")
+    tag_type: str | None = Field(None, description="Only using async is not deprecated")
     document_write: bool | None = Field(None, description="Whether tag uses document.write")
     disable_in_debug_mode: bool | None = Field(None, description="Disable in debug mode")
     respect_visitors_privacy: bool | None = Field(None, description="Respect visitor privacy settings")
@@ -43,7 +43,7 @@ class TagManagerCreateAttributes(BaseModel):
         return v
 
 
-class TagManagerUpdateAttributes(BaseModel):
+class TagUpdateAttributes(BaseModel):
     """Base attributes for updating Tag Manager resources."""
 
     model_config = {"extra": "allow"}  # Allow additional fields for template-specific attributes
@@ -61,6 +61,108 @@ class TagManagerUpdateAttributes(BaseModel):
     respect_visitors_privacy: bool | None = Field(None, description="Respect visitor privacy settings")
     priority: int | None = Field(None, description="Tag firing priority")
     template_options: dict[str, Any] | None = Field(None, description="Template-specific options")
+
+
+class TagRelationships(BaseModel):
+    """Optional trigger relationships for tags_create and tags_update (MCP tool input)."""
+
+    model_config = {"extra": "forbid"}
+
+    triggers: list[str] | None = Field(
+        default=None,
+        description=(
+            "Trigger UUIDs to attach (discover via triggers_list). "
+            "Omit or null: on tags_create, create without triggers; on tags_update, keep existing triggers. "
+            "Empty list: detach all triggers on tags_update; on tags_create, omit attaching triggers."
+        ),
+    )
+
+    @field_validator("triggers")
+    @classmethod
+    def _normalize_trigger_ids(cls, v: list[str] | None) -> list[str] | None:
+        if v is None:
+            return None
+        return [str(item).strip() for item in v if str(item).strip()]
+
+
+class TriggerRelationshipMemberMeta(BaseModel):
+    """Per-link metadata for a related trigger (JSON:API relationship member meta)."""
+
+    model_config = {"extra": "forbid"}
+
+    firing_threshold: int = Field(ge=1, description="Firing threshold for this linked trigger; must be >= 1")
+
+
+class TriggerRelationshipMember(BaseModel):
+    """One related trigger in MCP `relationships.triggers` (plain UUID strings are coerced to id-only)."""
+
+    model_config = {"extra": "forbid"}
+
+    id: str = Field(..., description="UUID of the related trigger resource")
+    meta: TriggerRelationshipMemberMeta | None = Field(
+        default=None,
+        description="Optional meta for this link (e.g. firing_threshold for trigger_group members)",
+    )
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _strip_id(cls, v: Any) -> str:
+        if not isinstance(v, str):
+            raise ValueError("id must be a string UUID")
+        s = v.strip()
+        if not s:
+            raise ValueError("id must be non-empty")
+        return s
+
+
+class TriggerRelationships(BaseModel):
+    """MCP ``relationships`` for triggers: at most ``triggers`` and ``tags`` (no other keys)."""
+
+    model_config = {"extra": "forbid"}
+
+    triggers: list[TriggerRelationshipMember] | None = Field(
+        default=None,
+        description=(
+            "Related trigger UUIDs for JSON:API `triggers` relationship. Each item may be a UUID string or "
+            'an object {"id": "...", "meta": {"firing_threshold": N}} with N >= 1 when meta is present.'
+        ),
+    )
+    tags: list[str] | None = Field(
+        default=None,
+        description=(
+            "Tag UUIDs for JSON:API `tags` relationship (discover via tags_list). "
+            "Omit or null: on triggers_create, create without tags; on triggers_update, keep existing tags. "
+            "Empty list: clear tag links on triggers_update."
+        ),
+    )
+
+    @field_validator("triggers", mode="before")
+    @classmethod
+    def _coerce_triggers_items(cls, v: Any) -> Any:
+        if v is None:
+            return None
+        if not isinstance(v, list):
+            raise ValueError("triggers must be a list of UUID strings and/or objects with id and optional meta")
+        out: list[Any] = []
+        for item in v:
+            if isinstance(item, str):
+                s = item.strip()
+                if s:
+                    out.append({"id": s})
+            elif isinstance(item, dict):
+                out.append(item)
+            else:
+                raise ValueError("each triggers item must be a UUID string or an object with id and optional meta")
+        return out
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def _normalize_tag_ids(cls, v: Any) -> list[str] | None:
+        if v is None:
+            return None
+        if not isinstance(v, list):
+            raise ValueError("tags must be a list of UUID strings")
+        return [str(item).strip() for item in v if str(item).strip()]
 
 
 class VariableCreateAttributes(BaseModel):
@@ -101,6 +203,15 @@ class TriggerCreateAttributes(BaseModel):
         if v not in allowed:
             raise ValueError(f"Unsupported trigger type '{v}'. Use templates_list_triggers() to discover options.")
         return v
+
+
+class TriggerUpdateAttributes(BaseModel):
+    """Attributes for updating triggers with template-specific fields."""
+
+    model_config = {"extra": "allow"}
+
+    name: str | None = Field(None, description="Trigger name")
+    conditions: list[dict[str, Any]] | None = Field(None, description="Trigger conditions")
 
 
 class VariableUpdateAttributes(BaseModel):

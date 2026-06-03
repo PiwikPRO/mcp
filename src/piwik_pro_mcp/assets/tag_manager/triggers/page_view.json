@@ -5,70 +5,26 @@
     "Page View Trigger"
   ],
   "description": "A page view trigger fires a tag when a visitor views a page. A page view can occur when (1) the browser starts to load a page (page view), (2) the HTML and DOM are fully loaded (DOM ready), or (3) when all page elements have finished loading (page load). By default, the tag fires on all page views. You can change its settings so that the tag fires on a specific page or under specific conditions.",
-  "loading_conditions_reference": {
-    "source": "https://help.piwik.pro/support/tag-manager/page-view-trigger/",
-    "description": "Load this tag right after the browser:",
-    "loading_option": "Begins to load a page (page view)",
-    "alternatives": [
-      "page_view – Fires when the browser begins to load a page",
-      "dom_ready – Fires when HTML and DOM are fully loaded",
-      "page_load – Fires when all page elements have finished loading"
-    ],
-    "note": "Fires the tag when a visitor visits a page and the page loads as selected."
+  "relationship_to_dom_ready_and_page_load": {
+    "note": "Three loading options exist: page_view (earliest), dom_ready, page_load (latest). Use page_load when the tag should run once browser start to load the page.",
+    "same_conditions": "Event condition types and multiplicity options are the same as for the DOM ready and page load trigger.",
+    "default_multiplicity": "Many times during a session - no extra condition is needed"
   },
-  "event_conditions_reference": {
+  "available_event_conditions": {
     "source": "https://help.piwik.pro/support/tag-manager/page-view-trigger/",
-    "conditions_tip": "Learn more about trigger conditions: https://help.piwik.pro/support/tag-manager/conditions-in-triggers/",
-    "condition_types": [
-      {
-        "type": "Page URL",
-        "description": "Fires when a visitor visits a page with the selected page URL.",
-        "example": "Page Url equals https://clearbank.com/product-tour/"
-      },
-      {
-        "type": "Page path",
-        "description": "Fires when a visitor visits a page with the selected page path.",
-        "example": "Page Path contains /product-tour"
-      },
-      {
-        "type": "Page hostname",
-        "description": "Fires when a visitor visits a page hosted on the selected domain.",
-        "example": "Page Hostname equals clearbank.com"
-      },
-      {
-        "type": "Referrer",
-        "description": "Fires when a visitor visits a page to which they were directed by the selected referrer (internal, same domain).",
-        "example": "Referrer equals https://clearbank.com/blog"
-      },
-      {
-        "type": "External referrer",
-        "description": "Fires when a visitor visits a page to which they were directed by the selected external referrer (different domain).",
-        "example": "External referrer equals https://google.com"
-      },
-      {
-        "type": "Campaign",
-        "description": "Fires when a visitor visits a page to which they were directed by the selected campaign (based on utm_campaign parameter).",
-        "example": "Campaign equals winter-promo"
-      },
-      {
-        "type": "Traffic source",
-        "description": "Fires when a visitor visits a page to which they were directed by the selected traffic source. Possible values: campaign, organic search, social, referral, direct.",
-        "example": "Traffic source equals direct"
-      },
-      {
-        "type": "Returning visitor",
-        "description": "Fires when a visitor is a returning visitor and visits a page. Recognized by Tag Manager using the stg_returning_visitor cookie.",
-        "example": "Returning visitor is true"
-      },
-      {
-        "type": "Variable-based conditions",
-        "description": "Any variable you add will appear in the list of conditions and you can use it to define trigger conditions."
-      }
-    ],
-    "multiplicity": [
-      "Many times during a session",
-      "Once in a session",
-      "Many times during a session, but skips the first event"
+    "conditions": [
+      "page_url",
+      "page_path",
+      "page_hostname",
+      "referrer",
+      "campaign",
+      "traffic_source",
+      "returning_visitor",
+      "external_referrer",
+      "history_fragment",
+      "cdp_audience",
+      "view_within_session",
+      "custom_variable_based"
     ]
   },
   "ai_usage_guide": {
@@ -94,28 +50,6 @@
       "Test conditions thoroughly before publishing triggers",
       "Use descriptive trigger names that indicate the page or purpose"
     ]
-  },
-  "mcp_usage": {
-    "create_trigger": {
-      "description": "Create a new page view trigger using this template",
-      "required_parameters": {
-        "trigger_type": {
-          "value": "page_view",
-          "description": "Must be 'page_view' for page view triggers"
-        },
-        "conditions": {
-          "description": "Array of condition objects that determine when the trigger fires"
-        }
-      }
-    },
-    "update_trigger": {
-      "description": "Update existing page view trigger - only editable fields will be processed",
-      "optional_parameters": {
-        "relationships": {
-          "description": "Updated tag relationships (use '__unchanged__' to keep existing)"
-        }
-      }
-    }
   },
   "required_attributes": {
     "name": {

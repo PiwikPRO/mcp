@@ -6,6 +6,7 @@ class _FakeClient:
         self.last_request = None
         self.last_get = None
         self.last_post = None
+        self.last_patch = None
 
     def get(self, url, params=None, extra_headers=None):
         request_data = {"url": url, "params": params, "headers": extra_headers}
@@ -17,4 +18,10 @@ class _FakeClient:
         request_data = {"url": url, "data": data}
         self.last_request = request_data
         self.last_post = request_data
+        return self.response
+
+    def patch(self, url, data=None):
+        request_data = {"url": url, "data": data}
+        self.last_request = request_data
+        self.last_patch = request_data
         return self.response

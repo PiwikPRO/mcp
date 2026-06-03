@@ -216,8 +216,20 @@ class TestAppCrudFunctional:
                     "appType": "web",
                     "timezone": "UTC",
                     "currency": "USD",
+                    "eCommerceTracking": True,
+                    "delay": 250,
                     "gdpr": False,
+                    "gdprUserModeEnabled": True,
+                    "privacyCookieDomainsEnabled": True,
+                    "privacyCookieExpirationPeriod": 365,
+                    "privacyCookieDomains": ["example.com", ".example.com"],
                     "gdprDataAnonymization": False,
+                    "sharepointIntegration": False,
+                    "gdprDataAnonymizationMode": "session_cookie_id",
+                    "privacyUseCookies": False,
+                    "privacyUseFingerprinting": True,
+                    "cnil": True,
+                    "sessionIdStrictPrivacyMode": True,
                     "realTimeDashboards": True,
                     "addedAt": "2024-01-01T00:00:00Z",
                     "updatedAt": "2024-01-02T00:00:00Z",
@@ -235,7 +247,21 @@ class TestAppCrudFunctional:
         assert data["app_type"] == "web"
         assert data["timezone"] == "UTC"
         assert data["currency"] == "USD"
+        assert data["e_commerce_tracking"] is True
+        assert data["delay"] == 250
         assert data["gdpr_enabled"] is False
+        assert data["gdpr_user_mode_enabled"] is True
+        assert data["privacy_cookie_domains_enabled"] is True
+        assert data["privacy_cookie_expiration_period"] == 365
+        assert data["privacy_cookie_domains"] == ["example.com", ".example.com"]
+        assert data["gdpr_data_anonymization"] is False
+        assert data["sharepoint_integration"] is False
+        assert data["gdpr_data_anonymization_mode"] == "session_cookie_id"
+        assert data["privacy_use_cookies"] is False
+        assert data["privacy_use_fingerprinting"] is True
+        assert data["cnil"] is True
+        assert data["session_id_strict_privacy_mode"] is True
+        assert data["real_time_dashboards"] is True
 
         mock_piwik_client.apps.get_app.assert_called_once_with("app-123")
 

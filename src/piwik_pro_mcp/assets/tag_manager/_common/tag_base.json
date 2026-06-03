@@ -47,13 +47,13 @@
           "type": "string",
           "description": "The UUID of the tag to update",
           "example": "87654321-4321-4321-4321-210987654321"
-        },
-        "attributes": {
-          "type": "object",
-          "description": "Tag attributes object containing fields to update (only editable fields will be processed)"
         }
       },
       "optional_parameters": {
+        "attributes": {
+          "type": "object",
+          "description": "Tag attributes to update (only editable fields are processed). Optional JSON:API relationships may be included when supported. Omit when only changing triggers via the triggers parameter."
+        },
         "triggers": {
           "type": "string",
           "description": "Comma-separated list of trigger UUIDs to replace current triggers",
@@ -101,7 +101,7 @@
         "user_feedback": "Requires consent for user feedback collection",
         "custom_consent": "Requires custom consent type"
       },
-      "ai_recommendation": "Use 'not_require_consent' for essential functionality, 'analytics' for tracking code, 'marketing_automation' for marketing scripts"
+      "ai_recommendation": "Use default for given tag template unless user specifies otherwise"
     }
   },
   "optional_attributes": {

@@ -1,5 +1,14 @@
 {
   "_comment": "Shared base for variable templates. Variable JSONs can set \"extends\": \"variable_base\" and will be deep-merged with this object (template wins).",
+  "builtin_variables_reference": {
+    "source": "https://developers.piwik.pro/reference/built-in-variables.md",
+    "description": "Built-in variables available in Tag Manager. Each has a fixed Variable ID (UUID) for use in conditions, tags, and API references.",
+    "mcp_lookup_notes": [
+      "Before triggers_create or triggers_update: when a trigger condition uses a built-in variable (see trigger_base.json → conditions_reference → builtin_variable_name), set conditions[].variable_id to the matching variable_id from this list (match by display_name).",
+      "Built-in variables are not returned by variables_list with filter builtin=false; resolve them only from this asset (templates_get_variable loads variable_base via extends).",
+      "Do not invent UUIDs — copy variable_id exactly from the entry whose display_name matches the builtin_variable_name from conditions_reference."
+    ]
+  },
   "mcp_usage": {
     "create_variable": {
       "tool_name": "variables_create",

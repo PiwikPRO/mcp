@@ -57,6 +57,21 @@ class TestTagCreateFunctional:
         assert call_args[1]["name"] == "Test Tag"
         assert call_args[1]["template"] == "custom_tag"
         assert call_args[1]["is_active"] is True
+        assert call_args[1].get("trigger_ids") is None
+
+    @pytest.mark.asyncio
+    async def test_tags_create_relationships_triggers_passed_to_api(self, mcp_server, mock_piwik_client):
+        """tags_create forwards relationships.triggers to the API client as trigger_ids."""
+        attributes = {"name": "Test Tag", "template": "custom_tag", "is_active": True}
+        tid = "b2222222-2222-2222-2222-222222222222"
+
+        await mcp_server.call_tool(
+            "tags_create",
+            {"app_id": "app-123", "attributes": attributes, "relationships": {"triggers": [tid]}},
+        )
+
+        mock_piwik_client.tag_manager.create_tag.assert_called_once()
+        assert mock_piwik_client.tag_manager.create_tag.call_args[1]["trigger_ids"] == [tid]
 
     @pytest.mark.asyncio
     async def test_tags_create_preserves_optional_unrecognized_variables_relationship(self, mcp_server):
@@ -146,6 +161,47 @@ class TestTagUpdateFunctional:
         assert call_args[1]["name"] == "Updated Tag"
         assert call_args[1]["is_active"] is True
         assert call_args[1].get("template") is None  # Not provided in attributes
+
+    @pytest.mark.asyncio
+    async def test_tags_update_triggers_only_omitting_attributes(self, mcp_server):
+        """tags_update allows omitting attributes when only replacing triggers."""
+        with patch("piwik_pro_mcp.tools.tag_manager.tags.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.update_tag.return_value = {
+                "data": {"id": "tag-123", "type": "tag", "attributes": {"name": "Tag"}},
+            }
+
+            await mcp_server.call_tool(
+                "tags_update",
+                {
+                    "app_id": "app-123",
+                    "tag_id": "tag-123",
+                    "relationships": {"triggers": ["a1111111-1111-1111-1111-111111111111"]},
+                },
+            )
+
+            mock_instance.tag_manager.update_tag.assert_called_once()
+            call_kw = mock_instance.tag_manager.update_tag.call_args[1]
+            assert call_kw["trigger_ids"] == ["a1111111-1111-1111-1111-111111111111"]
+
+    @pytest.mark.asyncio
+    async def test_tags_update_relationships_empty_triggers_clears(self, mcp_server):
+        """tags_update with relationships.triggers [] clears all triggers."""
+        with patch("piwik_pro_mcp.tools.tag_manager.tags.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.update_tag.return_value = {
+                "data": {"id": "tag-123", "type": "tag", "attributes": {"name": "Tag"}},
+            }
+
+            await mcp_server.call_tool(
+                "tags_update",
+                {"app_id": "app-123", "tag_id": "tag-123", "relationships": {"triggers": []}},
+            )
+
+            call_kw = mock_instance.tag_manager.update_tag.call_args[1]
+            assert call_kw["trigger_ids"] == []
 
     @pytest.mark.asyncio
     async def test_tags_update_preserves_optional_unrecognized_variables_relationship(self, mcp_server):
@@ -265,7 +321,7 @@ class TestTagCopyFunctional:
         assert "properties" in schema_dict
         assert "type" in schema_dict
         assert schema_dict["type"] == "object"
-        assert schema_dict["title"] == "TagManagerUpdateAttributes"
+        assert schema_dict["title"] == "TagUpdateAttributes"
 
         # Check for expected fields (all optional for update)
         properties = schema_dict["properties"]
@@ -355,7 +411,7 @@ class TestTagEdgeCases:
 
     @pytest.mark.asyncio
     async def test_tags_update_no_params_error(self, mcp_server):
-        # Empty attributes and triggers left unchanged should error
+        # Empty attributes and relationships left unchanged should error
         with pytest.raises(Exception) as exc_info:
             await mcp_server.call_tool(
                 "tags_update",

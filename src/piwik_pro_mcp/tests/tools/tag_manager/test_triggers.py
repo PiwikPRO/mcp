@@ -55,6 +55,213 @@ class TestTriggerCreateFunctional:
             assert call_args[1]["trigger_type"] == "event"
             assert call_args[1]["is_active"] is False
 
+    @pytest.mark.asyncio
+    async def test_triggers_create_relationships_tags_only(self, mcp_server):
+        attributes = {"name": "With tags", "trigger_type": "event"}
+        rel = {"tags": ["tag-9"]}
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.create_trigger.return_value = {
+                "data": {"id": "trigger-123", "type": "trigger", "attributes": {"name": "With tags"}},
+            }
+
+            await mcp_server.call_tool(
+                "triggers_create",
+                {"app_id": "app-123", "attributes": attributes, "relationships": rel},
+            )
+
+            mock_instance.tag_manager.create_trigger.assert_called_once_with(
+                app_id="app-123",
+                name="With tags",
+                trigger_type="event",
+                relationships={"tags": {"data": [{"id": "tag-9", "type": "tag"}]}},
+            )
+
+    @pytest.mark.asyncio
+    async def test_triggers_create_relationships_rejects_unknown_keys(self, mcp_server):
+        attributes = {"name": "X", "trigger_type": "event"}
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "triggers_create",
+                {
+                    "app_id": "app-123",
+                    "attributes": attributes,
+                    "relationships": {"trigger_group": {"data": {"id": "g1", "type": "trigger_group"}}},
+                },
+            )
+        msg = str(exc_info.value).lower()
+        assert "extra" in msg or "forbid" in msg or "validation" in msg
+
+    @pytest.mark.asyncio
+    async def test_triggers_create_mcp_relationships_tags_and_triggers(self, mcp_server):
+        attributes = {"name": "Linked", "trigger_type": "event"}
+        rel = {
+            "triggers": ["a1111111-1111-1111-1111-111111111111"],
+            "tags": ["b2222222-2222-2222-2222-222222222222"],
+        }
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.create_trigger.return_value = {
+                "data": {"id": "trigger-123", "type": "trigger", "attributes": {"name": "Linked"}},
+            }
+
+            await mcp_server.call_tool(
+                "triggers_create",
+                {"app_id": "app-123", "attributes": attributes, "relationships": rel},
+            )
+
+            mock_instance.tag_manager.create_trigger.assert_called_once_with(
+                app_id="app-123",
+                name="Linked",
+                trigger_type="event",
+                relationships={
+                    "triggers": {"data": [{"id": "a1111111-1111-1111-1111-111111111111", "type": "trigger"}]},
+                    "tags": {"data": [{"id": "b2222222-2222-2222-2222-222222222222", "type": "tag"}]},
+                },
+            )
+
+    @pytest.mark.asyncio
+    async def test_triggers_create_mcp_relationships_triggers_with_meta_firing_threshold(self, mcp_server):
+        attributes = {"name": "Group parent", "trigger_type": "trigger_group"}
+        rel = {
+            "triggers": [
+                {"id": "a1111111-1111-1111-1111-111111111111", "meta": {"firing_threshold": 3}},
+                "c3333333-3333-3333-3333-333333333333",
+            ],
+        }
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.create_trigger.return_value = {
+                "data": {"id": "trigger-123", "type": "trigger", "attributes": {"name": "Group parent"}},
+            }
+
+            await mcp_server.call_tool(
+                "triggers_create",
+                {"app_id": "app-123", "attributes": attributes, "relationships": rel},
+            )
+
+            mock_instance.tag_manager.create_trigger.assert_called_once_with(
+                app_id="app-123",
+                name="Group parent",
+                trigger_type="trigger_group",
+                relationships={
+                    "triggers": {
+                        "data": [
+                            {
+                                "id": "a1111111-1111-1111-1111-111111111111",
+                                "type": "trigger",
+                                "meta": {"firing_threshold": 3},
+                            },
+                            {"id": "c3333333-3333-3333-3333-333333333333", "type": "trigger"},
+                        ]
+                    }
+                },
+            )
+
+    @pytest.mark.asyncio
+    async def test_triggers_create_relationships_rejects_firing_threshold_below_one(self, mcp_server):
+        attributes = {"name": "X", "trigger_type": "event"}
+        rel = {"triggers": [{"id": "a1111111-1111-1111-1111-111111111111", "meta": {"firing_threshold": 0}}]}
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "triggers_create",
+                {"app_id": "app-123", "attributes": attributes, "relationships": rel},
+            )
+        msg = str(exc_info.value).lower()
+        assert "firing_threshold" in msg or "validation" in msg or "greater" in msg
+
+
+class TestTriggerUpdateFunctional:
+    """Functional tests for trigger update tools through MCP."""
+
+    @pytest.mark.asyncio
+    async def test_triggers_update_with_none_response_functional(self, mcp_server):
+        attributes = {"name": "Updated Trigger", "conditions": [{"condition_id": "c1", "variable_id": "v1"}]}
+
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.update_trigger.return_value = None
+            mock_instance.tag_manager.get_trigger.return_value = {
+                "data": {
+                    "id": "trigger-123",
+                    "type": "trigger",
+                    "attributes": {"name": "Updated Trigger", "conditions": [{"condition_id": "c1"}]},
+                }
+            }
+
+            result = await mcp_server.call_tool(
+                "triggers_update",
+                {"app_id": "app-123", "trigger_id": "trigger-123", "attributes": attributes},
+            )
+
+            assert isinstance(result, tuple)
+            assert len(result) == 2
+            _, response = result
+            assert response["data"]["id"] == "trigger-123"
+            assert response["data"]["attributes"]["name"] == "Updated Trigger"
+
+            mock_instance.tag_manager.update_trigger.assert_called_once()
+            mock_instance.tag_manager.get_trigger.assert_called_once_with(app_id="app-123", trigger_id="trigger-123")
+
+    @pytest.mark.asyncio
+    async def test_triggers_update_with_normal_response_functional(self, mcp_server):
+        attributes = {"name": "Updated Trigger"}
+
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.update_trigger.return_value = {
+                "data": {
+                    "id": "trigger-123",
+                    "type": "trigger",
+                    "attributes": {"name": "Updated Trigger"},
+                }
+            }
+
+            result = await mcp_server.call_tool(
+                "triggers_update",
+                {"app_id": "app-123", "trigger_id": "trigger-123", "attributes": attributes},
+            )
+
+            assert isinstance(result, tuple)
+            assert len(result) == 2
+            _, response = result
+            assert response["data"]["id"] == "trigger-123"
+            assert response["data"]["attributes"]["name"] == "Updated Trigger"
+
+            mock_instance.tag_manager.update_trigger.assert_called_once()
+            mock_instance.tag_manager.get_trigger.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_triggers_update_mcp_relationships_tags_only(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.update_trigger.return_value = None
+            mock_instance.tag_manager.get_trigger.return_value = {
+                "data": {"id": "trigger-123", "type": "trigger", "attributes": {"name": "T"}},
+            }
+
+            await mcp_server.call_tool(
+                "triggers_update",
+                {
+                    "app_id": "app-123",
+                    "trigger_id": "trigger-123",
+                    "relationships": {"tags": ["tag-1"]},
+                },
+            )
+
+            mock_instance.tag_manager.update_trigger.assert_called_once_with(
+                app_id="app-123",
+                trigger_id="trigger-123",
+                relationships={"tags": {"data": [{"id": "tag-1", "type": "tag"}]}},
+            )
+            mock_instance.tag_manager.get_trigger.assert_called_once_with(app_id="app-123", trigger_id="trigger-123")
+
 
 class TestTriggerCopyFunctional:
     """Functional tests for trigger copy tools through MCP."""
@@ -158,6 +365,21 @@ class TestTriggerCrudListGetDelete:
             assert data["data"]["id"] == "tr1"
             mock_instance.tag_manager.get_trigger.assert_called_once_with("app-1", "tr1")
 
+    @pytest.mark.asyncio
+    async def test_triggers_delete_happy_path(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.delete_trigger.return_value = None
+
+            result = await mcp_server.call_tool("triggers_delete", {"app_id": "app-1", "trigger_id": "tr1"})
+
+            assert isinstance(result, tuple) and len(result) == 2
+            _, data = result
+            assert data["status"] == "success"
+            assert data["message"] == "Trigger tr1 deleted successfully from app app-1"
+            mock_instance.tag_manager.delete_trigger.assert_called_once_with("app-1", "tr1")
+
 
 class TestTriggerValidationErrors:
     @pytest.mark.asyncio
@@ -194,6 +416,24 @@ class TestTriggerValidationErrors:
             assert "not found" in str(exc_info.value).lower()
 
     @pytest.mark.asyncio
+    async def test_triggers_update_empty_dict_error(self, mcp_server):
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "triggers_update",
+                {"app_id": "app-1", "trigger_id": "tr1", "attributes": {}},
+            )
+        assert "no editable fields" in str(exc_info.value).lower()
+
+    @pytest.mark.asyncio
+    async def test_triggers_update_validation_error(self, mcp_server):
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "triggers_update",
+                {"app_id": "app-1", "trigger_id": "tr1", "attributes": "not-a-dict"},
+            )
+        assert "validation" in str(exc_info.value).lower()
+
+    @pytest.mark.asyncio
     async def test_triggers_list_tags_not_found_mapping(self, mcp_server):
         with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
             mock_instance = Mock()
@@ -211,3 +451,18 @@ class TestTriggerValidationErrors:
                 )
             s = str(exc_info.value).lower()
             assert "trigger" in s and "app" in s and ("not found" in s or "failed" in s)
+
+    @pytest.mark.asyncio
+    async def test_triggers_delete_not_found_mapping(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+
+            def _raise(*args, **kwargs):
+                raise NotFoundError(status_code=404, message="not found", response_data={})
+
+            mock_instance.tag_manager.delete_trigger.side_effect = _raise
+
+            with pytest.raises(Exception) as exc_info:
+                await mcp_server.call_tool("triggers_delete", {"app_id": "app-1", "trigger_id": "tr1"})
+            assert "not found" in str(exc_info.value).lower()

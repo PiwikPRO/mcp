@@ -26,7 +26,7 @@ class TestTemplateDiscoveryFunctional:
         assert "properties" in schema_dict
         assert "type" in schema_dict
         assert schema_dict["type"] == "object"
-        assert schema_dict["title"] == "TagManagerCreateAttributes"
+        assert schema_dict["title"] == "TagCreateAttributes"
 
         # Check for expected fields
         properties = schema_dict["properties"]
@@ -44,7 +44,7 @@ class TestTemplateDiscoveryFunctional:
 
         schema = result[0].text
         schema_dict = json.loads(schema)
-        assert schema_dict["title"] == "TriggerAttributes"
+        assert schema_dict["title"] == "TriggerCreateAttributes"
 
         # Test create_variable
         result = await mcp_server.call_tool("tools_parameters_get", {"tool_name": "variables_create"})

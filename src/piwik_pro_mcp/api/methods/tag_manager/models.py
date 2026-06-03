@@ -103,8 +103,48 @@ class TriggerCondition(BaseModel):
     condition_id: str = Field(..., description="Condition UUID")
     variable_id: str = Field(..., description="Variable UUID")
     condition_type: str = Field(..., description="Condition type (equals, contains, etc.)")
-    value: str | None = Field(None, description="Condition value")
+    value: str | None = Field(
+        None,
+        description="Condition value; use null for unary types (is_true, is_false, is_set, …)",
+    )
     options: dict[str, Any] = Field(default_factory=dict, description="Condition options")
+
+
+# Unary comparisons: Tag Manager API expects an explicit JSON null for `value`, not a missing key.
+TRIGGER_CONDITION_TYPES_REQUIRING_EXPLICIT_NULL_VALUE = frozenset(
+    {
+        "is_true",
+        "is_false",
+        "is_set",
+        "is_not_set",
+        "is_empty",
+        "is_not_empty",
+        "is_first_visit",
+        "is_not_first_visit",
+    }
+)
+
+
+def inject_explicit_null_trigger_condition_values(attributes_payload: dict[str, Any]) -> None:
+    """Ensure unary trigger conditions keep ``value: null`` in the API payload.
+
+    ``model_dump(..., exclude_none=True)`` drops keys whose value is ``None``, but several
+    ``condition_type`` values still require an explicit null ``value`` in JSON.
+
+    Args:
+        attributes_payload: Serialized trigger ``attributes`` object (mutated in place).
+    """
+    conditions = attributes_payload.get("conditions")
+    if not conditions:
+        return
+    fixed: list[dict[str, Any]] = []
+    for raw in conditions:
+        row = dict(raw)
+        ct = row.get("condition_type")
+        if ct in TRIGGER_CONDITION_TYPES_REQUIRING_EXPLICIT_NULL_VALUE and "value" not in row:
+            row["value"] = None
+        fixed.append(row)
+    attributes_payload["conditions"] = fixed
 
 
 class TriggerAttributes(BaseModel):

@@ -101,7 +101,7 @@ def load_env_file(env_file_path):
         sys.exit(1)
 
     try:
-        load_dotenv(env_path)
+        load_dotenv(env_path, override=True)
         logger.info("Loaded environment variables from: %s", env_file_path)
 
         # Clear cached settings so they re-read from updated environment

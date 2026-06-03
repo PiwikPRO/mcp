@@ -74,9 +74,12 @@ WRITE_TOOLS = [
     "tags_delete",
     "triggers_copy",
     "triggers_create",
+    "triggers_delete",
+    "triggers_update",
     "variables_copy",
     "variables_create",
     "variables_update",
+    "variables_delete",
     "versions_publish_draft",
     # Tracker Settings
     "tracker_settings_global_update",
@@ -181,6 +184,7 @@ class TestSchemaResolvable:
             "tags_create",
             "tags_update",
             "triggers_create",
+            "triggers_update",
             "variables_create",
             "variables_update",
         ]

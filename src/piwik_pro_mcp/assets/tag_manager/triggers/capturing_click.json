@@ -9,61 +9,29 @@
     "note": "Two click trigger types exist in the API: 'click' and 'capturing_click'. Use 'click' for standard click tracking. Use 'capturing_click' when you need the click to be handled in the capturing phase so tags can run before navigation or before the event bubbles.",
     "same_conditions": "Condition types and structure are the same as for the Click trigger (trigger_type 'click')."
   },
-  "event_conditions_reference": {
+  "available_event_conditions": {
     "source": "https://help.piwik.pro/support/tag-manager/click-trigger/",
-    "condition_types": [
-      {
-        "type": "Click ID",
-        "description": "Fires when the visitor clicks an element with the selected ID"
-      },
-      {
-        "type": "Click URL",
-        "description": "Fires when the visitor clicks a link with the selected URL"
-      },
-      {
-        "type": "Click Classes",
-        "description": "Fires when the visitor clicks an element with the selected CSS class"
-      },
-      {
-        "type": "Click Element",
-        "description": "Fires when the visitor clicks an element matching the selected CSS or XPath selector"
-      },
-      {
-        "type": "Page URL",
-        "description": "Fires when the click happens on a page with the selected URL"
-      },
-      {
-        "type": "Page path",
-        "description": "Fires when the click happens on a page whose path contains the selected path"
-      },
-      {
-        "type": "Page hostname",
-        "description": "Fires when the click happens on a page on the selected domain"
-      },
-      {
-        "type": "Referrer",
-        "description": "Fires when the visitor came from the selected internal referrer"
-      },
-      {
-        "type": "External referrer",
-        "description": "Fires when the visitor came from the selected external referrer"
-      },
-      {
-        "type": "Campaign",
-        "description": "Fires when the visitor came from the selected campaign (utm_campaign)"
-      },
-      {
-        "type": "Traffic source",
-        "description": "Fires when traffic source matches (campaign, organic search, social, referral, direct)"
-      },
-      {
-        "type": "Returning visitor",
-        "description": "Fires when the visitor is a returning visitor"
-      },
-      {
-        "type": "Variable-based conditions",
-        "description": "Any variable can be used to define trigger conditions"
-      }
+    "conditions": [
+      "page_url",
+      "page_path",
+      "page_hostname",
+      "referrer",
+      "campaign",
+      "traffic_source",
+      "returning_visitor",
+      "external_referrer",
+      "history_fragment",
+      "cdp_audience",
+      "click_id",
+      "click_url",
+      "click_classes",
+      "click_element",
+      "consents",
+      "history_source",
+      "old_history_fragment",
+      "history_state",
+      "old_history_state",
+      "custom_variable_based"
     ]
   },
   "ai_usage_guide": {
@@ -84,23 +52,6 @@
       "Same condition types as click (Click Element, Click URL, etc.); use variable_id and condition_type as for click",
       "For Click Element conditions use options.selector_type (css or xpath) as with the click trigger"
     ]
-  },
-  "mcp_usage": {
-    "create_trigger": {
-      "description": "Create a capturing click trigger. Use when tags must run before the click navigates or propagates.",
-      "required_parameters": {
-        "trigger_type": {
-          "value": "capturing_click",
-          "description": "Must be 'capturing_click' for capturing click triggers"
-        },
-        "conditions": {
-          "description": "Array of condition objects; same structure as for click trigger (variable_id, condition_type, value, options)."
-        }
-      }
-    },
-    "update_trigger": {
-      "description": "Update an existing capturing click trigger - only editable fields can be modified"
-    }
   },
   "required_attributes": {
     "name": {

@@ -32,20 +32,6 @@
       "Document your data layer structure for team collaboration"
     ]
   },
-  "mcp_usage": {
-    "create_variable": {
-      "description": "Create a new data layer variable to access values from window.dataLayer or window._mtm",
-      "required_parameters": {
-        "variable_type": {
-          "value": "data_layer",
-          "description": "Must be 'data_layer' for data layer variables"
-        },
-        "value": {
-          "description": "Path to the property to read from the data layer"
-        }
-      }
-    }
-  },
   "required_attributes": {
     "name": {
       "examples": [

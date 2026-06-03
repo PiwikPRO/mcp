@@ -33,20 +33,6 @@
       "Document the purpose and expected usage of each constant variable"
     ]
   },
-  "mcp_usage": {
-    "create_variable": {
-      "description": "Create a new constant variable that returns a fixed static value",
-      "required_parameters": {
-        "variable_type": {
-          "value": "constant",
-          "description": "Must be 'constant' for constant variables"
-        },
-        "value": {
-          "description": "The static value this variable will always return"
-        }
-      }
-    }
-  },
   "required_attributes": {
     "template": {
       "examples": [

@@ -28,20 +28,6 @@
       "Document which cookie names your tags depend on for team and debugging"
     ]
   },
-  "mcp_usage": {
-    "create_variable": {
-      "description": "Create a cookie variable that returns the value of the specified cookie",
-      "required_parameters": {
-        "variable_type": {
-          "value": "cookie",
-          "description": "Must be 'cookie' for cookie variables"
-        },
-        "value": {
-          "description": "Name of the cookie to read (API: value). At runtime the variable returns that cookie's value."
-        }
-      }
-    }
-  },
   "required_attributes": {
     "name": {
       "examples": [

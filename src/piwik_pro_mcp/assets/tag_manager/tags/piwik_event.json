@@ -28,30 +28,6 @@
     "template_options.value",
     "template_options.custom_dimensions[].value"
   ],
-  "mcp_usage": {
-    "create_tag": {
-      "description": "Create a new Piwik PRO Event tag using this template.",
-      "required_parameters": {
-        "attributes": {
-          "description": "Tag attributes for creation. Must include name, template='piwik_event', and required template_options.",
-          "required": [
-            "name",
-            "template",
-            "template_options.category",
-            "template_options.action"
-          ]
-        }
-      }
-    },
-    "update_tag": {
-      "description": "Update an existing event tag. Only editable fields are processed (create-only and read-only fields are ignored).",
-      "required_parameters": {
-        "attributes": {
-          "description": "Editable tag attributes (e.g., name, is_active, template_options.*)"
-        }
-      }
-    }
-  },
   "required_attributes": {
     "consent_type": {
       "default": "analytics",

@@ -7,7 +7,7 @@ module-name = "piwik_pro_mcp"
 
 [project]
 name = "piwik-pro-mcp"
-version = "0.4.0"
+version = "0.5.0"
 description = "Piwik PRO MCP server"
 readme = "README.md"
 authors = [

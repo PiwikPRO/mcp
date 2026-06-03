@@ -2,7 +2,7 @@
 Variable management tools for Piwik PRO Tag Manager.
 
 This module provides MCP tools for managing variables, including creation,
-updating, listing, and detailed information retrieval.
+updating, deletion, listing, and detailed information retrieval.
 """
 
 from typing import Any
@@ -18,8 +18,95 @@ from piwik_pro_mcp.api.methods.tag_manager.models import (
 
 from ...common.templates import list_available_assets
 from ...common.utils import create_piwik_client, validate_data_against_model
-from ...responses import CopyResourceResponse
+from ...responses import CopyResourceResponse, OperationStatusResponse
 from .models import VariableCreateAttributes, VariableUpdateAttributes
+
+# Only these ``data.relationships`` keys are consulted before variable delete.
+_VARIABLE_DELETE_RELATIONSHIP_KEYS: frozenset[str] = frozenset(
+    {
+        "required_by_variables",
+        "tags",
+        "triggers",
+    }
+)
+
+
+def _refs_for_relationship_keys(
+    relationships: dict[str, Any] | None,
+    keys: frozenset[str],
+) -> list[tuple[str, str, str]]:
+    """Collect linked resource ids from JSON:API-style relationship entries for ``keys`` only.
+
+    Args:
+        relationships: The ``data.relationships`` object from a Tag Manager GET.
+        keys: Relationship names to read (all others are ignored).
+
+    Returns:
+        List of ``(relationship_name, resource_id, resource_type)`` for each linked resource.
+    """
+    if not relationships:
+        return []
+
+    blocking: list[tuple[str, str, str]] = []
+    for rel_name in keys:
+        rel_payload = relationships.get(rel_name)
+        if not isinstance(rel_payload, dict):
+            continue
+        data = rel_payload.get("data")
+        if data is None:
+            continue
+        if isinstance(data, dict):
+            rid = data.get("id")
+            if isinstance(rid, str) and rid:
+                rtype = data.get("type")
+                blocking.append((rel_name, rid, str(rtype) if rtype is not None else ""))
+        elif isinstance(data, list):
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                rid = item.get("id")
+                if isinstance(rid, str) and rid:
+                    rtype = item.get("type")
+                    blocking.append((rel_name, rid, str(rtype) if rtype is not None else ""))
+    return blocking
+
+
+def _format_variable_delete_blocked_error(
+    app_id: str,
+    variable_id: str,
+    blocking_refs: list[tuple[str, str, str]],
+) -> str:
+    """Build a delete-blocked message with an explicit no-cascade policy."""
+    lines: list[str] = []
+    by_rel: dict[str, list[tuple[str, str]]] = {}
+    for rel_name, rid, rtype in blocking_refs:
+        by_rel.setdefault(rel_name, []).append((rid, rtype))
+
+    for rel_name in sorted(by_rel):
+        parts = []
+        for rid, rtype in by_rel[rel_name]:
+            if rtype:
+                parts.append(f"{rtype} {rid}")
+            else:
+                parts.append(rid)
+        lines.append(f"  - {rel_name}: {', '.join(parts)}")
+
+    detail = "\n".join(lines)
+    return (
+        f"Refusing to delete variable {variable_id} in app {app_id}: the Tag Manager API "
+        f"reports dependencies under data.relationships "
+        f"(required_by_variables, tags, triggers) from variables_get.\n"
+        f"Linked resources:\n{detail}\n"
+        "Do not delete tags, variables, or triggers (or other linked resources) just to "
+        "unblock this deletion—that causes unintended data loss. Update each dependent "
+        "resource in place to remove its use of this variable, or ask a human to review.\n"
+        f"Inspect the current graph with variables_get(app_id={app_id!r}, variable_id={variable_id!r})."
+    )
+
+
+def _variable_delete_blocking_refs(relationships: dict[str, Any] | None) -> list[tuple[str, str, str]]:
+    """Return blocking refs from required_by_variables, tags, and triggers only."""
+    return _refs_for_relationship_keys(relationships, _VARIABLE_DELETE_RELATIONSHIP_KEYS)
 
 
 def list_variables(
@@ -118,6 +205,38 @@ def update_variable(app_id: str, variable_id: str, attributes: dict) -> TagManag
         raise RuntimeError(f"Failed to update variable: {e.message}")
     except Exception as e:
         raise RuntimeError(f"Failed to update variable: {str(e)}")
+
+
+def delete_variable(app_id: str, variable_id: str) -> OperationStatusResponse:
+    try:
+        client = create_piwik_client()
+        existing = client.tag_manager.get_variable(app_id, variable_id)
+        if not isinstance(existing, dict) or not isinstance(existing.get("data"), dict):
+            raise RuntimeError(f"Variable with ID {variable_id} not found in app {app_id}")
+
+        data = existing["data"]
+        relationships = data.get("relationships")
+        if isinstance(relationships, dict):
+            blocking = _variable_delete_blocking_refs(relationships)
+            if blocking:
+                raise RuntimeError(_format_variable_delete_blocked_error(app_id, variable_id, blocking))
+
+        client.tag_manager.delete_variable(app_id, variable_id)
+        return OperationStatusResponse(
+            status="success",
+            message=f"Variable {variable_id} deleted successfully from app {app_id}",
+        )
+    except NotFoundError:
+        raise RuntimeError(f"Variable with ID {variable_id} not found in app {app_id}")
+    except BadRequestError as e:
+        detail = e.message
+        if e.response_data:
+            detail = f"{detail}. Full response: {e.response_data}"
+        raise RuntimeError(f"Failed to delete variable: {detail}")
+    except RuntimeError:
+        raise
+    except Exception as e:
+        raise RuntimeError(f"Failed to delete variable: {str(e)}")
 
 
 def copy_variable(
@@ -219,6 +338,19 @@ def register_variable_tools(mcp: FastMCP) -> None:
         Use tools_parameters_get("variables_update") to get the complete JSON schema.
         """
         return update_variable(app_id, variable_id, attributes)
+
+    @mcp.tool(annotations={"title": "Piwik PRO: Delete Variable"})
+    def variables_delete(app_id: str, variable_id: str) -> OperationStatusResponse:
+        """Delete a variable from Piwik PRO Tag Manager.
+
+        Before deleting, the server loads the variable and refuses the operation when
+        ``data.relationships`` lists dependents under ``required_by_variables``, ``tags``,
+        or ``triggers``. If you see that error, update those resources to stop referencing
+        this variable—do not delete linked tags, variables, or triggers as a shortcut.
+
+        Warning: This action is irreversible once the API accepts the delete.
+        """
+        return delete_variable(app_id, variable_id)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Copy Variable"})
     def variables_copy(

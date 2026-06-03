@@ -4,80 +4,33 @@
   "name_aliases": [
     "Timer Trigger"
   ],
-  "description": "Fires when a visitor is on your site for the selected amount of time (e.g. after 30 seconds or 2 minutes). By default the tag fires on all pages; add conditions to fire only on a specific page or under specific criteria. You must specify the duration using the built-in Time on Website variable (value = number of seconds) and set the condition_type to each_time, once_per_page_view, or once_per_session. See Piwik PRO help: Timer trigger (time on website).",
-  "time_on_website_conditions_reference": {
-    "source": "https://help.piwik.pro/support/tag-manager/time-on-a-website-trigger/",
-    "time_condition": {
-      "type": "Fire a tag after X seconds/minutes",
-      "description": "Fires the tag when a visitor stays on your site for the selected time."
-    },
-    "builtin_variable": {
-      "variable_id": "4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd",
-      "name": "Time on Website",
-      "description": "A variable used in the timer (time on website) trigger. It defines the duration in seconds after which the tag fires.",
-      "usage": "Use this variable_id in the condition that defines when the trigger fires. The condition_type for this condition must be set to each_time, once_per_page_view, or once_per_session. Set the condition value to the number of seconds (e.g. 30 for 30 seconds, 120 for 2 minutes).",
-      "condition_type_enum": [
-        "each_time",
-        "once_per_page_view",
-        "once_per_session"
-      ],
-      "condition_type_description": "For the Time on Website condition, condition_type must be one of these (not equals or other comparison).",
-      "value_description": "Number of seconds. E.g. 30 (30 seconds), 60 (1 minute), 120 (2 minutes)."
-    },
-    "multiplicity": [
-      "Many times during a session (each time)",
-      "Once for each page view",
-      "Once in a session"
-    ],
-    "note": "The time condition must use the built-in variable 'Time on Website' (id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd). Set condition_type to each_time, once_per_page_view, or once_per_session. Set value to the number of seconds."
+  "description": "Fires when a visitor is on your site for the selected amount of time (e.g. after 30 seconds or 2 minutes). By default the tag fires on all pages; add conditions to fire only on a specific page or under specific criteria. You must specify the duration using the built-in Time on Website variable (value = number of seconds) and set the condition_type once_per_page_view, or once_per_session. See Piwik PRO help: Timer trigger (time on website).",
+  "required_conditions": {
+    "time_on_website": {
+      "source": "https://help.piwik.pro/support/tag-manager/time-on-a-website-trigger/",
+      "condition_reference": "time_on_website"
+    }
   },
-  "event_conditions_reference": {
+  "available_event_conditions": {
     "source": "https://help.piwik.pro/support/tag-manager/time-on-a-website-trigger/",
-    "condition_types": [
-      {
-        "type": "Page URL",
-        "description": "Fires when a visitor stays on a page with the selected page URL for the selected time",
-        "example": "Page URL equals https://example.com/product-tour/"
-      },
-      {
-        "type": "Page path",
-        "description": "Fires when a visitor stays on a page with the selected page path for the selected time",
-        "example": "Page Path contains /product-tour"
-      },
-      {
-        "type": "Page hostname",
-        "description": "Fires when a visitor stays on a page hosted on the selected domain for the selected time",
-        "example": "Page Hostname equals example.com"
-      },
-      {
-        "type": "Referrer",
-        "description": "Fires when a visitor stays on a page to which they were directed by the selected internal referrer for the selected time",
-        "example": "Referrer equals https://example.com/blog"
-      },
-      {
-        "type": "External referrer",
-        "description": "Fires when a visitor stays on a page to which they were directed by the selected external referrer for the selected time",
-        "example": "External referrer equals https://google.com"
-      },
-      {
-        "type": "Campaign",
-        "description": "Fires when a visitor stays on a page to which they were directed by the selected campaign (utm_campaign) for the selected time",
-        "example": "Campaign equals winter-promo"
-      },
-      {
-        "type": "Traffic source",
-        "description": "Fires when a visitor stays on a page to which they were directed by the selected traffic source for the selected time. Values: campaign, organic search, social, referral, direct",
-        "example": "Traffic source equals direct"
-      },
-      {
-        "type": "Returning visitor",
-        "description": "Fires when a visitor is a returning visitor and stays on a page for the selected time",
-        "example": "Returning visitor is true"
-      },
-      {
-        "type": "Variable-based conditions",
-        "description": "Any variable can be used to define trigger conditions"
-      }
+    "conditions": [
+      "page_url",
+      "page_path",
+      "page_hostname",
+      "referrer",
+      "campaign",
+      "traffic_source",
+      "returning_visitor",
+      "external_referrer",
+      "history_fragment",
+      "cdp_audience",
+      "time_on_website",
+      "consents",
+      "history_source",
+      "old_history_fragment",
+      "history_state",
+      "old_history_state",
+      "custom_variable_based"
     ]
   },
   "ai_usage_guide": {
@@ -93,26 +46,8 @@
     ],
     "best_practices": [
       "Set value to the number of seconds (e.g. 30, 60, 120)",
-      "Use once_per_page_view or once_per_session to avoid repeated firing; use each_time if you need multiple firings per page/session",
       "Add Page path or Page URL conditions to limit where the timer runs"
     ]
-  },
-  "mcp_usage": {
-    "create_trigger": {
-      "description": "Create a timer (time on website) trigger. Requires at least one condition using the built-in 'Time on Website' variable (variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd) with condition_type set to each_time, once_per_page_view, or once_per_session and value set to the number of seconds; optionally add event conditions.",
-      "required_parameters": {
-        "trigger_type": {
-          "value": "time_on_website",
-          "description": "Must be 'time_on_website' for timer triggers"
-        },
-        "conditions": {
-          "description": "Array of condition objects. Include at least one condition with variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd (Time on Website), condition_type = each_time, once_per_page_view, or once_per_session, value = number of seconds. Optional event conditions."
-        }
-      }
-    },
-    "update_trigger": {
-      "description": "Update an existing timer trigger – only editable fields will be processed"
-    }
   },
   "required_attributes": {
     "name": {
@@ -134,19 +69,19 @@
       }
     },
     "conditions": {
-      "description": "Array of condition objects. Must include at least one condition using the built-in variable 'Time on Website' (variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd) with condition_type = each_time, once_per_page_view, or once_per_session and value = number of seconds. May include event conditions.",
+      "description": "Array of condition objects. Must include at least one condition using the built-in variable 'Time on Website' (variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd) with condition_type = once_per_page_view, or once_per_session and value = number of seconds. May include event conditions.",
       "structure": {
         "variable_id": "For timer duration use 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd (Time on Website); for event conditions use the appropriate variable UUID",
-        "condition_type": "For the Time on Website condition must be one of: each_time, once_per_page_view, once_per_session. For event conditions use the appropriate type (e.g. equals, contains).",
+        "condition_type": "For the Time on Website condition must be one of: once_per_page_view, once_per_session. For event conditions use the appropriate type (e.g. equals, contains).",
         "value": "Number of seconds when using Time on Website variable (e.g. 30, 60, 120)",
         "options": {}
       },
-      "recommendation": "Include one condition with variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd (Time on Website), condition_type each_time | once_per_page_view | once_per_session, and value = seconds; add Page path or Page URL conditions to limit where the trigger fires."
+      "recommendation": "Include one condition with variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd (Time on Website), condition_type once_per_page_view | once_per_session, and value = seconds; add Page path or Page URL conditions to limit where the trigger fires."
     }
   },
   "complete_examples": {
     "time_on_website_30_seconds": {
-      "description": "Fire after 30 seconds on page (each time)",
+      "description": "Fire after 30 seconds on page (once_per_page_view)",
       "mcp_call": {
         "function": "create_trigger",
         "parameters": {
@@ -156,7 +91,7 @@
           "conditions": [
             {
               "variable_id": "4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd",
-              "condition_type": "each_time",
+              "condition_type": "once_per_page_view",
               "value": "30",
               "options": {}
             }
@@ -213,7 +148,7 @@
           "conditions": [
             {
               "variable_id": "4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd",
-              "condition_type": "each_time",
+              "condition_type": "once_per_page_view",
               "value": "45",
               "options": {}
             },
@@ -229,19 +164,19 @@
     }
   },
   "common_mistakes": [
-    "Using condition_type other than each_time, once_per_page_view, or once_per_session for the Time on Website condition",
+    "Using condition_type other than once_per_page_view, or once_per_session for the Time on Website condition",
     "Setting value in minutes instead of seconds (use seconds, e.g. 120 for 2 minutes)",
     "Omitting the Time on Website condition so the trigger has no duration"
   ],
   "troubleshooting": {
     "trigger_not_firing": {
       "possible_causes": [
-        "condition_type not set to each_time, once_per_page_view, or once_per_session for the Time on Website condition",
+        "condition_type not set to once_per_page_view, or once_per_session for the Time on Website condition",
         "Value not a valid number of seconds",
         "Event conditions too restrictive"
       ],
       "debugging_steps": [
-        "Ensure one condition uses variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd with condition_type each_time, once_per_page_view, or once_per_session and value = seconds",
+        "Ensure one condition uses variable_id 4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd with condition_type once_per_page_view, or once_per_session and value = seconds",
         "Use a small value (e.g. 5) to test; ensure the user stays on the page long enough",
         "Test with only the Time on Website condition"
       ]

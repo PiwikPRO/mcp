@@ -15,7 +15,7 @@ from piwik_pro_mcp.api.methods.tag_manager.models import TagFilters, TagManagerL
 from ...common.templates import list_available_assets
 from ...common.utils import create_piwik_client, validate_data_against_model
 from ...responses import CopyResourceResponse, OperationStatusResponse
-from .models import TagManagerCreateAttributes, TagManagerUpdateAttributes
+from .models import TagCreateAttributes, TagRelationships, TagUpdateAttributes
 
 
 def list_tags(
@@ -75,12 +75,27 @@ def get_tag_triggers(
         raise RuntimeError(f"Failed to get tag triggers: {str(e)}")
 
 
-def create_tag(app_id: str, attributes: dict, triggers: str = "") -> TagManagerSingleResponse:
+def _trigger_ids_from_relationships(relationships: dict[str, Any] | None) -> list[str] | None:
+    """Resolve trigger UUID list from MCP `relationships` payload.
+
+    Returns None when the caller did not request a trigger relationship change
+    (no `relationships`, or `triggers` omitted/null). Returns a (possibly empty)
+    list when `triggers` is set, including an empty list to clear triggers on update.
+    """
+    if relationships is None:
+        return None
+    validated = validate_data_against_model(relationships, TagRelationships, invalid_item_label="relationships")
+    if validated.triggers is None:
+        return None
+    return validated.triggers
+
+
+def create_tag(app_id: str, attributes: dict, relationships: dict[str, Any] | None = None) -> TagManagerSingleResponse:
     try:
         client = create_piwik_client()
 
         # Validate attributes directly against the model
-        validated_attrs = validate_data_against_model(attributes, TagManagerCreateAttributes)
+        validated_attrs = validate_data_against_model(attributes, TagCreateAttributes)
 
         # Convert to dictionary and filter out None values
         create_kwargs = {k: v for k, v in validated_attrs.model_dump(exclude_none=True).items()}
@@ -94,11 +109,7 @@ def create_tag(app_id: str, attributes: dict, triggers: str = "") -> TagManagerS
         if template not in allowed_templates:
             raise RuntimeError(f"Unsupported tag template '{template}'. Use templates_list_tags() to discover options.")
 
-        # Process triggers parameter
-        trigger_ids = None
-        if triggers and triggers.strip():
-            # Split comma-separated trigger UUIDs and clean whitespace
-            trigger_ids = [trigger_id.strip() for trigger_id in triggers.split(",") if trigger_id.strip()]
+        trigger_ids = _trigger_ids_from_relationships(relationships)
 
         response = client.tag_manager.create_tag(
             app_id=app_id, name=name, template=template, trigger_ids=trigger_ids, **create_kwargs
@@ -110,25 +121,24 @@ def create_tag(app_id: str, attributes: dict, triggers: str = "") -> TagManagerS
         raise RuntimeError(f"Failed to create tag: {str(e)}")
 
 
-def update_tag(app_id: str, tag_id: str, attributes: dict, triggers: str = "__unchanged__") -> TagManagerSingleResponse:
+def update_tag(
+    app_id: str,
+    tag_id: str,
+    attributes: dict | None = None,
+    relationships: dict[str, Any] | None = None,
+) -> TagManagerSingleResponse:
     try:
         client = create_piwik_client()
 
+        attributes = attributes if attributes is not None else {}
+
         # Validate attributes directly against the model
-        validated_attrs = validate_data_against_model(attributes, TagManagerUpdateAttributes)
+        validated_attrs = validate_data_against_model(attributes, TagUpdateAttributes)
 
         # Convert to dictionary and filter out None values
         update_kwargs = {k: v for k, v in validated_attrs.model_dump(exclude_none=True).items()}
 
-        # Process triggers parameter - only process if not the unchanged sentinel value
-        trigger_ids = None
-        if triggers != "__unchanged__":  # Check if triggers should be modified
-            if triggers.strip():
-                # Split comma-separated trigger UUIDs and clean whitespace
-                trigger_ids = [trigger_id.strip() for trigger_id in triggers.split(",") if trigger_id.strip()]
-            else:
-                # Empty string means remove all triggers
-                trigger_ids = []
+        trigger_ids = _trigger_ids_from_relationships(relationships)
 
         # Check if we have either attributes or triggers to update
         if not update_kwargs and trigger_ids is None:
@@ -261,7 +271,11 @@ def register_tag_tools(mcp: FastMCP) -> None:
         return get_tag_triggers(app_id, tag_id, limit, offset, sort, name, trigger_type)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Create Tag"})
-    def tags_create(app_id: str, attributes: dict, triggers: str = "") -> TagManagerSingleResponse:
+    def tags_create(
+        app_id: str,
+        attributes: dict,
+        relationships: dict[str, Any] | None = None,
+    ) -> TagManagerSingleResponse:
         """Create a new tag in Piwik PRO Tag Manager using JSON attributes.
 
         Before calling this tool, always check both:
@@ -277,8 +291,8 @@ def register_tag_tools(mcp: FastMCP) -> None:
             3. tags_create() → create the tag with verified template name
 
         Args:
-            triggers: Optional comma-separated trigger UUIDs to attach during creation.
-                Use an empty string to create the tag without triggers.
+            relationships: Optional object with a `triggers` array of trigger UUIDs to attach during creation.
+                Omit or set `triggers` to null to create the tag without triggers.
                 Use triggers_list() to discover available triggers and their UUIDs.
                 Use variables_list() to discover available variables used in trigger conditions.
 
@@ -286,11 +300,14 @@ def register_tag_tools(mcp: FastMCP) -> None:
             Created tag resource. The response may include `data.relationships.unrecognized_variables`
             when the backend detects unresolved variable references.
         """
-        return create_tag(app_id, attributes, triggers)
+        return create_tag(app_id, attributes, relationships)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Update Tag"})
     def tags_update(
-        app_id: str, tag_id: str, attributes: dict, triggers: str = "__unchanged__"
+        app_id: str,
+        tag_id: str,
+        attributes: dict | None = None,
+        relationships: dict[str, Any] | None = None,
     ) -> TagManagerSingleResponse:
         """Update an existing tag using JSON attributes.
 
@@ -300,11 +317,12 @@ def register_tag_tools(mcp: FastMCP) -> None:
         - `tools_parameters_get("tags_update")` for the runtime JSON schema of the `attributes` object
 
         Args:
-            triggers: Optional comma-separated trigger UUIDs replacing current triggers.
-                Use `__unchanged__` to keep triggers as-is.
-                Use an empty string to remove all triggers.
+            attributes: Optional tag fields and relationships to update. Omit when only changing triggers.
+            relationships: Optional object with a `triggers` array replacing current triggers.
+                Omit or set `triggers` to null to keep triggers unchanged.
+                Use an empty `triggers` array to remove all triggers.
         """
-        return update_tag(app_id, tag_id, attributes, triggers)
+        return update_tag(app_id, tag_id, attributes, relationships)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Delete Tag"})
     def tags_delete(app_id: str, tag_id: str) -> OperationStatusResponse:

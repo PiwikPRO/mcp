@@ -43,20 +43,6 @@
       "Test for potential XSS vulnerabilities in dynamic content"
     ]
   },
-  "mcp_usage": {
-    "create_variable": {
-      "description": "Create a new custom JavaScript variable that executes code to return dynamic values",
-      "required_parameters": {
-        "variable_type": {
-          "value": "custom_javascript",
-          "description": "Must be 'custom_javascript' for custom JavaScript variables"
-        },
-        "value": {
-          "description": "JavaScript code to execute - must return a value"
-        }
-      }
-    }
-  },
   "required_attributes": {
     "name": {
       "examples": [

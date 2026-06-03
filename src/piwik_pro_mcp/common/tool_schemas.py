@@ -12,12 +12,14 @@ from pydantic import BaseModel
 from piwik_pro_mcp.api.methods.analytics.models import QueryRequest
 from piwik_pro_mcp.api.methods.apps.models import AppEditableAttributes, NewAppAttributes
 from piwik_pro_mcp.api.methods.cdp.models import EditableAudienceAttributes, NewAudienceAttributes
-from piwik_pro_mcp.api.methods.tag_manager.models import TagFilters, TriggerAttributes, TriggerFilters, VariableFilters
+from piwik_pro_mcp.api.methods.tag_manager.models import TagFilters, TriggerFilters, VariableFilters
 from piwik_pro_mcp.api.methods.tracker_settings.models import AppTrackerSettings, GlobalTrackerSettings
 
 from ..tools.tag_manager.models import (
-    TagManagerCreateAttributes,
-    TagManagerUpdateAttributes,
+    TagCreateAttributes,
+    TagUpdateAttributes,
+    TriggerCreateAttributes,
+    TriggerUpdateAttributes,
     VariableCreateAttributes,
     VariableUpdateAttributes,
 )
@@ -29,10 +31,11 @@ TOOL_PARAMETER_MODELS: dict[str, type[BaseModel]] = {
     "audiences_update": EditableAudienceAttributes,
     "tracker_settings_app_update": AppTrackerSettings,
     "tracker_settings_global_update": GlobalTrackerSettings,
-    "tags_create": TagManagerCreateAttributes,
-    "tags_update": TagManagerUpdateAttributes,
+    "tags_create": TagCreateAttributes,
+    "tags_update": TagUpdateAttributes,
     "tags_list": TagFilters,
-    "triggers_create": TriggerAttributes,
+    "triggers_create": TriggerCreateAttributes,
+    "triggers_update": TriggerUpdateAttributes,
     "triggers_list": TriggerFilters,
     "variables_create": VariableCreateAttributes,
     "variables_update": VariableUpdateAttributes,

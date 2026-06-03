@@ -2,7 +2,7 @@
 Trigger management tools for Piwik PRO Tag Manager.
 
 This module provides MCP tools for managing triggers, including creation,
-listing, and detailed information retrieval.
+updating, listing, and detailed information retrieval.
 """
 
 from typing import Any
@@ -17,8 +17,32 @@ from piwik_pro_mcp.api.methods.tag_manager.models import (
 )
 
 from ...common.utils import create_piwik_client, validate_data_against_model
-from ...responses import CopyResourceResponse
-from .models import TriggerCreateAttributes
+from ...responses import CopyResourceResponse, OperationStatusResponse
+from .models import TriggerCreateAttributes, TriggerRelationships, TriggerUpdateAttributes
+
+
+def _mcp_relationships_to_api_payload(relationships: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Build JSON:API ``data.relationships`` from the MCP ``relationships`` argument.
+
+    Only ``triggers`` and ``tags`` are allowed (see ``TriggerRelationships``). They are validated
+    and converted into JSON:API ``data`` arrays; omit the argument or pass an empty object when
+    you have no tag or trigger links to send.
+    """
+    if relationships is None:
+        return None
+    validated = validate_data_against_model(relationships, TriggerRelationships, invalid_item_label="relationships")
+    payload: dict[str, Any] = {}
+    if validated.triggers is not None:
+        trigger_data: list[dict[str, Any]] = []
+        for member in validated.triggers:
+            entry: dict[str, Any] = {"id": member.id, "type": "trigger"}
+            if member.meta is not None:
+                entry["meta"] = member.meta.model_dump(exclude_none=True)
+            trigger_data.append(entry)
+        payload["triggers"] = {"data": trigger_data}
+    if validated.tags is not None:
+        payload["tags"] = {"data": [{"id": tid, "type": "tag"} for tid in validated.tags]}
+    return payload if payload else None
 
 
 def list_triggers(
@@ -101,7 +125,11 @@ def get_trigger(app_id: str, trigger_id: str) -> TagManagerSingleResponse:
         raise RuntimeError(f"Failed to get trigger: {str(e)}")
 
 
-def create_trigger(app_id: str, attributes: dict) -> TagManagerSingleResponse:
+def create_trigger(
+    app_id: str,
+    attributes: dict,
+    relationships: dict[str, Any] | None = None,
+) -> TagManagerSingleResponse:
     """Create a trigger; conditions are evaluated with logical AND (no OR grouping)."""
     try:
         client = create_piwik_client()
@@ -111,19 +139,66 @@ def create_trigger(app_id: str, attributes: dict) -> TagManagerSingleResponse:
 
         # Convert to dictionary and filter out None values
         create_kwargs = {k: v for k, v in validated_attrs.model_dump(exclude_none=True).items()}
+        create_kwargs.pop("relationships", None)
 
         # Extract required fields
         name = create_kwargs.pop("name")
         trigger_type = create_kwargs.pop("trigger_type")
 
+        api_rels = _mcp_relationships_to_api_payload(relationships)
+
         response = client.tag_manager.create_trigger(
-            app_id=app_id, name=name, trigger_type=trigger_type, **create_kwargs
+            app_id=app_id,
+            name=name,
+            trigger_type=trigger_type,
+            relationships=api_rels,
+            **create_kwargs,
         )
         return TagManagerSingleResponse(**response)
     except BadRequestError as e:
         raise RuntimeError(f"Failed to create trigger: {e.message}")
     except Exception as e:
         raise RuntimeError(f"Failed to create trigger: {str(e)}")
+
+
+def update_trigger(
+    app_id: str,
+    trigger_id: str,
+    attributes: dict | None = None,
+    relationships: dict[str, Any] | None = None,
+) -> TagManagerSingleResponse:
+    """Update trigger fields from attributes; request data.relationships only from the MCP relationships argument."""
+    try:
+        client = create_piwik_client()
+
+        attributes = attributes if attributes is not None else {}
+
+        validated_attrs = validate_data_against_model(attributes, TriggerUpdateAttributes)
+        update_kwargs = {k: v for k, v in validated_attrs.model_dump(by_alias=True, exclude_none=True).items()}
+        update_kwargs.pop("relationships", None)
+        api_rels = _mcp_relationships_to_api_payload(relationships)
+
+        if not update_kwargs and api_rels is None:
+            raise RuntimeError("No editable fields provided for update")
+
+        response = client.tag_manager.update_trigger(
+            app_id=app_id,
+            trigger_id=trigger_id,
+            relationships=api_rels,
+            **update_kwargs,
+        )
+
+        if response is None:
+            updated_trigger = client.tag_manager.get_trigger(app_id=app_id, trigger_id=trigger_id)
+            return TagManagerSingleResponse(**updated_trigger)
+
+        return TagManagerSingleResponse(**response)
+    except NotFoundError:
+        raise RuntimeError(f"Trigger with ID {trigger_id} not found in app {app_id}")
+    except BadRequestError as e:
+        raise RuntimeError(f"Failed to update trigger: {e.message}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to update trigger: {str(e)}")
 
 
 def copy_trigger(
@@ -168,6 +243,22 @@ def copy_trigger(
         raise RuntimeError(f"Failed to copy trigger: {str(e)}")
 
 
+def delete_trigger(app_id: str, trigger_id: str) -> OperationStatusResponse:
+    try:
+        client = create_piwik_client()
+        client.tag_manager.delete_trigger(app_id, trigger_id)
+        return OperationStatusResponse(
+            status="success",
+            message=f"Trigger {trigger_id} deleted successfully from app {app_id}",
+        )
+    except NotFoundError:
+        raise RuntimeError(f"Trigger with ID {trigger_id} not found in app {app_id}")
+    except BadRequestError as e:
+        raise RuntimeError(f"Failed to delete trigger: {e.message}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to delete trigger: {str(e)}")
+
+
 def register_trigger_tools(mcp: FastMCP) -> None:
     """Register all trigger management tools with the MCP server."""
 
@@ -204,7 +295,11 @@ def register_trigger_tools(mcp: FastMCP) -> None:
         return get_trigger(app_id, trigger_id)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Create Trigger"})
-    def triggers_create(app_id: str, attributes: dict) -> TagManagerSingleResponse:
+    def triggers_create(
+        app_id: str,
+        attributes: dict,
+        relationships: dict[str, Any] | None = None,
+    ) -> TagManagerSingleResponse:
         """Create a new trigger in Piwik PRO Tag Manager using JSON attributes.
 
         Before calling this tool, always check both:
@@ -217,8 +312,34 @@ def register_trigger_tools(mcp: FastMCP) -> None:
             1. templates_list_triggers() → get exact trigger type names
             2. templates_get_trigger(template_name='...') → get requirements for your chosen type
             3. triggers_create() → create the trigger with verified type name
+
+        Args:
+            relationships: Optional object with only ``tags`` and/or ``triggers`` (see tool schema).
+                Converted to JSON:API ``data.relationships``; unknown keys are rejected.
         """
-        return create_trigger(app_id, attributes)
+        return create_trigger(app_id, attributes, relationships)
+
+    @mcp.tool(annotations={"title": "Piwik PRO: Update Trigger"})
+    def triggers_update(
+        app_id: str,
+        trigger_id: str,
+        attributes: dict | None = None,
+        relationships: dict[str, Any] | None = None,
+    ) -> TagManagerSingleResponse:
+        """Update an existing trigger in Piwik PRO Tag Manager using JSON attributes.
+
+        Before calling this tool, always check both:
+        - `templates_get_trigger(template_name)` for trigger type requirements
+        - `tools_parameters_get("triggers_update")` for the runtime JSON schema of the `attributes` object
+
+        Only editable fields are processed. Create-only and read-only fields are ignored.
+
+        Args:
+            attributes: Optional dict of editable fields (name, conditions). If omitted, the call is treated
+                as an empty update and is rejected unless `relationships` is provided.
+            relationships: Same as triggers_create: only ``triggers`` and/or ``tags``; converted to JSON:API.
+        """
+        return update_trigger(app_id, trigger_id, attributes, relationships)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Copy Trigger"})
     def triggers_copy(
@@ -233,6 +354,14 @@ def register_trigger_tools(mcp: FastMCP) -> None:
             target_app_id: Optional UUID of the target app. If omitted, copies within the same app.
         """
         return copy_trigger(app_id, trigger_id, target_app_id, name)
+
+    @mcp.tool(annotations={"title": "Piwik PRO: Delete Trigger"})
+    def triggers_delete(app_id: str, trigger_id: str) -> OperationStatusResponse:
+        """Delete a trigger from Piwik PRO Tag Manager.
+
+        Warning: This action is irreversible.
+        """
+        return delete_trigger(app_id, trigger_id)
 
     @mcp.tool(annotations={"title": "Piwik PRO: List Tags for Trigger", "readOnlyHint": True})
     def triggers_list_tags(

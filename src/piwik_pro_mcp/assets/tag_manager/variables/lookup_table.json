@@ -31,6 +31,14 @@
     "create_variable": {
       "description": "Create a lookup table variable. Set value to the input variable reference (e.g. {{ Referrer }}), and options.mapping to the list of input→output pairs. Optionally set options.default_value.",
       "required_parameters": {
+        "app_id": {
+          "type": "string",
+          "description": "UUID of your Piwik PRO app"
+        },
+        "name": {
+          "type": "string",
+          "description": "Descriptive name for the variable"
+        },
         "variable_type": {
           "value": "lookup_table",
           "description": "Must be 'lookup_table' for lookup table variables"

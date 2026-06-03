@@ -4,6 +4,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from piwik_pro_mcp.tools.tag_manager.variables import (
+    _format_variable_delete_blocked_error,
+    _refs_for_relationship_keys,
+    _variable_delete_blocking_refs,
+)
+
 
 class TestVariableCreateFunctional:
     """Functional tests for variable creation tools through MCP."""
@@ -284,6 +290,119 @@ class TestVariableCrudListGetDelete:
             _, data = result
             assert data["data"]["id"] == "var1"
             mock_instance.tag_manager.get_variable.assert_called_once_with("app-1", "var1")
+
+    @pytest.mark.asyncio
+    async def test_variables_delete_happy_path(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.variables.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.get_variable.return_value = {
+                "data": {
+                    "id": "var-1",
+                    "type": "variable",
+                    "attributes": {"name": "V"},
+                    "relationships": {
+                        "required_variables": {"data": []},
+                        "required_by_variables": {"data": []},
+                        "unrecognized_variables": {"data": []},
+                        "tags": {"data": []},
+                        "triggers": {"data": []},
+                    },
+                }
+            }
+            mock_instance.tag_manager.delete_variable.return_value = None
+
+            result = await mcp_server.call_tool("variables_delete", {"app_id": "app-1", "variable_id": "var-1"})
+
+            assert isinstance(result, tuple) and len(result) == 2
+            _, data = result
+            assert data["status"] == "success"
+            mock_instance.tag_manager.get_variable.assert_called_once_with("app-1", "var-1")
+            mock_instance.tag_manager.delete_variable.assert_called_once_with("app-1", "var-1")
+
+    @pytest.mark.asyncio
+    async def test_variables_delete_blocked_when_relationships_reference_other_resources(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.variables.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.get_variable.return_value = {
+                "data": {
+                    "id": "var-1",
+                    "type": "variable",
+                    "attributes": {"name": "Base"},
+                    "relationships": {
+                        "required_variables": {"data": []},
+                        "required_by_variables": {
+                            "data": [{"id": "var-dep", "type": "variable"}],
+                        },
+                        "unrecognized_variables": {"data": []},
+                        "tags": {"data": []},
+                        "triggers": {"data": []},
+                    },
+                }
+            }
+
+            with pytest.raises(Exception) as exc_info:
+                await mcp_server.call_tool("variables_delete", {"app_id": "app-1", "variable_id": "var-1"})
+
+            assert "Refusing to delete variable" in str(exc_info.value)
+            assert "var-dep" in str(exc_info.value)
+            assert "Do not delete tags" in str(exc_info.value)
+            mock_instance.tag_manager.get_variable.assert_called_once_with("app-1", "var-1")
+            mock_instance.tag_manager.delete_variable.assert_not_called()
+
+
+class TestVariableDeleteRelationshipHelpers:
+    def test_variable_delete_blocking_ignores_required_and_unrecognized_variables(self):
+        # GET variable (OpenAPI): relationships only include these five keys; only
+        # required_by_variables, tags, and triggers are treated as delete blockers.
+        rels = {
+            "required_variables": {"data": [{"id": "upstream", "type": "variable"}]},
+            "required_by_variables": {"data": []},
+            "unrecognized_variables": {
+                "data": [{"id": "UnknownVarName", "type": "unrecognized_variable"}],
+            },
+            "tags": {"data": []},
+            "triggers": {"data": []},
+        }
+        assert _variable_delete_blocking_refs(rels) == []
+
+    def test_variable_delete_blocking_reads_only_tags_triggers_required_by_variables(self):
+        rels = {
+            "required_variables": {"data": []},
+            "unrecognized_variables": {"data": []},
+            "tags": {"data": [{"id": "t1", "type": "tag"}, {"id": "t2", "type": "tag"}]},
+            "triggers": {"data": [{"id": "tr1", "type": "trigger"}]},
+            "required_by_variables": {"data": [{"id": "v2", "type": "variable"}]},
+        }
+        out = _variable_delete_blocking_refs(rels)
+        assert ("tags", "t1", "tag") in out
+        assert ("tags", "t2", "tag") in out
+        assert ("triggers", "tr1", "trigger") in out
+        assert ("required_by_variables", "v2", "variable") in out
+        assert len(out) == 4
+
+    def test_refs_for_relationship_keys_respects_custom_key_set(self):
+        keys = frozenset({"tags"})
+        rels = {
+            "tags": {"data": [{"id": "x", "type": "tag"}]},
+            "triggers": {"data": [{"id": "y", "type": "trigger"}]},
+        }
+        out = _refs_for_relationship_keys(rels, keys)
+        assert out == [("tags", "x", "tag")]
+
+    def test_format_variable_delete_blocked_error_includes_policy(self):
+        msg = _format_variable_delete_blocked_error(
+            "app-9",
+            "var-x",
+            [("required_by_variables", "dep-1", "variable")],
+        )
+        assert "var-x" in msg
+        assert "app-9" in msg
+        assert "dep-1" in msg
+        assert "required_by_variables" in msg
+        assert "Do not delete tags" in msg
+        assert "variables_get" in msg
 
 
 class TestVariableValidationErrors:

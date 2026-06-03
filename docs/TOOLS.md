@@ -57,8 +57,8 @@ This document provides a complete reference of all MCP tools available in the Pi
 
 - `tags_list(app_id, limit, offset, filters)` - List tags
 - `tags_get(app_id, tag_id)` - Get specific tag details
-- `tags_create(app_id, attributes)` - Create new tag using JSON attributes
-- `tags_update(app_id, tag_id, attributes)` - Update existing tag using JSON attributes
+- `tags_create(app_id, attributes, relationships)` - Create new tag using JSON attributes
+- `tags_update(app_id, tag_id, attributes, relationships)` - Update existing tag using JSON attributes
 - `tags_delete(app_id, tag_id)` - Delete tag (irreversible)
 - `tags_copy(app_id, tag_id, target_app_id?, name?, with_triggers=false)` - Copy a tag within the same app or to another app. Supports optional rename and copying attached triggers (set `with_triggers=true`).
 - `tags_list_triggers(app_id, tag_id, limit, offset, sort, name, trigger_type)` - List triggers attached to a tag
@@ -67,7 +67,9 @@ This document provides a complete reference of all MCP tools available in the Pi
 
 - `triggers_list(app_id, limit, offset, filters)` - List triggers
 - `triggers_get(app_id, trigger_id)` - Get specific trigger details
-- `triggers_create(app_id, attributes)` - Create new trigger using JSON attributes
+- `triggers_create(app_id, attributes, relationships)` - Create new trigger using JSON attributes
+- `triggers_update(app_id, trigger_id, attributes, relationships)` - Update existing trigger using JSON attributes
+- `triggers_delete(app_id, trigger_id)` - Delete trigger
 - `triggers_copy(app_id, trigger_id, target_app_id?, name?)` - Copy a trigger within the same app to another app. Supports optional rename.
 - `triggers_list_tags(app_id, trigger_id, limit, offset, sort, name, is_active, template, consent_type, is_prioritized)` - List tags assigned to a trigger
 
@@ -76,6 +78,7 @@ This document provides a complete reference of all MCP tools available in the Pi
 - `variables_list(app_id, limit, offset, filters)` - List variables
 - `variables_get(app_id, variable_id)` - Get specific variable details
 - `variables_create(app_id, attributes)` - Create new variable using JSON attributes
+- `variables_delete(app_id, variable_id)` - Delete variable
 - `variables_update(app_id, variable_id, attributes)` - Update an existing variable using JSON attributes
 - `variables_copy(app_id, variable_id, target_app_id?, name?)` - Copy a variable within the same app or to another app. Supports optional rename.
 

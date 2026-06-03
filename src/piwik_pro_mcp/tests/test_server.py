@@ -127,3 +127,85 @@ class TestServerCli:
 
         with pytest.raises(SystemExit):
             server_module.main()
+
+
+class TestEnvFileLoading:
+    def test_load_env_file_overrides_existing_environment_values(self, tmp_path):
+        env_file = tmp_path / ".env.override"
+        env_file.write_text(
+            "\n".join(
+                [
+                    "PIWIK_PRO_HOST=from-env-file.piwik.pro",
+                    "PIWIK_PRO_CLIENT_ID=from-env-file-client-id",
+                    "PIWIK_PRO_CLIENT_SECRET=from-env-file-client-secret",
+                ]
+            )
+        )
+
+        with patch.dict(
+            os.environ,
+            {
+                "PIWIK_PRO_HOST": "from-existing-env.piwik.pro",
+                "PIWIK_PRO_CLIENT_ID": "from-existing-env-client-id",
+                "PIWIK_PRO_CLIENT_SECRET": "from-existing-env-client-secret",
+            },
+            clear=False,
+        ):
+            server_module.load_env_file(env_file)
+
+            assert os.environ["PIWIK_PRO_HOST"] == "from-env-file.piwik.pro"
+            assert os.environ["PIWIK_PRO_CLIENT_ID"] == "from-env-file-client-id"
+            assert os.environ["PIWIK_PRO_CLIENT_SECRET"] == "from-env-file-client-secret"
+
+    def test_main_uses_env_file_values_when_environment_is_already_populated(self, tmp_path, monkeypatch):
+        env_file = tmp_path / ".env.override"
+        env_file.write_text(
+            "\n".join(
+                [
+                    "PIWIK_PRO_HOST=from-env-file.piwik.pro",
+                    "PIWIK_PRO_CLIENT_ID=from-env-file-client-id",
+                    "PIWIK_PRO_CLIENT_SECRET=from-env-file-client-secret",
+                ]
+            )
+        )
+
+        captured = {}
+
+        def fake_start_server(**kwargs):
+            captured.update(kwargs)
+            captured["env"] = {
+                "PIWIK_PRO_HOST": os.getenv("PIWIK_PRO_HOST"),
+                "PIWIK_PRO_CLIENT_ID": os.getenv("PIWIK_PRO_CLIENT_ID"),
+                "PIWIK_PRO_CLIENT_SECRET": os.getenv("PIWIK_PRO_CLIENT_SECRET"),
+            }
+
+        monkeypatch.setattr(server_module, "start_server", fake_start_server)
+
+        original_argv = sys.argv[:]
+        try:
+            sys.argv = ["server.py", "--env-file", str(env_file)]
+
+            with patch.dict(
+                os.environ,
+                {
+                    "PIWIK_PRO_HOST": "from-existing-env.piwik.pro",
+                    "PIWIK_PRO_CLIENT_ID": "from-existing-env-client-id",
+                    "PIWIK_PRO_CLIENT_SECRET": "from-existing-env-client-secret",
+                },
+                clear=False,
+            ):
+                server_module.main()
+        finally:
+            sys.argv = original_argv
+
+        assert captured == {
+            "transport": "stdio",
+            "host": None,
+            "port": None,
+            "path": None,
+            "env": {
+                "PIWIK_PRO_HOST": "from-env-file.piwik.pro",
+                "PIWIK_PRO_CLIENT_ID": "from-env-file-client-id",
+                "PIWIK_PRO_CLIENT_SECRET": "from-env-file-client-secret",
+            },
+        }
