@@ -3,8 +3,8 @@
 MCP-specific Response Models for Piwik PRO Analytics API
 
 This module provides minimal Pydantic models for MCP-specific operations
-like create/update/delete status responses. It complements the existing
-piwik_pro_api models without duplicating API response structures.
+like create/update/delete status responses. It complements the API method
+models without duplicating API response structures.
 """
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer

@@ -4,7 +4,7 @@ Piwik PRO API Client
 A Python client library for interacting with Piwik PRO APIs.
 """
 
-__version__ = "0.1.0"
+from piwik_pro_mcp._version import __version__
 
 from .client import PiwikProClient
 from .exceptions import (
@@ -20,6 +20,7 @@ from .methods.cdp import CdpAPI
 from .methods.tracker_settings import TrackerSettingsAPI
 
 __all__ = [
+    "__version__",
     "PiwikProClient",
     "AppsAPI",
     "CdpAPI",

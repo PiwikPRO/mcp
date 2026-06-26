@@ -1,3 +1,5 @@
+from importlib.metadata import version
+
 import pytest
 
 from piwik_pro_mcp.api.client import PiwikProClient
@@ -37,6 +39,15 @@ def test_request_forwards_query_params(monkeypatch):
     assert captured["params"] == params
     assert captured["method"] == "GET"
     assert captured["url"].endswith("/api/test")
+
+
+def test_headers_use_package_version_in_user_agent():
+    client = PiwikProClient(host="https://example.com", client_id="id", client_secret="secret")
+    client.auth.get_auth_headers = lambda: {}
+
+    headers = client._get_headers()
+
+    assert headers["User-Agent"] == f"piwik-pro-api-python/{version('piwik-pro-mcp')}"
 
 
 def test_method_wrappers_forward_params(monkeypatch):

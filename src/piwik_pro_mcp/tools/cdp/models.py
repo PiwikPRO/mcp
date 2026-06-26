@@ -3,7 +3,7 @@ MCP-specific models for CDP management tools.
 
 This module provides Pydantic models used specifically by the MCP CDP tools
 for validation and schema generation. Most CDP models are imported from
-the piwik_pro_api.api.cdp.models module.
+the API methods CDP models module.
 """
 
 from datetime import datetime

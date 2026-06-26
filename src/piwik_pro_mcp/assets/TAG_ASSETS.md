@@ -13,7 +13,7 @@ Our Tag Manager template system follows a **"pregenerated, AI-optimized document
 ## **📁 File Structure Pattern**
 
 ```
-piwik_mcp/assets/tag_manager/
+piwik_pro_mcp/assets/tag_manager/
 ├── _common/
 │   ├── tag_base.json           # Base for all the tags templates assets
 │   ├── tag_base_ecommerce.json # Base for all the ecommerce tags templates assets
@@ -107,7 +107,7 @@ get_variable_template(template_name) → {comprehensive_template_with_mutability
 ### **MCP Tool Exposure Pattern**
 
 ```python
-# In piwik_mcp/tools/tag_manager/templates.py - core functions AND MCP-exposed wrappers
+# In piwik_pro_mcp/tools/tag_manager/templates.py - core functions and MCP-exposed wrappers
 def get_available_tag_templates() -> Dict[str, Any]: ...
 def get_tag_template(template_name: str) -> Dict[str, Any]: ...
 def get_available_trigger_templates() -> Dict[str, Any]: ...
@@ -265,7 +265,7 @@ Example:
 
 ```python
 from mcp.server.fastmcp import FastMCP
-from piwik_mcp.tools import register_all_tools
+from piwik_pro_mcp.tools import register_all_tools
 
 mcp = FastMCP("Piwik PRO Analytics Server 📊")
 register_all_tools(mcp)
@@ -299,7 +299,7 @@ Field Mutability:
 
 ```python
 # File structure
-piwik_mcp/assets/tag_manager/triggers/
+piwik_pro_mcp/assets/tag_manager/triggers/
 ├── page_view.json          # Complete create/update template
 ├── click.json              # Complete create/update template
 ├── form_submission.json    # Complete create/update template
@@ -330,7 +330,7 @@ templates_get_trigger(template_name: str)  # Includes mcp_usage.update_trigger i
 
 ```python
 # File structure
-piwik_mcp/assets/tag_manager/variables/
+piwik_pro_mcp/assets/tag_manager/variables/
 ├── constant.json           # Complete create/update template
 ├── custom_javascript.json  # Complete create/update template
 ├── dom_element.json        # Complete create/update template

@@ -83,7 +83,7 @@ uv run piwik-pro-mcp --transport streamable-http --host 0.0.0.0 --port 8000 --pa
 
 Options:
 
-- `--host` defaults to `0.0.0.0`, enabling access from other machines on your network
+- `--host` defaults to `127.0.0.1`; change it to `0.0.0.0` to allow remote access on your network
 - `--port` defaults to `8000`; adjust to fit your environment or reverse proxy
 - `--path` defaults to `/mcp`, matching the SDK client expectations
 - `--transport http` may be used as an alias for `streamable-http`

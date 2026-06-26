@@ -9,6 +9,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from piwik_pro_mcp._version import __version__
+
 from .auth import OAuth2Handler
 from .config import Config
 from .exceptions import (
@@ -87,7 +89,7 @@ class PiwikProClient:
         headers = {
             "Content-Type": "application/vnd.api+json",
             "Accept": "application/vnd.api+json",
-            "User-Agent": "piwik-pro-api-python/0.2.0",
+            "User-Agent": f"piwik-pro-api-python/{__version__}",
         }
 
         # Add authentication headers

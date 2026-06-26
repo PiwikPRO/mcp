@@ -6,12 +6,13 @@ An MCP server that provides tools for interacting with Piwik PRO analytics API.
 Authentication is handled via client credentials from environment variables.
 
 Usage:
-    python server.py [--env-file ENV_FILE] [--transport TRANSPORT] [--host HOST] [--port PORT] [--path PATH]
+    uv run python -m piwik_pro_mcp.server [--env-file ENV_FILE] [--transport TRANSPORT]
+        [--host HOST] [--port PORT] [--path PATH]
 
 Options:
     --env-file: Path to .env file to load environment variables from
     --transport: Transport to expose the MCP server (stdio, streamable-http)
-    --host: Host to bind when using streamable-http transport (default: 0.0.0.0)
+    --host: Host to bind when using streamable-http transport (default: 127.0.0.1)
     --port: Port to bind when using streamable-http transport (default: 8000)
     --path: Path for the streamable-http transport endpoint (default: /mcp)
 """
@@ -131,7 +132,7 @@ def validate_environment():
         sys.exit(1)
 
 
-DEFAULT_HTTP_HOST = "0.0.0.0"
+DEFAULT_HTTP_HOST = "127.0.0.1"
 DEFAULT_HTTP_PORT = 8000
 DEFAULT_HTTP_PATH = "/mcp"
 
@@ -197,10 +198,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python server.py                           # Start server
-  python server.py --env-file .env           # Load environment variables from .env file
-  python server.py --env-file /path/to/.env  # Load from specific .env file path
-  python server.py --transport streamable-http --port 8080  # Expose over HTTP(S) on port 8080
+  uv run python -m piwik_pro_mcp.server                           # Start server
+  uv run python -m piwik_pro_mcp.server --env-file .env           # Load environment variables from .env file
+  uv run python -m piwik_pro_mcp.server --env-file /path/to/.env  # Load from specific .env file path
+  uv run python -m piwik_pro_mcp.server --transport streamable-http --port 8080  # Expose over HTTP(S) on port 8080
 
 Required environment variables:
   PIWIK_PRO_HOST         - Your Piwik PRO instance hostname

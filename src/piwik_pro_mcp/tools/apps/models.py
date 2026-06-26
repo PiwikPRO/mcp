@@ -3,7 +3,7 @@ MCP-specific models for app management tools.
 
 This module provides Pydantic models used specifically by the MCP app tools
 for validation and schema generation. Most app models are imported from
-the piwik_pro_api.api.apps.models module.
+the API methods app models module.
 """
 
 from datetime import datetime

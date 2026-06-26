@@ -3,7 +3,7 @@ MCP-specific models for tracker settings tools.
 
 This module provides Pydantic models used specifically by the MCP tracker settings tools
 for validation and schema generation. Most tracker settings models are imported from
-the piwik_pro_api.api.tracker_settings.models module.
+the API methods tracker settings models module.
 """
 
 from pydantic import BaseModel, Field
