@@ -5,6 +5,7 @@ This module provides comprehensive MCP tools for managing Piwik PRO Tag Manager
 including tags, triggers, variables, versions, and template discovery.
 """
 
+from .operations import register_operation_tools
 from .tags import register_tag_tools
 from .templates import register_template_tools
 from .triggers import register_trigger_tools
@@ -16,5 +17,6 @@ __all__ = [
     "register_trigger_tools",
     "register_variable_tools",
     "register_version_tools",
+    "register_operation_tools",
     "register_template_tools",
 ]

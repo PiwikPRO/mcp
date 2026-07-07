@@ -15,6 +15,7 @@ from .cdp import register_cdp_tools
 from .container_settings import register_container_settings_tools
 from .parameters import register_parameter_discovery_tool
 from .tag_manager import (
+    register_operation_tools,
     register_tag_tools,
     register_template_tools,
     register_trigger_tools,
@@ -40,6 +41,7 @@ def register_all_tools(mcp: FastMCP) -> None:
     register_trigger_tools(mcp)
     register_variable_tools(mcp)
     register_version_tools(mcp)
+    register_operation_tools(mcp)
     register_template_tools(mcp)
 
     # Register tracker settings tools
@@ -74,6 +76,7 @@ __all__ = [
     "register_trigger_tools",
     "register_variable_tools",
     "register_version_tools",
+    "register_operation_tools",
     "register_template_tools",
     "register_tracker_settings_tools",
     "register_container_settings_tools",

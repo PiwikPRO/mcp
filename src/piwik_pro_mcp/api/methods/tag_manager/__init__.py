@@ -5,7 +5,6 @@ Piwik PRO Tag Manager API module.
 from .api import TagManagerAPI
 from .models import (
     DebugLinkAttributes,
-    OperationAttributes,
     ResourceType,
     TagAttributes,
     TagManagerListResponse,
@@ -31,5 +30,4 @@ __all__ = [
     "VariableAttributes",
     "VersionAttributes",
     "DebugLinkAttributes",
-    "OperationAttributes",
 ]

@@ -62,6 +62,102 @@ class TestVersionsFunctional:
         mock_piwik_client.tag_manager.get_published_version.assert_called_once_with("app-1")
 
     @pytest.mark.asyncio
+    async def test_versions_create_draft_snapshot_happy_path_async(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.create_draft_snapshot.return_value = {
+            "data": {
+                "id": "v-snap",
+                "type": "version",
+                "relationships": {"operation": {"data": {"id": "op-snap", "type": "operation"}}},
+            }
+        }
+        mock_piwik_client.tag_manager.wait_for_operation.return_value = {
+            "data": {
+                "id": "op-snap",
+                "type": "operation",
+                "attributes": {"state": "completed", "operation_type": "create_snapshot"},
+            }
+        }
+
+        result = await mcp_server.call_tool(
+            "versions_create_draft_snapshot",
+            {"app_id": "app-1"},
+        )
+
+        assert isinstance(result, tuple) and len(result) == 2
+        _, data = result
+        assert data["status"] == "success"
+        assert data["message"] == "Draft version snapshot completed (Operation ID: op-snap)"
+        assert data["version_info"]["version_id"] == "v-snap"
+        assert data["version_info"]["operation_id"] == "op-snap"
+        assert data["version_info"]["operation_status"] == "completed"
+        assert data["version_info"]["is_async"] is False
+        mock_piwik_client.tag_manager.create_draft_snapshot.assert_called_once_with("app-1")
+        mock_piwik_client.tag_manager.wait_for_operation.assert_called_once_with("app-1", "op-snap")
+
+    @pytest.mark.asyncio
+    async def test_versions_create_draft_snapshot_unexpected_none_response(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.create_draft_snapshot.return_value = None
+
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "versions_create_draft_snapshot",
+                {"app_id": "app-1"},
+            )
+
+        assert "Unexpected response type from create_draft_snapshot: NoneType" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_versions_create_draft_snapshot_missing_relationships(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.create_draft_snapshot.return_value = {
+            "data": {"id": "v-snap", "type": "version", "attributes": {"name": "Snapshot"}},
+        }
+
+        result = await mcp_server.call_tool(
+            "versions_create_draft_snapshot",
+            {"app_id": "app-1"},
+        )
+
+        assert isinstance(result, tuple)
+        _, data = result
+        assert data["status"] == "success"
+        assert data["message"] == "Draft version snapshot completed"
+        assert data["version_info"]["version_id"] == "v-snap"
+        assert data["version_info"]["operation_id"] is None
+        assert data["version_info"]["is_async"] is False
+        mock_piwik_client.tag_manager.wait_for_operation.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_versions_create_draft_snapshot_unexpected_response_type(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.create_draft_snapshot.return_value = "unexpected"
+
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "versions_create_draft_snapshot",
+                {"app_id": "app-1"},
+            )
+
+        assert "Unexpected response type from create_draft_snapshot" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_versions_create_draft_snapshot_operation_failed(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.create_draft_snapshot.return_value = {
+            "data": {
+                "id": "v-snap",
+                "type": "version",
+                "relationships": {"operation": {"data": {"id": "op-snap", "type": "operation"}}},
+            }
+        }
+        mock_piwik_client.tag_manager.wait_for_operation.side_effect = RuntimeError("Operation op-snap failed")
+
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "versions_create_draft_snapshot",
+                {"app_id": "app-1"},
+            )
+
+        assert "Operation op-snap failed" in str(exc_info.value)
+
+    @pytest.mark.asyncio
     async def test_versions_publish_draft_happy_path_async(self, mcp_server, mock_piwik_client):
         mock_piwik_client.tag_manager.publish_draft_version.return_value = {
             "data": {
@@ -70,15 +166,35 @@ class TestVersionsFunctional:
                 "relationships": {"operation": {"data": {"id": "op-1", "type": "operation"}}},
             }
         }
+        mock_piwik_client.tag_manager.wait_for_operation.return_value = {
+            "data": {
+                "id": "op-1",
+                "type": "operation",
+                "attributes": {"state": "completed", "operation_type": "publish"},
+            }
+        }
 
         result = await mcp_server.call_tool("versions_publish_draft", {"app_id": "app-1"})
 
         assert isinstance(result, tuple) and len(result) == 2
         _, data = result
         assert data["status"] == "success"
+        assert data["message"] == "Draft version publish completed (Operation ID: op-1)"
         assert data["version_info"]["version_id"] == "v-new"
         assert data["version_info"]["operation_id"] == "op-1"
-        assert data["version_info"]["is_async"] is True
+        assert data["version_info"]["operation_status"] == "completed"
+        assert data["version_info"]["is_async"] is False
+        mock_piwik_client.tag_manager.publish_draft_version.assert_called_once_with("app-1")
+        mock_piwik_client.tag_manager.wait_for_operation.assert_called_once_with("app-1", "op-1")
+
+    @pytest.mark.asyncio
+    async def test_versions_publish_draft_unexpected_none_response(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.publish_draft_version.return_value = None
+
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool("versions_publish_draft", {"app_id": "app-1"})
+
+        assert "Unexpected response type from publish_draft_version: NoneType" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_versions_publish_draft_missing_relationships(self, mcp_server, mock_piwik_client):
@@ -90,18 +206,20 @@ class TestVersionsFunctional:
         assert isinstance(result, tuple)
         _, data = result
         assert data["status"] == "success"
+        assert data["message"] == "Draft version publish completed"
         assert data["version_info"]["version_id"] == "v-new"
+        assert data["version_info"]["operation_id"] is None
+        assert data["version_info"]["is_async"] is False
+        mock_piwik_client.tag_manager.wait_for_operation.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_versions_publish_draft_happy_path_sync(self, mcp_server, mock_piwik_client):
-        mock_piwik_client.tag_manager.publish_draft_version.return_value = None
+    async def test_versions_publish_draft_unexpected_response_type(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.publish_draft_version.return_value = "unexpected"
 
-        result = await mcp_server.call_tool("versions_publish_draft", {"app_id": "app-1"})
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool("versions_publish_draft", {"app_id": "app-1"})
 
-        assert isinstance(result, tuple) and len(result) == 2
-        _, data = result
-        assert data["status"] == "success"
-        assert data["version_info"]["is_async"] is False
+        assert "Unexpected response type from publish_draft_version" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_version_calls_error_propagation_toolerror(self, mcp_server, mock_piwik_client):

@@ -183,8 +183,7 @@ def update_variable(app_id: str, variable_id: str, attributes: dict) -> TagManag
         validated_attrs = validate_data_against_model(attributes, VariableUpdateAttributes)
 
         # Convert to dictionary and filter out None values
-        # Use by_alias=True to match API layer expectations
-        update_kwargs = {k: v for k, v in validated_attrs.model_dump(by_alias=True, exclude_none=True).items()}
+        update_kwargs = {k: v for k, v in validated_attrs.model_dump(exclude_none=True).items()}
 
         if not update_kwargs:
             raise RuntimeError("No editable fields provided for update")

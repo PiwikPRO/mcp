@@ -429,10 +429,9 @@ templates_get_variable(template_name: str)  # Includes mcp_usage.update_variable
 ```python
 # Tags (API client enforces filtering)
 editable_only = attributes.model_dump(
-    by_alias=True,
     exclude_none=True,
     exclude={
-        'createdAt', 'created_at', 'updatedAt', 'updated_at', 'is_published',
+        'created_at', 'updated_at', 'is_published',
         'template', 'tag_type'
     }
 )

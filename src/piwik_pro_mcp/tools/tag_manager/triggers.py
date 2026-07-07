@@ -174,7 +174,7 @@ def update_trigger(
         attributes = attributes if attributes is not None else {}
 
         validated_attrs = validate_data_against_model(attributes, TriggerUpdateAttributes)
-        update_kwargs = {k: v for k, v in validated_attrs.model_dump(by_alias=True, exclude_none=True).items()}
+        update_kwargs = {k: v for k, v in validated_attrs.model_dump(exclude_none=True).items()}
         update_kwargs.pop("relationships", None)
         api_rels = _mcp_relationships_to_api_payload(relationships)
 

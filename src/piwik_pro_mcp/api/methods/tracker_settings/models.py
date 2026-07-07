@@ -1,11 +1,11 @@
 """Pydantic models for Piwik PRO Tracker Settings API data structures."""
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class GeolocationLevel(str, Enum):
+class GeolocationLevel(StrEnum):
     """Geolocation anonymization level enumeration."""
 
     NONE = "none"
@@ -15,7 +15,7 @@ class GeolocationLevel(str, Enum):
     CONTINENT = "Continent"
 
 
-class SessionLimitAction(str, Enum):
+class SessionLimitAction(StrEnum):
     """Session limit exceeded action enumeration."""
 
     SPLIT_AND_EXCLUDE = "split_and_exclude"

@@ -198,7 +198,9 @@ class TestParameterRegistryConsistency:
             "versions_list",
             "versions_get_draft",
             "versions_get_published",
+            "operations_get",
             "versions_publish_draft",
+            "versions_create_draft_snapshot",
             # Templates discovery
             "templates_list_tags",
             "templates_get_tag",

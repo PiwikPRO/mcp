@@ -15,7 +15,7 @@ import threading
 import time
 import uuid
 from collections.abc import Callable
-from enum import Enum
+from enum import StrEnum
 from functools import wraps
 from typing import Any
 from urllib.parse import quote_plus
@@ -27,7 +27,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from piwik_pro_mcp.api.auth import OAuth2Handler
 
 
-class TelemetryStatus(str, Enum):
+class TelemetryStatus(StrEnum):
     """Enumeration of possible tool invocation outcomes."""
 
     SUCCESS = "success"

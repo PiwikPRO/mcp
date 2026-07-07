@@ -3,14 +3,14 @@ Pydantic models for Piwik PRO Apps API data structures.
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..common import JsonApiResource, Meta
 
 
-class AppType(str, Enum):
+class AppType(StrEnum):
     """App type enumeration."""
 
     WEB = "web"
@@ -18,7 +18,7 @@ class AppType(str, Enum):
     DEMO = "demo"
 
 
-class Permission(str, Enum):
+class Permission(StrEnum):
     """Permission enumeration."""
 
     VIEW = "view"
@@ -27,7 +27,7 @@ class Permission(str, Enum):
     MANAGE = "manage"
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     """Sort order enumeration."""
 
     NAME = "name"
@@ -38,7 +38,7 @@ class SortOrder(str, Enum):
     UPDATED_AT_DESC = "-updatedAt"
 
 
-class GdprDataAnonymizationMode(str, Enum):
+class GdprDataAnonymizationMode(StrEnum):
     """GDPR data anonymization mode."""
 
     NO_DEVICE_STORAGE = "no_device_storage"

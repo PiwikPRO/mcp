@@ -39,6 +39,7 @@ READ_ONLY_TOOLS = [
     "versions_list",
     "versions_get_draft",
     "versions_get_published",
+    "operations_get",
     # Container Settings
     "container_settings_get_installation_code",
     "container_settings_list",
@@ -81,6 +82,7 @@ WRITE_TOOLS = [
     "variables_update",
     "variables_delete",
     "versions_publish_draft",
+    "versions_create_draft_snapshot",
     # Tracker Settings
     "tracker_settings_global_update",
     "tracker_settings_app_update",
