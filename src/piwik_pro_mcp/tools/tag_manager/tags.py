@@ -291,7 +291,10 @@ def register_tag_tools(mcp: FastMCP) -> None:
             3. tags_create() → create the tag with verified template name
 
         Args:
-            relationships: Optional object with a `triggers` array of trigger UUIDs to attach during creation.
+            relationships: Optional object with a `triggers` array of trigger UUID strings.
+                Preferred: `{"triggers": ["688b4d05-0c44-41b9-b29c-72ddab85ddc6"]}`.
+                Compatibility: a bare UUID string or JSON:API-style objects (with `data[].id`)
+                are accepted and normalized.
                 Omit or set `triggers` to null to create the tag without triggers.
                 Use triggers_list() to discover available triggers and their UUIDs.
                 Use variables_list() to discover available variables used in trigger conditions.

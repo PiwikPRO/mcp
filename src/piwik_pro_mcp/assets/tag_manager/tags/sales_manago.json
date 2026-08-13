@@ -121,7 +121,9 @@
             },
             "consent_type": "marketing_automation"
           },
-          "triggers": "pageview-trigger-uuid"
+          "relationships": {
+            "triggers": ["pageview-trigger-uuid"]
+          }
         }
       },
       "prerequisite": "Get smid (Client ID) from SALESmanago > Settings > Integrations. Use page_view trigger."

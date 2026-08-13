@@ -11,8 +11,8 @@ from piwik_pro_mcp.api.client import PiwikProClient
 from piwik_pro_mcp.api.exceptions import BadRequestError, NotFoundError
 from piwik_pro_mcp.api.methods.tag_manager.models import TagManagerListResponse, TagManagerSingleResponse
 
-from ...common.utils import create_piwik_client
-from .models import PublishStatusResponse
+from ...common.utils import create_piwik_client, validate_data_against_model
+from .models import PublishStatusResponse, VersionUpdateAttributes
 
 
 def _extract_async_operation_info(response: dict) -> tuple[str | None, str | None]:
@@ -95,6 +95,38 @@ def get_published_version(app_id: str) -> TagManagerSingleResponse:
         raise RuntimeError(f"Published version not found for app {app_id}")
     except Exception as e:
         raise RuntimeError(f"Failed to get published version: {str(e)}")
+
+
+def update_version(app_id: str, version_id: str, attributes: dict) -> TagManagerSingleResponse:
+    try:
+        client = create_piwik_client()
+
+        # Validate attributes against the version update model
+        validated_attrs = validate_data_against_model(attributes, VersionUpdateAttributes)
+
+        # Keep only fields the caller actually provided. ``exclude_unset`` preserves
+        # explicit ``None`` values (used to clear a field) while dropping omitted fields.
+        update_attributes = validated_attrs.model_dump(exclude_unset=True)
+
+        if not update_attributes:
+            raise RuntimeError("No editable fields provided for update")
+
+        response = client.tag_manager.update_version(app_id=app_id, version_id=version_id, attributes=update_attributes)
+
+        # Handle 204 No Content response (successful update with no response body)
+        if response is None:
+            # For updates that return 204, fetch the updated version to return the response
+            updated_version = client.tag_manager.get_version(app_id=app_id, version_id=version_id)
+            return TagManagerSingleResponse(**updated_version)
+
+        return TagManagerSingleResponse(**response)
+
+    except NotFoundError:
+        raise RuntimeError(f"Version with ID {version_id} not found in app {app_id}")
+    except BadRequestError as e:
+        raise RuntimeError(f"Failed to update version: {e.message}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to update version: {str(e)}")
 
 
 def create_draft_version_snapshot(app_id: str) -> PublishStatusResponse:
@@ -187,6 +219,28 @@ def register_version_tools(mcp: FastMCP) -> None:
             - Version configuration and metadata
         """
         return get_published_version(app_id)
+
+    @mcp.tool(annotations={"title": "Piwik PRO: Update Version"})
+    def versions_update(app_id: str, version_id: str, attributes: dict) -> TagManagerSingleResponse:
+        """Edit a version's name and description in Piwik PRO Tag Manager.
+
+        The version name is the commit name. Only ``name`` and ``description``
+        are editable. An omitted field is left unchanged; passing an explicit
+        ``null`` clears the field.
+
+        Use tools_parameters_get("versions_update") to get the complete JSON schema.
+
+        Args:
+            app_id: UUID of the app
+            version_id: UUID of the version to edit
+            attributes: JSON object with editable fields (name and/or description).
+                Omit a field to leave it unchanged, or set it to null to clear it.
+
+        Returns:
+            Dictionary containing the updated version details including:
+            - data: Version object with updated name and description
+        """
+        return update_version(app_id, version_id, attributes)
 
     @mcp.tool(annotations={"title": "Piwik PRO: Create Draft Version Snapshot"})
     def versions_create_draft_snapshot(app_id: str) -> PublishStatusResponse:

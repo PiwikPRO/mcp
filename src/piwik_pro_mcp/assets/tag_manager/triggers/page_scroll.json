@@ -47,7 +47,9 @@
     "best_practices": [
       "Use options.unit 'percentage' and value 0–100 for percent-based thresholds",
       "Use options.unit 'pixels' and value in pixels for fixed scroll depth",
-      "Add Page path conditions to limit the trigger to specific pages; set multiplicity (e.g. once per page view) to avoid duplicate events"
+      "For default/basic scroll triggers, use condition_type each_time (default multiplicity)",
+      "Use once_per_page_view or once_per_session only when the user asks to limit firing frequency or avoid duplicate events",
+      "Add Page path conditions to limit the trigger to specific pages"
     ]
   },
   "required_attributes": {
@@ -79,7 +81,7 @@
           "unit": "Required. Must be 'percentage' or 'pixels'"
         }
       },
-      "recommendation": "Include one condition with variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5 (Page Scroll), condition_type each_time | once_per_page_view | once_per_session, value 0–100 for percentage (or pixel number), and options: { \"unit\": \"percentage\" } or { \"unit\": \"pixels\" }; add Page path or Page URL conditions to limit where the trigger fires."
+      "recommendation": "For default/basic scroll triggers use condition_type each_time (default multiplicity). Include one condition with variable_id a9a87b7d-d565-433d-8090-df9d80bf91f5 (Page Scroll), value 0–100 for percentage (or pixel number), and options: { \"unit\": \"percentage\" } or { \"unit\": \"pixels\" }; use once_per_page_view or once_per_session only when limiting firing frequency; add Page path or Page URL conditions to limit where the trigger fires."
     }
   },
   "complete_examples": {

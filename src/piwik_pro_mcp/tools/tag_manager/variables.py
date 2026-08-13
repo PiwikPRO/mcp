@@ -291,6 +291,11 @@ def register_variable_tools(mcp: FastMCP) -> None:
     ) -> TagManagerListResponse:
         """List variables for an app in Piwik PRO Tag Manager.
 
+        Lists custom (user-created) variables for the app. Do not use this tool to
+        resolve built-in variable UUIDs for trigger conditions — built-in UUIDs are
+        fixed platform-wide and are listed in trigger_base.json →
+        conditions_reference.conditions.<key>.builtin_variable_id.
+
         Args:
             app_id: UUID of the app
             limit: Maximum number of variables to return (default: 10)

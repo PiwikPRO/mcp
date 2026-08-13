@@ -11,7 +11,7 @@
         },
         "attributes": {
           "type": "object",
-          "description": "Trigger configuration object. Must include name, trigger_type, and conditions as required by this template (see required_attributes). Use tools_parameters_get(\"triggers_create\") for the full runtime JSON schema. For each conditions[].variable_id: built-in variables → variable_base.json → builtin_variables_reference (match builtin_variable_name from conditions_reference); custom variables → variables_list(app_id, filters={\"builtin\": false})."
+          "description": "Trigger configuration object. Must include name, trigger_type, and conditions as required by this template (see required_attributes). Use tools_parameters_get(\"triggers_create\") for the full runtime JSON schema. For each conditions[].variable_id: built-in variables → conditions_reference.conditions.<key>.builtin_variable_id; custom variables → variables_list(app_id, filters={\"builtin\": false})."
         }
       },
       "optional_parameters": {
@@ -92,7 +92,7 @@
       "optional_parameters": {
         "attributes": {
           "type": "object",
-          "description": "Trigger fields to update (only editable fields are processed): optional name and conditions. Use tools_parameters_get(\"triggers_update\") for the runtime JSON schema. Do not put relationships here; use the top-level relationships parameter. When updating conditions[], resolve variable_id the same way as triggers_create (builtin → variable_base.json → builtin_variables_reference; custom → variables_list with builtin=false)."
+          "description": "Trigger fields to update (only editable fields are processed): optional name and conditions. Use tools_parameters_get(\"triggers_update\") for the runtime JSON schema. Do not put relationships here; use the top-level relationships parameter. When updating conditions[], resolve variable_id the same way as triggers_create (built-in → conditions_reference.conditions.<key>.builtin_variable_id; custom → variables_list with builtin=false)."
         },
         "relationships": {
           "type": "object",
@@ -181,7 +181,7 @@
         "variable_id": {
           "type": "string",
           "format": "uuid",
-          "description": "UUID of the variable to check. Built-in: copy variable_id from variable_base.json → builtin_variables_reference where display_name matches conditions_reference → builtin_variable_name. Custom: use id from variables_list(app_id, filters={\"builtin\": false})."
+          "description": "UUID of the variable to check. Built-in: copy builtin_variable_id from the matching conditions_reference.conditions entry. Custom: use id from variables_list(app_id, filters={\"builtin\": false})."
         },
         "condition_type": {
           "type": "string",
@@ -259,12 +259,12 @@
   "variable_reference_guide": {
     "description": "How to resolve conditions[].variable_id when creating or updating triggers.",
     "builtin_variables": {
-      "where": "variable_base.json → builtin_variables_reference",
-      "how_to_load": "templates_get_variable() on any variable template (e.g. constant) — variable_base is merged via extends and includes builtin_variables_reference.",
+      "where": "conditions_reference.conditions.<key>.builtin_variable_id",
+      "how_to_load": "templates_get_trigger(template_name='...') — trigger_base is merged into trigger templates and includes conditions_reference.",
       "steps": [
-        "Read conditions_reference (below) or the trigger template's available_event_conditions / required_conditions to find the builtin_variable_name (e.g. Event, Page URL).",
-        "Find the same display_name in builtin_variables_reference.variables and copy its variable_id into conditions[].variable_id.",
-        "Built-in UUIDs are fixed platform-wide; do not use variables_list for them."
+        "Read conditions_reference (below) or the trigger template's available_event_conditions / required_conditions to find the condition key and builtin_variable_name (e.g. event → Event, page_url → Page URL).",
+        "Copy variable_id from the matching conditions_reference.conditions.<key>.builtin_variable_id.",
+        "Built-in UUIDs are fixed platform-wide; do not use variables_list for them. Do not call triggers_create until every variable_id is verified."
       ]
     },
     "custom_variables": {
@@ -276,7 +276,7 @@
         "Use when the trigger allows custom_variable_based in conditions_reference or when the condition targets a user-defined variable (data layer, constant, etc.)."
       ]
     },
-    "conditions_reference_link": "conditions_reference.conditions[].builtin_variable_name names the built-in variable; always pair it with the variable_id from builtin_variables_reference, not a guessed UUID."
+    "conditions_reference_link": "conditions_reference.conditions[].builtin_variable_name names the built-in variable; for built-ins, copy variable_id from the adjacent builtin_variable_id field, not a guessed UUID."
   },
   "condition_types_reference": {
     "description": "Maps API `condition_type` values (object keys, snake_case) to metadata. Use the key string as `conditions[].condition_type`. Each entry includes `value` (same as the key), `display_name` (UI-oriented label), and documentation fields.",
@@ -511,8 +511,8 @@
   "conditions_reference": {
     "description": "Deduplicated union of optional trigger condition variables documented across trigger templates (`event_conditions_reference.conditions`), keyed by `builtin_variable_name`. Descriptions prefer page_view, then event, then form_submission, then other templates.",
     "mcp_lookup_notes": [
-      "Each entry's builtin_variable_name is the human-readable built-in variable label — not the API variable_id.",
-      "When building conditions[] for triggers_create/triggers_update: set variable_id from variable_base.json → builtin_variables_reference (match display_name to builtin_variable_name), unless the condition uses a custom app variable (then use variables_list with builtin=false).",
+      "Each entry's builtin_variable_name is the human-readable built-in variable label; builtin_variable_id is the API variable_id to use in conditions[].variable_id.",
+      "When building conditions[] for triggers_create/triggers_update: set variable_id from conditions_reference.conditions.<key>.builtin_variable_id, unless the condition uses a custom app variable (then use variables_list with builtin=false).",
       "Trigger templates reference these keys via available_event_conditions.conditions and required_conditions.*.condition_reference."
     ],
     "default_allowed_condition_types": [
@@ -536,6 +536,7 @@
     "conditions": {
       "campaign": {
         "builtin_variable_name": "Campaign",
+        "builtin_variable_id": "a3f51ab7-ea76-4adc-a839-a32d392df37c",
         "description": "Fires when a visitor visits a page to which they were directed by the selected campaign (based on utm_campaign parameter).",
         "example": "Campaign equals winter-promo",
         "allowed_condition_types": [
@@ -570,6 +571,7 @@
       },
       "cdp_audience": {
         "builtin_variable_name": "CDP Audience",
+        "builtin_variable_id": "46505189-34d1-4d98-8418-bd827c3a7c57",
         "description": "Fires a tag whenever it detects that the user is a member of any selected audience. Membership is checked at the beginning of a session and periodically during the session.",
         "example": "CDP Audience visitor_belongs_to desktop users",
         "allowed_condition_types": [
@@ -579,11 +581,13 @@
       },
       "click_classes": {
         "builtin_variable_name": "Click Classes",
+        "builtin_variable_id": "efc09356-e1f2-40f7-8a0a-4c454429e678",
         "description": "Fires when the visitor clicks an element with the selected CSS class",
         "example": "Click Classes contains primary_button"
       },
       "click_element": {
         "builtin_variable_name": "Click Element",
+        "builtin_variable_id": "db5a673e-dabe-4dfa-908c-d08b369d08c9",
         "description": "Fires when the visitor clicks an element matching the selected CSS or XPath selector",
         "example": "Click Element matches .promo_banner",
         "allowed_condition_types": [
@@ -595,16 +599,19 @@
       },
       "click_id": {
         "builtin_variable_name": "Click ID",
+        "builtin_variable_id": "f39468e9-ae2d-4e58-9e2c-73a4d44add6f",
         "description": "Fires when the visitor clicks an element with the selected ID",
         "example": "Click ID equals item-123"
       },
       "click_url": {
         "builtin_variable_name": "Click URL",
+        "builtin_variable_id": "efd3558a-714d-4b33-9edd-2bbeb0b5eaf7",
         "description": "Fires when the visitor clicks a link with the selected URL",
         "example": "Click URL equals https://example.com/big-promo/"
       },
       "consents": {
         "builtin_variable_name": "Consents",
+        "builtin_variable_id": "67f49c79-bab6-4b0f-95c8-3bf624b6398f",
         "description": "Fires when the visitor consents meets given conditions",
         "example": "Consents is set",
         "allowed_condition_types": [
@@ -625,6 +632,7 @@
       },
       "event": {
         "builtin_variable_name": "Event",
+        "builtin_variable_id": "977a1f9d-4fdb-43bf-9549-bdf68a7b69a6",
         "description": "Fires a tag when a specific event occurs in the data layer",
         "example": "Event contains exampleEventName",
         "allowed_condition_types": [
@@ -670,21 +678,25 @@
       },
       "external_referrer": {
         "builtin_variable_name": "External referrer",
+        "builtin_variable_id": "6fa9617f-00b8-4bed-8112-ccbb32033c74",
         "description": "Fires when a visitor visits a page to which they were directed by the selected external referrer (different domain).",
         "example": "External referrer equals https://google.com"
       },
       "form_classes": {
         "builtin_variable_name": "Form Classes",
+        "builtin_variable_id": "d7c47336-342d-4c9b-b35a-fa13f238ca44",
         "description": "Fires when a visitor submits a form with the selected CSS class",
         "example": "Form Classes contains emergency-contact"
       },
       "form_id": {
         "builtin_variable_name": "Form ID",
+        "builtin_variable_id": "b1504526-de0d-4c27-9ff0-1ee7734561ed",
         "description": "Fires when a visitor submits a form with the selected ID",
         "example": "Form ID contains contact-form"
       },
       "form_name": {
         "builtin_variable_name": "Form Name",
+        "builtin_variable_id": "028f3993-dc39-4ad1-8602-f6345c91f3bb",
         "description": "Fires when a visitor submits a form with the selected name",
         "example": "Form Name equals emergencyContact",
         "allowed_condition_types": [
@@ -704,11 +716,13 @@
       },
       "form_url": {
         "builtin_variable_name": "Form URL",
+        "builtin_variable_id": "0e45761b-d00d-4b18-88c1-eb8fc233d3da",
         "description": "Fires when a visitor submits a form that sends a request to the selected page URL",
         "example": "Form URL equals https://example.com/contact-requests"
       },
       "found_elements": {
         "builtin_variable_name": "Found Elements",
+        "builtin_variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
         "description": "Fires the tag when the selected element is present on a page. The condition's value is the CSS selector (e.g. .promo_banner or a class name)",
         "example": "Found Elements each_time .promo_banner",
         "allowed_condition_types": [
@@ -731,21 +745,25 @@
       },
       "history_fragment": {
         "builtin_variable_name": "History fragment",
+        "builtin_variable_id": "d462fb15-d23c-40e2-bc54-494377accccb",
         "description": "Fires when the URL hash matches the selected condition",
         "example": "History fragment equals pricing"
       },
       "history_source": {
         "builtin_variable_name": "History source",
+        "builtin_variable_id": "caf01b44-cdbf-4a7e-a7e8-0150744b4e32",
         "description": "Fires when a specific history event occurs (pushState, replaceState, popState or hashchange)",
         "example": "History source equals pushState"
       },
       "history_state": {
         "builtin_variable_name": "History state",
+        "builtin_variable_id": "c98aff1e-a24a-4ab7-bad4-d7e0f056b42e",
         "description": "Fires when the history state matches the selected condition",
         "example": "History state is set or History state equals my-state"
       },
       "leave_content": {
         "builtin_variable_name": "Leave Content",
+        "builtin_variable_id": "c2fe42d6-2cbc-45d0-b4df-af92fdbdc2fc",
         "description": "Fires the tag when a visitor moves the cursor in the selected direction. The condition's value must be one of: 'top' (upper page boundary / exit intent), 'any' (upper, bottom or side page boundary).",
         "example": "Leave Content each_time top",
         "allowed_condition_types": [
@@ -778,31 +796,37 @@
       },
       "old_history_fragment": {
         "builtin_variable_name": "Old history fragment",
+        "builtin_variable_id": "44ef5a4b-4009-4f66-8fb4-c8137c0ed1b0",
         "description": "Fires when the previous URL hash matches the selected condition",
         "example": "Old history fragment equals about-us"
       },
       "old_history_state": {
         "builtin_variable_name": "Old history state",
+        "builtin_variable_id": "a489adb8-f2cf-4a09-8b7a-e6a048b943d7",
         "description": "Fires when the previous history state matches the selected condition",
         "example": "Old history state equals my-state"
       },
       "page_url": {
         "builtin_variable_name": "Page URL",
+        "builtin_variable_id": "67ed6060-eace-4370-8ede-a083f7c909f1",
         "description": "Fires when a visitor visits a page with the selected page URL.",
         "example": "Page Url equals https://clearbank.com/product-tour/"
       },
       "page_hostname": {
         "builtin_variable_name": "Page hostname",
+        "builtin_variable_id": "42ff090e-f97c-45b5-8625-21ae26891382",
         "description": "Fires when a visitor visits a page hosted on the selected domain.",
         "example": "Page Hostname equals clearbank.com"
       },
       "page_path": {
         "builtin_variable_name": "Page path",
+        "builtin_variable_id": "e1e2b185-464f-4eb5-8575-feec34c5e281",
         "description": "Fires when a visitor visits a page with the selected page path.",
         "example": "Page Path contains /product-tour"
       },
       "page_scroll": {
         "builtin_variable_name": "Page Scroll",
+        "builtin_variable_id": "a9a87b7d-d565-433d-8090-df9d80bf91f5",
         "description": "Fires the tag when a visitor scrolls to the selected point on the page. For example, a visitor scrolls 50% of the page or scrolls down to 1440 px.",
         "example": "Page Scroll once_per_page_view 35 (options: percentage)",
         "allowed_condition_types": [
@@ -835,11 +859,13 @@
       },
       "referrer": {
         "builtin_variable_name": "Referrer",
+        "builtin_variable_id": "8530b589-aaac-42e4-b4c0-dfeef1360ee5",
         "description": "Fires when a visitor visits a page to which they were directed by the selected referrer (internal, same domain).",
         "example": "Referrer equals https://clearbank.com/blog"
       },
       "returning_visitor": {
         "builtin_variable_name": "Returning visitor",
+        "builtin_variable_id": "d76335ca-0ae1-4540-8b7e-5ff7acb0d14f",
         "description": "Fires when a visitor is a returning visitor and visits a page. Recognized by Tag Manager using the stg_returning_visitor cookie.",
         "example": "Returning visitor is true",
         "allowed_condition_types": [
@@ -849,6 +875,7 @@
       },
       "time_on_website": {
         "builtin_variable_name": "Time on website",
+        "builtin_variable_id": "4a3cbab8-e239-44ca-b1c9-6c1bc5cc3fbd",
         "description": "Fires the tag when a visitor stays on your site for the selected time (seconds).",
         "example": "Time on website once_per_session 30",
         "allowed_condition_types": [
@@ -858,6 +885,7 @@
       },
       "traffic_source": {
         "builtin_variable_name": "Traffic source",
+        "builtin_variable_id": "78fec807-3991-4fbc-ad57-238a6960d0b7",
         "description": "Fires when a visitor visits a page to which they were directed by the selected traffic source. Possible values: campaign, organic search, social, referral, direct.",
         "example": "Traffic source equals direct",
         "allowed_condition_types": [
@@ -877,6 +905,7 @@
       },
       "view_within_session": {
         "builtin_variable_name": "View within session",
+        "builtin_variable_id": "18c827bd-43e2-409a-a25d-cd8b0f6b95f7",
         "description": "Fires when it is/isn't first visit within session",
         "example": "View within session is_first_visit",
         "allowed_condition_types": [
@@ -903,9 +932,9 @@
       },
       "step_2": {
         "action": "Resolve built-in variable UUIDs for conditions",
-        "where": "variable_base.json → builtin_variables_reference → variables[]",
-        "mcp_call": "templates_get_variable(template_name='constant')",
-        "purpose": "For each condition that uses a built-in variable: match conditions_reference.builtin_variable_name to builtin_variables_reference.display_name and copy the corresponding variable_id into conditions[].variable_id. Built-in UUIDs are fixed — do not use variables_list for them."
+        "where": "conditions_reference.conditions.<key>.builtin_variable_id",
+        "mcp_call": "templates_get_trigger(template_name='...')",
+        "purpose": "Copy each built-in conditions[].variable_id from conditions_reference.conditions.<key>.builtin_variable_id before triggers_create. Built-in UUIDs are fixed — do not use variables_list for them."
       },
       "step_3": {
         "action": "Resolve custom variable UUIDs (if needed)",

@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from piwik_pro_mcp.api.exceptions import NotFoundError
+from piwik_pro_mcp.api.methods.tag_manager.models import TriggerType
 
 
 class TestTriggerCreateFunctional:
@@ -348,6 +349,26 @@ class TestTriggerCrudListGetDelete:
 
             call_args = mock_instance.tag_manager.list_triggers.call_args
             assert call_args[1]["app_id"] == "app-1"
+
+    @pytest.mark.asyncio
+    async def test_triggers_list_normalizes_pageview_filter_alias(self, mcp_server):
+        """pageview trigger_type filter is aliased to page_view before calling the API."""
+
+        with patch("piwik_pro_mcp.tools.tag_manager.triggers.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+            mock_instance.tag_manager.list_triggers.return_value = {
+                "data": [],
+                "meta": {"total": 0},
+            }
+
+            await mcp_server.call_tool(
+                "triggers_list",
+                {"app_id": "app-1", "filters": {"trigger_type": "pageview"}},
+            )
+
+            call_args = mock_instance.tag_manager.list_triggers.call_args
+            assert call_args[1]["filters"].trigger_type == TriggerType.PAGE_VIEW
 
     @pytest.mark.asyncio
     async def test_triggers_get_happy_path(self, mcp_server):

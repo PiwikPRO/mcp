@@ -72,10 +72,46 @@ class TagRelationships(BaseModel):
         default=None,
         description=(
             "Trigger UUIDs to attach (discover via triggers_list). "
+            'Prefer a flat list of UUID strings, e.g. {"triggers": ["<uuid>"]}. '
+            "For compatibility, a bare UUID string or JSON:API-style objects "
+            "(with `data[].id`) are accepted and normalized. "
             "Omit or null: on tags_create, create without triggers; on tags_update, keep existing triggers. "
             "Empty list: detach all triggers on tags_update; on tags_create, omit attaching triggers."
         ),
     )
+
+    @field_validator("triggers", mode="before")
+    @classmethod
+    def _coerce_trigger_ids(cls, value: object) -> list[str] | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            stripped = value.strip()
+            return [stripped] if stripped else []
+        if isinstance(value, dict):
+            nested = value.get("data", value.get("triggers"))
+            if nested is not None:
+                return cls._coerce_trigger_ids(nested)
+            raise ValueError("triggers must be a list of trigger UUID strings, not a JSON:API object")
+        if isinstance(value, list):
+            ids: list[str] = []
+            for item in value:
+                if isinstance(item, str):
+                    stripped = item.strip()
+                    if not stripped:
+                        raise ValueError("each triggers item must be a non-empty trigger UUID string")
+                    ids.append(stripped)
+                elif isinstance(item, dict):
+                    trigger_id = item.get("id")
+                    if not isinstance(trigger_id, str) or not trigger_id.strip():
+                        raise ValueError(
+                            "each triggers item must be a UUID string or an object with a non-empty string id"
+                        )
+                    ids.append(trigger_id.strip())
+                else:
+                    raise ValueError("each triggers item must be a UUID string or an object with a non-empty string id")
+            return ids
+        raise ValueError("triggers must be a list of trigger UUID strings")
 
     @field_validator("triggers")
     @classmethod
@@ -222,6 +258,29 @@ class VariableUpdateAttributes(BaseModel):
     name: str | None = Field(None, description="Variable name")
     value: str | None = Field(None, description="Value differs based on variable type")
     options: dict[str, Any] | None = Field(None, description="Template-specific options.")
+
+
+class VersionUpdateAttributes(BaseModel):
+    """Attributes for editing a Tag Manager version's name and description.
+
+    Only ``name`` (the commit name) and ``description`` are editable. An omitted
+    field is left unchanged; passing an explicit ``null`` clears the field.
+    """
+
+    model_config = {"extra": "forbid"}
+
+    name: str | None = Field(
+        None,
+        min_length=1,
+        max_length=255,
+        description="Version name (commit name). Omit to leave unchanged; pass null to clear.",
+    )
+    description: str | None = Field(
+        None,
+        min_length=1,
+        max_length=65536,
+        description="Version description. Omit to leave unchanged; pass null to clear.",
+    )
 
 
 class PublishStatusResponse(BaseModel):

@@ -4,6 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from piwik_pro_mcp.api.exceptions import NotFoundError
+
 
 class TestVersionsFunctional:
     @pytest.fixture
@@ -60,6 +62,97 @@ class TestVersionsFunctional:
         _, data = result
         assert data["data"]["id"] == "v-pub"
         mock_piwik_client.tag_manager.get_published_version.assert_called_once_with("app-1")
+
+    @pytest.mark.asyncio
+    async def test_versions_update_happy_path_returns_body(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.update_version.return_value = {
+            "data": {
+                "id": "v-1",
+                "type": "version",
+                "attributes": {"name": "Release 1.0", "description": "desc"},
+            }
+        }
+
+        result = await mcp_server.call_tool(
+            "versions_update",
+            {
+                "app_id": "app-1",
+                "version_id": "v-1",
+                "attributes": {"name": "Release 1.0", "description": "desc"},
+            },
+        )
+
+        assert isinstance(result, tuple) and len(result) == 2
+        _, data = result
+        assert data["data"]["id"] == "v-1"
+        assert data["data"]["attributes"]["name"] == "Release 1.0"
+        mock_piwik_client.tag_manager.update_version.assert_called_once_with(
+            app_id="app-1", version_id="v-1", attributes={"name": "Release 1.0", "description": "desc"}
+        )
+        mock_piwik_client.tag_manager.get_version.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_versions_update_204_refetches_version(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.update_version.return_value = None
+        mock_piwik_client.tag_manager.get_version.return_value = {
+            "data": {"id": "v-1", "type": "version", "attributes": {"name": "New name"}}
+        }
+
+        result = await mcp_server.call_tool(
+            "versions_update",
+            {"app_id": "app-1", "version_id": "v-1", "attributes": {"name": "New name"}},
+        )
+
+        assert isinstance(result, tuple) and len(result) == 2
+        _, data = result
+        assert data["data"]["attributes"]["name"] == "New name"
+        mock_piwik_client.tag_manager.update_version.assert_called_once_with(
+            app_id="app-1", version_id="v-1", attributes={"name": "New name"}
+        )
+        mock_piwik_client.tag_manager.get_version.assert_called_once_with(app_id="app-1", version_id="v-1")
+
+    @pytest.mark.asyncio
+    async def test_versions_update_clears_fields_with_explicit_null(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.update_version.return_value = None
+        mock_piwik_client.tag_manager.get_version.return_value = {
+            "data": {"id": "v-1", "type": "version", "attributes": {"name": None, "description": None}}
+        }
+
+        result = await mcp_server.call_tool(
+            "versions_update",
+            {"app_id": "app-1", "version_id": "v-1", "attributes": {"name": None, "description": None}},
+        )
+
+        assert isinstance(result, tuple) and len(result) == 2
+        _, data = result
+        assert data["data"]["attributes"]["name"] is None
+        # Explicit None must be forwarded (not dropped) so the API clears the fields.
+        mock_piwik_client.tag_manager.update_version.assert_called_once_with(
+            app_id="app-1", version_id="v-1", attributes={"name": None, "description": None}
+        )
+
+    @pytest.mark.asyncio
+    async def test_versions_update_no_editable_fields(self, mcp_server, mock_piwik_client):
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "versions_update",
+                {"app_id": "app-1", "version_id": "v-1", "attributes": {}},
+            )
+
+        assert "No editable fields provided for update" in str(exc_info.value)
+        mock_piwik_client.tag_manager.update_version.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_versions_update_not_found(self, mcp_server, mock_piwik_client):
+        mock_piwik_client.tag_manager.update_version.side_effect = NotFoundError("not found")
+
+        with pytest.raises(Exception) as exc_info:
+            await mcp_server.call_tool(
+                "versions_update",
+                {"app_id": "app-1", "version_id": "v-1", "attributes": {"name": "x"}},
+            )
+
+        assert "Version with ID v-1 not found in app app-1" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_versions_create_draft_snapshot_happy_path_async(self, mcp_server, mock_piwik_client):

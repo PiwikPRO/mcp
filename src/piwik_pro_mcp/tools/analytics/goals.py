@@ -68,13 +68,18 @@ def register_goals_tools(mcp: FastMCP) -> None:
         """
         List all goals for a website.
 
+        Use this before goal conversion queries when the user names a specific goal.
+        Match the goal by exact name in `data[].attributes.name`, then use the goal's
+        `id` as the `goal_uuid` filter value in `analytics_query_execute`. Do not put
+        `goal_uuid` in query columns when filtering to a single goal.
+
         Args:
             website_id: Website/App UUID
             limit: Maximum number of rows to return (default: 10, min: 1, max: 100000)
             offset: Number of rows to skip (default: 0, min: 0)
 
         Returns:
-            Goals list with metadata
+            Goals list with metadata. Each goal has `id` (UUID) and `attributes.name`.
         """
         client = create_piwik_client()
         api_resp = client.analytics.list_goals(
@@ -82,7 +87,16 @@ def register_goals_tools(mcp: FastMCP) -> None:
             limit=limit,
             offset=offset,
         )
-        return GoalsList(**api_resp.model_dump())
+        goals_list = GoalsList(**api_resp.model_dump())
+        goals_list.meta["query_planning_hint"] = (
+            "For conversions of one named goal: use that goal's `id` in "
+            "analytics_query_execute `filters` as "
+            '{"column_id": "goal_uuid", "condition": {"operator": "eq", "value": "<goal-id>"}}. '
+            "Do not add `goal_uuid` to `columns`. Group by timestamp with "
+            'transformation_id "to_date", select metric `goal_conversions`, and set '
+            "`order_by` to the goal_conversions column index with direction `desc`."
+        )
+        return goals_list
 
     @mcp.tool(annotations={"title": "Piwik PRO: Get Goal", "readOnlyHint": True})
     def analytics_goals_get(goal_id: str, website_id: str) -> GoalItem:

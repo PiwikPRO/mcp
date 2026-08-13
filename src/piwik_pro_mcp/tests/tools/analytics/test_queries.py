@@ -12,6 +12,7 @@ from piwik_pro_mcp.api.methods.analytics.models import (
     QueryResponse,
     QueryResponseMeta,
 )
+from piwik_pro_mcp.tools.analytics.query import _build_query_execute_message
 
 
 # Mock data for dimensions
@@ -544,3 +545,85 @@ class TestMetricsDetailsList:
         assert len(data["metrics"]) == 1
         assert len(data["calculated_metrics"]) == 1
         assert data["calculated_metrics"][0]["calculated_metric_id"] == "custom-metric-1"
+
+
+class TestBuildQueryExecuteMessage:
+    """Unit tests for dynamic analytics_query_execute response hints."""
+
+    def test_base_message_without_hints(self):
+        message = _build_query_execute_message(
+            columns=[{"column_id": "source"}, {"column_id": "visitors"}],
+            filters=None,
+            order_by=[[1, "desc"]],
+            row_count=2,
+        )
+
+        assert message == "Query executed successfully. Returned 2 rows."
+
+    def test_goal_uuid_in_columns_adds_filter_hint(self):
+        message = _build_query_execute_message(
+            columns=[{"column_id": "goal_uuid"}, {"column_id": "goal_conversions"}],
+            filters=None,
+            order_by=None,
+            row_count=5,
+        )
+
+        assert "put `goal_uuid` in `filters`" in message
+        assert "instead of selecting `goal_uuid` in `columns`" in message
+
+    def test_goal_uuid_in_columns_and_filters_no_goal_hint(self):
+        message = _build_query_execute_message(
+            columns=[{"column_id": "goal_uuid"}, {"column_id": "goal_conversions"}],
+            filters={
+                "operator": "and",
+                "conditions": [
+                    {"column_id": "goal_uuid", "condition": {"operator": "eq", "value": "goal-id"}},
+                ],
+            },
+            order_by=None,
+            row_count=1,
+        )
+
+        assert "put `goal_uuid` in `filters`" not in message
+        assert "set `order_by` on the `goal_conversions` column index" in message
+
+    def test_goal_conversions_without_order_by_adds_hint(self):
+        message = _build_query_execute_message(
+            columns=[
+                {"column_id": "timestamp", "transformation_id": "to_date"},
+                {"column_id": "goal_conversions"},
+            ],
+            filters=None,
+            order_by=None,
+            row_count=30,
+        )
+
+        assert "set `order_by` on the `goal_conversions` column index" in message
+
+    def test_goal_conversions_with_order_by_no_hint(self):
+        message = _build_query_execute_message(
+            columns=[
+                {"column_id": "timestamp", "transformation_id": "to_date"},
+                {"column_id": "goal_conversions"},
+            ],
+            filters=None,
+            order_by=[[1, "desc"]],
+            row_count=30,
+        )
+
+        assert message == "Query executed successfully. Returned 30 rows."
+
+    def test_timestamp_daily_grouping_with_period_metrics_does_not_add_omit_hint(self):
+        message = _build_query_execute_message(
+            columns=[
+                {"column_id": "timestamp", "transformation_id": "to_date"},
+                {"column_id": "bounce_rate"},
+            ],
+            filters=None,
+            order_by=None,
+            row_count=30,
+        )
+
+        assert message == "Query executed successfully. Returned 30 rows."
+        assert "omit" not in message.lower()
+        assert "overall period metrics" not in message.lower()

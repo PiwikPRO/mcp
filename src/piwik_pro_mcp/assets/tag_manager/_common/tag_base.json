@@ -224,7 +224,7 @@
     "workflow_use_existing_trigger": {
       "step_1": "Use triggers_list(app_id) to see available triggers",
       "step_2": "Use triggers_get(app_id, trigger_id) to understand trigger conditions",
-      "step_3": "Include trigger UUIDs in the triggers parameter when creating tag",
+      "step_3": "Pass trigger UUIDs in relationships.triggers as a string array when calling tags_create, e.g. {\"relationships\": {\"triggers\": [\"<uuid>\"]}}",
       "step_4": "Use tags_list_triggers(app_id, tag_id) to verify trigger attachments"
     },
     "workflow_create_new_trigger": {

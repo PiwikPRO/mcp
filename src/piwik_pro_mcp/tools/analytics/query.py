@@ -46,6 +46,47 @@ DIMENSIONS_WITH_ENUMS = [
 
 DIMENSIONS_URL_PREFIX = "https://ppdevelopersportal.z1.web.core.windows.net/assets/enums/"
 
+
+def _collect_filter_column_ids(filters: object | None) -> set[str]:
+    if not isinstance(filters, dict):
+        return set()
+    found: set[str] = set()
+    column_id = filters.get("column_id")
+    if isinstance(column_id, str):
+        found.add(column_id)
+    conditions = filters.get("conditions")
+    if isinstance(conditions, list):
+        for condition in conditions:
+            found.update(_collect_filter_column_ids(condition))
+    return found
+
+
+def _build_query_execute_message(
+    columns: list[dict[str, Any]],
+    filters: dict[str, Any] | None,
+    order_by: list[list[int | Literal["asc", "desc"]]] | None,
+    row_count: int,
+) -> str:
+    message = f"Query executed successfully. Returned {row_count} rows."
+    column_ids = {
+        column.get("column_id")
+        for column in columns
+        if isinstance(column, dict) and isinstance(column.get("column_id"), str)
+    }
+    if "goal_uuid" in column_ids and "goal_uuid" not in _collect_filter_column_ids(filters):
+        message += (
+            " Hint: when the question targets one specific goal, put `goal_uuid` in"
+            " `filters` (operator `eq`, value from analytics_goals_list) instead of"
+            " selecting `goal_uuid` in `columns`."
+        )
+    if "goal_conversions" in column_ids and not order_by:
+        message += (
+            " Hint: for highest/top conversion questions, set `order_by` on the"
+            " `goal_conversions` column index with direction `desc`."
+        )
+    return message
+
+
 # Dimension to Metric transformations (aggregations)
 METRIC_TRANSFORMATIONS = {
     "unique_count": {"source_types": {"int", "str"}, "result_type": "int"},
@@ -166,7 +207,57 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         """
         Execute an analytics query against Piwik PRO.
 
+        Query planning rules:
+
+        - Use `columns` only for values that should appear in the result, be grouped by,
+        aggregated, or sorted.
+        - Use `filters` for values that narrow the dataset, such as exact names, IDs,
+        countries, devices, campaigns, pages, goals, or other conditions.
+        - If the user asks "for X", "named X", "only X", or "with ID X", X is usually
+        a filter, not a selected column.
+        - If the user asks "by X", "per X", "which X", or "compare X", X is usually
+        a selected column/grouping dimension.
+        - For day-level results, use `timestamp` with `transformation_id="to_date"`.
+        - For highest/top/most/lowest questions, always set `order_by` on the target
+        metric column index (zero-based), not on the grouping dimension.
+        - For period-level summaries (overall bounce rate, total sessions, average
+        duration for a date range) without "per day", "by day", "daily", or "which day",
+        do not group by `timestamp`. Use one query with metrics only.
+        - `session_total_time` is a dimension: use `transformation_id="average"` for
+        average session duration. Metrics such as `bounce_rate` and `sessions` cannot
+        be transformed.
+        - Call `analytics_query_execute` once after selecting validated columns,
+        filters, date range, limit, and ordering. Re-run it only if the previous query
+        failed or the result is insufficient to answer.
+
+        Goal conversion queries:
+        - Call `analytics_goals_list` first to resolve a goal name to its UUID (`data[].id`).
+        - Restrict results to one goal with a `goal_uuid` filter, not a `goal_uuid` column:
+          {"column_id": "goal_uuid", "condition": {"operator": "eq", "value": "<goal-id>"}}
+        - Never add `goal_uuid` to `columns` when the user asks about one specific goal.
+        - Typical columns: `timestamp` with `to_date`, plus `goal_conversions`.
+        - For "highest/most conversions on which day", always set `order_by` on the
+        `goal_conversions` column index with `"desc"`.
+
+        Multi-period comparisons (e.g. month vs month, before vs after):
+        - Run one `analytics_query_execute` call per period with the same `columns`,
+        `limit`, and `order_by`.
+        - Rank positions are per period: row #3 in January is not rank #3 in February.
+        - Compare periods by matching the grouping dimension value (e.g. `event_url`),
+        not by row index.
+        - Report rank changes as "Jan #X → Feb #Y" using each period's own ranking.
+        - Pages in only one period's top-N are new or removed; quote session counts
+        exactly as returned for each period.
+
         REQUIRED WORKFLOW - You must follow these steps in order:
+
+        Before calling this tool, always call:
+        - analytics_dimensions_details_list for every dimension used in columns or filters
+        - analytics_metrics_details_list for every metric used in columns, metric_filters, or ordering
+
+        For day-level grouping, use:
+        {"column_id": "timestamp", "transformation_id": "to_date"}
+        Do not use raw {"column_id": "timestamp"} when the user asks for a day/date.
 
         1. Call `analytics_dimensions_list` to get available dimension IDs
         2. Call `analytics_metrics_list` to get available metric IDs
@@ -186,16 +277,16 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
             website_id: UUID of the website/app to query
             columns: List of column definitions. Each column is a dict with:
                 - column_id (required): Dimension or metric ID from the list endpoints
-                  (in case of calculated metric use always string "calculated_metric",
-                  in case of custom channel grouping use always string "custom_channel_grouping")
+                    (in case of calculated metric use always string "calculated_metric",
+                    in case of custom channel grouping use always string "custom_channel_grouping")
                 - transformation_id (optional): Aggregation function from details endpoint
-                  (e.g., "sum", "count", "unique_count")
-                  Note: Only dimensions support transformations. Metrics cannot be transformed.
+                    (e.g., "sum", "count", "unique_count")
+                    Note: Only dimensions support transformations. Metrics cannot be transformed.
                 - calculated_metric_id: only for calculated metrics
                 - custom_channel_grouping_id: only for custom channel groupings
                 - dimension_value_grouping_id: only for transformation_id = 'dimension_value_grouping'
                 - event_type: optional int value only for transformed dimension with scope = 'product'
-                  Allowed values:
+                    Allowed values:
                     Order: 9, Abandoned cart: 10, Product detail view: 22, Add to cart: 23, Remove from cart: 24
 
             date_from: Start date in YYYY-MM-DD format
@@ -211,6 +302,12 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
                 Each condition:
                 {"column_id": "...", "condition": {"operator": "<op>", "value": ...}}
 
+                Goal example (single named goal only):
+                {"operator": "and", "conditions": [
+                    {"column_id": "goal_uuid", "condition": {"operator": "eq", "value": "<goal-id>"}}
+                ]}
+                Use the goal UUID from `analytics_goals_list` (`data[].id`), not the goal name.
+
                 Filter operators:
                 - String: eq, neq, contains, not_contains, starts_with, ends_with, matches, not_matches
                 - Numeric: gt, gte, lt, lte
@@ -221,7 +318,10 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
             metric_filters: as arg 'filters' but for metrics
             offset: Rows to skip (default: 0)
             limit: Max rows to return (default: 100, max: 100000)
-            order_by: List of [column_index, "asc"|"desc"] pairs
+            order_by: List of [column_index, "asc"|"desc"] pairs. Column indices are
+                zero-based positions in `columns`. For highest/top questions, sort by the
+                metric being optimized (e.g. columns [timestamp.to_date, goal_conversions]
+                -> order_by [[1, "desc"]]).
 
         ---
 
@@ -249,7 +349,7 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
             return QueryExecuteResponse(
                 status="success",
                 result=response,
-                message=f"Query executed successfully. Returned {len(response.data)} rows.",
+                message=_build_query_execute_message(columns, filters, order_by, len(response.data)),
             )
         except Exception as e:
             raise RuntimeError(f"Failed to execute query: {str(e)}")
@@ -362,9 +462,22 @@ def register_query_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
                 # Parse [[id, name], ...] format to {name: id}
                 dimension.enum_values = {str(item[1]): item[0] for item in enum_data}
 
-        return DimensionsDetailsList(
+        result = DimensionsDetailsList(
             dimensions=regular_dimensions, custom_channel_groupings=custom_channel_groupings
-        ).model_dump(exclude_none=True)  # type: ignore
+        ).model_dump(exclude_none=True)
+        if "goal_uuid" in dimensions:
+            result["query_planning_hint"] = (
+                "Use `goal_uuid` in analytics_query_execute `filters` when the user asks "
+                "about one specific goal. Resolve the UUID from analytics_goals_list "
+                "(`data[].id`) and do not select `goal_uuid` in `columns` for that case."
+            )
+        elif "session_total_time" in dimensions:
+            result["query_planning_hint"] = (
+                "For average session duration over a period, use "
+                '{"column_id": "session_total_time", "transformation_id": "average"} '
+                "without grouping by `timestamp`, unless the user asks for a daily breakdown."
+            )
+        return result  # type: ignore[return-value]
 
     @mcp.tool(annotations=ToolAnnotations(title="Piwik PRO: List Metrics Details", readOnlyHint=True))
     def analytics_metrics_details_list(website_id: str, metrics: list[str]) -> MetricsDetailsList:

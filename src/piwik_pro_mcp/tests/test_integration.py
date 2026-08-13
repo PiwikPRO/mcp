@@ -81,12 +81,16 @@ WRITE_TOOLS = [
     "variables_create",
     "variables_update",
     "variables_delete",
+    "versions_update",
     "versions_publish_draft",
     "versions_create_draft_snapshot",
     # Tracker Settings
     "tracker_settings_global_update",
     "tracker_settings_app_update",
     "tracker_settings_app_delete",
+    # Container Settings
+    "container_settings_app_update",
+    "container_settings_app_delete",
     # Analytics
     "analytics_annotations_create",
     "analytics_annotations_update",

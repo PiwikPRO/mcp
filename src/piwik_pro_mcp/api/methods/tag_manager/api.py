@@ -810,6 +810,44 @@ class TagManagerAPI:
         """
         return self.client.get(f"/api/tag/v1/{app_id}/versions/{version_id}")
 
+    def update_version(
+        self,
+        app_id: str,
+        version_id: str,
+        attributes: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """
+        Edit a version's name and description.
+
+        The version ``name`` is the commit name. Only ``name`` and ``description``
+        are editable. Only the keys present in ``attributes`` are sent to the API:
+        include a key with value ``None`` to clear that field, or omit the key to
+        leave it unchanged.
+
+        Args:
+            app_id: App UUID
+            version_id: Version UUID
+            attributes: Version attributes to send (e.g. ``{"name": "Release 1.0"}``
+                or ``{"description": None}`` to clear the description)
+
+        Returns:
+            ``None`` on success (API returns 204 No Content)
+
+        Raises:
+            NotFoundError: If version is not found
+            BadRequestError: If request data is invalid
+            PiwikProAPIError: If the request fails
+        """
+        data = {
+            "data": {
+                "type": "version",
+                "id": version_id,
+                "attributes": attributes,
+            }
+        }
+
+        return self.client.patch(f"/api/tag/v1/{app_id}/versions/{version_id}", data=data)
+
     def get_draft_version(self, app_id: str) -> dict[str, Any] | None:
         """
         Get draft version for an app.

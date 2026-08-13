@@ -91,7 +91,8 @@
   },
   "required_attributes": {
     "consent_type": {
-      "default": "remarketing"
+      "default": "remarketing",
+      "description": "Must be remarketing for Floodlight tags (do not use conversion_tracking)."
     },
     "template": {
       "description": "Must be 'doubleclick_floodlight'",
@@ -180,7 +181,7 @@
           "order_id",
           "quantity"
         ],
-        "template_options.revenue": "Revenue amount (variable reference or number, min 0)",
+        "template_options.revenue": "Revenue amount (variable reference or numeric literal, min 0; use 100 not \"100\")",
         "template_options.order_id": "Order identifier (variable reference or string)",
         "template_options.quantity": "Number of items sold (variable reference or integer, min 0)"
       },
@@ -189,7 +190,7 @@
           "revenue",
           "order_id"
         ],
-        "template_options.revenue": "Revenue amount (variable reference or number, min 0)",
+        "template_options.revenue": "Revenue amount (variable reference or numeric literal, min 0; use 100 not \"100\")",
         "template_options.order_id": "Order identifier (variable reference or string)"
       }
     },
@@ -383,7 +384,8 @@
     "Mismatching type and counting_method (e.g. doubleclick_floodlight_sales with session)",
     "For Sales: missing revenue, order_id (or quantity for item_sold)",
     "Using page_view trigger for Sales - use purchase/conversion trigger",
-    "Copying wrong values from Floodlight code (src, type, cat)"
+    "Copying wrong values from Floodlight code (src, type, cat)",
+    "Passing revenue as a string literal (e.g. \"100\") instead of a number (100) when not using a variable reference"
   ],
   "troubleshooting": {
     "conversions_not_counting": [

@@ -4,6 +4,9 @@ import json
 from unittest.mock import Mock, patch
 
 import pytest
+from pydantic import ValidationError
+
+from piwik_pro_mcp.tools.tag_manager.models import TagRelationships
 
 
 class TestTagCreateFunctional:
@@ -476,3 +479,58 @@ class TestTagValidationErrors:
                 {"app_id": "app-1", "tag_id": "t1", "attributes": "not-a-dict"},
             )
         assert "validation" in str(exc_info.value).lower()
+
+
+class TestTagRelationshipsValidation:
+    """Unit tests for TagRelationships trigger coercion."""
+
+    @pytest.mark.parametrize(
+        "triggers",
+        [
+            [{"type": "trigger"}],
+            [{"id": 123}],
+            [{"id": ""}],
+            [""],
+            ["   "],
+            [123],
+        ],
+    )
+    def test_tag_relationships_rejects_malformed_trigger_items(self, triggers):
+        with pytest.raises(ValidationError):
+            TagRelationships(triggers=triggers)
+
+    def test_tag_relationships_accepts_uuid_strings_and_objects_with_id(self):
+        tid = "a1111111-1111-1111-1111-111111111111"
+        model = TagRelationships(
+            triggers=[
+                tid,
+                {"id": "b2222222-2222-2222-2222-222222222222", "type": "trigger"},
+            ]
+        )
+
+        assert model.triggers == [tid, "b2222222-2222-2222-2222-222222222222"]
+
+    def test_tag_relationships_accepts_json_api_data_wrapper(self):
+        tid = "a1111111-1111-1111-1111-111111111111"
+        model = TagRelationships(triggers={"data": [{"id": tid, "type": "trigger"}]})
+
+        assert model.triggers == [tid]
+
+    @pytest.mark.asyncio
+    async def test_tags_update_rejects_malformed_trigger_relationships(self, mcp_server):
+        with patch("piwik_pro_mcp.tools.tag_manager.tags.create_piwik_client") as mock_client:
+            mock_instance = Mock()
+            mock_client.return_value = mock_instance
+
+            with pytest.raises(Exception) as exc_info:
+                await mcp_server.call_tool(
+                    "tags_update",
+                    {
+                        "app_id": "app-123",
+                        "tag_id": "tag-123",
+                        "relationships": {"triggers": [{"type": "trigger"}]},
+                    },
+                )
+
+            mock_instance.tag_manager.update_tag.assert_not_called()
+            assert "validation" in str(exc_info.value).lower() or "invalid" in str(exc_info.value).lower()

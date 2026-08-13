@@ -7,6 +7,7 @@ class _FakeClient:
         self.last_get = None
         self.last_post = None
         self.last_patch = None
+        self.last_delete = None
 
     def get(self, url, params=None, extra_headers=None):
         request_data = {"url": url, "params": params, "headers": extra_headers}
@@ -24,4 +25,10 @@ class _FakeClient:
         request_data = {"url": url, "data": data}
         self.last_request = request_data
         self.last_patch = request_data
+        return self.response
+
+    def delete(self, url, params=None, extra_headers=None):
+        request_data = {"url": url, "params": params, "headers": extra_headers}
+        self.last_request = request_data
+        self.last_delete = request_data
         return self.response

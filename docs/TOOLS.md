@@ -50,6 +50,8 @@ This document provides a complete reference of all MCP tools available in the Pi
 
 - `container_settings_get_installation_code(app_id)` - Get installation code snippet for embedding the container
 - `container_settings_list(app_id)` - Get app container settings (JSON:API list with pagination)
+- `container_settings_app_update(app_id, attributes)` - Update one or more app container settings, including customizing the domains and paths used to track and serve a Piwik PRO Tag Manager container (fpc, tracking_domain, static_resources_domain, ui_apis_domain, container_js_path, tracking_script_path, tracking_endpoint_path) as well as toggles like automatic_scroll_tracking and spa_tracking
+- `container_settings_app_delete(app_id, setting_name)` - Delete an app container setting, reverting it to the organization/default value
 
 ## Tag Manager
 
@@ -163,6 +165,7 @@ This document provides a complete reference of all MCP tools available in the Pi
 - `versions_list(app_id, limit, offset)` - List all versions
 - `versions_get_draft(app_id)` - Get current draft version
 - `versions_get_published(app_id)` - Get published/live version
+- `versions_update(app_id, version_id, attributes)` - Edit a version's name (commit name) and description
 - `versions_publish_draft(app_id)` - Publish draft to make it live
 
 ## Customer Data Platform (CDP)

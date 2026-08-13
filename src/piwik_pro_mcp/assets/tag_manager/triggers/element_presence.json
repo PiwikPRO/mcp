@@ -48,7 +48,8 @@
     ],
     "best_practices": [
       "Use a precise CSS selector (e.g. .promo_banner, #signup-form) to target the element",
-      "Add Page URL or Page path conditions to avoid firing on every page",
+      "For domain restrictions use the page_hostname condition reference; for path restrictions use page_path or page_url.",
+      "Resolve built-in conditions[].variable_id from trigger_base.json → conditions_reference.conditions.<key>.builtin_variable_id before triggers_create — do not guess UUIDs or use variables_list for built-ins",
       "Test that the element is present in the DOM when you expect (including after JS injection)"
     ]
   },
@@ -72,14 +73,14 @@
       }
     },
     "conditions": {
-      "description": "Array of condition objects. Must include at least one condition that defines which element to watch using the built-in variable 'Found Elements' (variable_id 7dead2a9-5804-4cdd-8d73-b04d338952e9) with value = CSS selector (e.g. .promo_banner). May include event conditions: Page URL, Page path, Page hostname, History source/fragment/state, Referrer, Campaign, Traffic source, Returning visitor, or variable-based.",
+      "description": "Array of condition objects. Must include at least one condition that defines which element to watch using the found_elements condition reference with value = CSS selector (e.g. .promo_banner). May include event conditions using trigger_base.json → conditions_reference.",
       "structure": {
-        "variable_id": "For element definition use 7dead2a9-5804-4cdd-8d73-b04d338952e9 (Found Elements); for event conditions use the appropriate variable UUID",
-        "condition_type": "equals, contains, is_set, etc.",
-        "value": "CSS selector or class name (e.g. .promo_banner) when using Found Elements variable",
+        "variable_id": "Use trigger_base.json → conditions_reference.conditions.<key>.builtin_variable_id. Common keys: found_elements, page_hostname, page_path, page_url.",
+        "condition_type": "equals, contains, is_set, etc.; use once_per_page_view or each_time for Found Elements",
+        "value": "CSS selector when using Found Elements; hostname (e.g. piwik.pro), path fragment, or URL when using page conditions",
         "options": {}
       },
-      "recommendation": "Include one condition with variable_id 7dead2a9-5804-4cdd-8d73-b04d338952e9 (Found Elements) and value = your selector; add Page path or Page URL conditions to limit where the trigger fires."
+      "recommendation": "Include one found_elements condition with value = your selector. For hostname add page_hostname with condition_type equals. Copy built-in UUIDs from trigger_base.json → conditions_reference.conditions.<key>.builtin_variable_id — do not call triggers_create until every variable_id is verified."
     }
   },
   "complete_examples": {
@@ -103,27 +104,56 @@
       }
     },
     "element_presence_with_page_path": {
-      "description": "Fire when element is present and only on product pages",
+      "description": "Fire when element is present and only on product pages. Page Path variable_id comes from trigger_base.json → conditions_reference.conditions.page_path.builtin_variable_id.",
       "mcp_call": {
-        "function": "create_trigger",
+        "function": "triggers_create",
         "parameters": {
           "app_id": "abc12345-1234-5678-9012-123456789abc",
-          "name": "Element Presence – Product CTA",
-          "trigger_type": "element_presence",
-          "conditions": [
-            {
-              "variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
-              "condition_type": "once_per_page_view",
-              "value": ".product-cta",
-              "options": {}
-            },
-            {
-              "variable_id": "page-path-variable-uuid",
-              "condition_type": "contains",
-              "value": "/product/",
-              "options": {}
-            }
-          ]
+          "attributes": {
+            "name": "Element Presence – Product CTA",
+            "trigger_type": "element_presence",
+            "conditions": [
+              {
+                "variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
+                "condition_type": "once_per_page_view",
+                "value": ".product-cta",
+                "options": {}
+              },
+              {
+                "variable_id": "e1e2b185-464f-4eb5-8575-feec34c5e281",
+                "condition_type": "contains",
+                "value": "/product/",
+                "options": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    "element_presence_with_page_hostname": {
+      "description": "Fire when #contact-form is present and only on piwik.pro. Page Hostname variable_id comes from trigger_base.json → conditions_reference.conditions.page_hostname.builtin_variable_id.",
+      "mcp_call": {
+        "function": "triggers_create",
+        "parameters": {
+          "app_id": "abc12345-1234-5678-9012-123456789abc",
+          "attributes": {
+            "name": "Contact Form Element Presence",
+            "trigger_type": "element_presence",
+            "conditions": [
+              {
+                "variable_id": "7dead2a9-5804-4cdd-8d73-b04d338952e9",
+                "condition_type": "once_per_page_view",
+                "value": "#contact-form",
+                "options": {}
+              },
+              {
+                "variable_id": "42ff090e-f97c-45b5-8625-21ae26891382",
+                "condition_type": "equals",
+                "value": "piwik.pro",
+                "options": {}
+              }
+            ]
+          }
         }
       }
     }
@@ -131,7 +161,9 @@
   "common_mistakes": [
     "Using a selector that never appears in the DOM (e.g. typo or wrong class)",
     "Expecting the trigger to fire before DOM ready (it runs after DOM is ready)",
-    "Omitting the element-defining condition so the trigger does not know which element to watch"
+    "Omitting the element-defining condition so the trigger does not know which element to watch",
+    "Using variables_list to resolve built-in event-condition UUIDs instead of trigger_base.json → conditions_reference.conditions.<key>.builtin_variable_id (causes triggers_create retries with wrong variable_id)",
+    "Calling triggers_create before copying every built-in conditions[].variable_id from trigger_base.json → conditions_reference — never guess UUIDs"
   ],
   "troubleshooting": {
     "trigger_not_firing": {

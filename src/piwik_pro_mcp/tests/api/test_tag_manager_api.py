@@ -152,6 +152,45 @@ def test_update_trigger_allows_relationship_only_payload():
     }
 
 
+def test_update_version_sends_name_and_description():
+    fake_client = _FakeClient()
+    api = TagManagerAPI(fake_client)
+
+    api.update_version(
+        app_id="app-123",
+        version_id="version-123",
+        attributes={"name": "Release 1.0", "description": "Adds a few tags and triggers"},
+    )
+
+    assert fake_client.last_patch["url"] == "/api/tag/v1/app-123/versions/version-123"
+    sent_data = fake_client.last_patch["data"]["data"]
+    assert sent_data == {
+        "type": "version",
+        "id": "version-123",
+        "attributes": {"name": "Release 1.0", "description": "Adds a few tags and triggers"},
+    }
+
+
+def test_update_version_sends_only_provided_attributes():
+    fake_client = _FakeClient()
+    api = TagManagerAPI(fake_client)
+
+    api.update_version(app_id="app-123", version_id="version-123", attributes={"name": "Only name"})
+
+    sent_data = fake_client.last_patch["data"]["data"]
+    assert sent_data["attributes"] == {"name": "Only name"}
+
+
+def test_update_version_sends_explicit_null_to_clear_attributes():
+    fake_client = _FakeClient()
+    api = TagManagerAPI(fake_client)
+
+    api.update_version(app_id="app-123", version_id="version-123", attributes={"name": None, "description": None})
+
+    sent_data = fake_client.last_patch["data"]["data"]
+    assert sent_data["attributes"] == {"name": None, "description": None}
+
+
 class _PollingFakeClient:
     def __init__(self, responses: list[dict]):
         self.responses = list(responses)

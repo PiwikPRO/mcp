@@ -293,7 +293,15 @@ class QueryRequest(BaseModel):
     """Request model for analytics query."""
 
     website_id: str = Field(description="Website/app UUID")
-    columns: list[MetricColumnInput | DimensionColumnInput] = Field(description="Columns to retrieve")
+    columns: list[MetricColumnInput | DimensionColumnInput] = Field(
+        description=(
+            "Columns to retrieve, group by, sort by, or aggregate. "
+            "Do not put constraint-only fields here; put them in filters instead. "
+            "For day-level results use timestamp with transformation_id='to_date'. "
+            "For overall period summaries (e.g. bounce rate for a month), omit timestamp "
+            "unless the user asks for per-day or per-date breakdown."
+        )
+    )
     date_from: str | None = Field(
         None,
         description=(
@@ -318,12 +326,28 @@ class QueryRequest(BaseModel):
             "last_X_days must be in range 1 <= X <= 365"
         ),
     )
-    filters: FilterGroup | None = Field(None, description="Dimension filtering conditions")
+    filters: FilterGroup | None = Field(
+        None,
+        description=(
+            "Dimension constraints that narrow the dataset, such as exact names, IDs, "
+            "countries, devices, campaigns, pages, goals, or other values mentioned as "
+            "conditions in the user's question. For a single named goal, filter with "
+            "column_id 'goal_uuid', operator 'eq', and the goal UUID from "
+            "analytics_goals_list (data[].id); do not add goal_uuid to columns."
+        ),
+    )
     metric_filters: FilterGroup | None = Field(None, description="Metric filtering conditions")
     offset: int | None = Field(0, ge=0, description="Number of rows to skip")
     limit: int | None = Field(100, ge=1, le=100000, description="Maximum rows to return")
     order_by: list[list[int | Literal["asc", "desc"]]] | None = Field(
-        None, description="Order by column index and direction"
+        None,
+        description=(
+            "Order by zero-based selected column index and direction. "
+            "Required for highest/top/maximum questions: order by the metric being "
+            "optimized, not the grouping dimension. "
+            "Examples: [timestamp.to_date, page_views] -> [[1, 'desc']]; "
+            "[timestamp.to_date, goal_conversions] -> [[1, 'desc']]."
+        ),
     )
 
     @model_validator(mode="after")

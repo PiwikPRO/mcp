@@ -4,9 +4,9 @@
     "source": "https://developers.piwik.pro/reference/built-in-variables.md",
     "description": "Built-in variables available in Tag Manager. Each has a fixed Variable ID (UUID) for use in conditions, tags, and API references.",
     "mcp_lookup_notes": [
-      "Before triggers_create or triggers_update: when a trigger condition uses a built-in variable (see trigger_base.json → conditions_reference → builtin_variable_name), set conditions[].variable_id to the matching variable_id from this list (match by display_name).",
-      "Built-in variables are not returned by variables_list with filter builtin=false; resolve them only from this asset (templates_get_variable loads variable_base via extends).",
-      "Do not invent UUIDs — copy variable_id exactly from the entry whose display_name matches the builtin_variable_name from conditions_reference."
+      "For trigger conditions, prefer trigger_base.json → conditions_reference.conditions.<key>.builtin_variable_id; it already pairs each built-in condition name with the API variable_id.",
+      "Built-in variables are not returned by variables_list with filter builtin=false; use variables_list only for custom app-scoped variables.",
+      "Do not invent UUIDs — copy variable_id exactly from conditions_reference for built-ins, or from variables_list for custom variables."
     ]
   },
   "mcp_usage": {

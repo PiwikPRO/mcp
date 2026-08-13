@@ -138,6 +138,29 @@ class TestParameterDiscoveryFunctional:
             assert field_schema["default"] is None, f"Field '{field_name}' should have default null"
 
     @pytest.mark.asyncio
+    async def test_tools_parameters_get_versions_update_functional(self, mcp_server):
+        """Test that tools_parameters_get returns the schema for versions_update through MCP.
+
+        The versions_update docstring points users at tools_parameters_get, so the tool must
+        be registered in TOOL_PARAMETER_MODELS and expose name/description.
+        """
+        result = await mcp_server.call_tool("tools_parameters_get", {"tool_name": "versions_update"})
+
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert hasattr(result[0], "text")
+
+        schema = json.loads(result[0].text)
+
+        assert schema["type"] == "object"
+        properties = schema["properties"]
+        assert "name" in properties
+        assert "description" in properties
+        # Constraints from VersionUpdateAttributes (string branch of the optional union)
+        assert properties["name"]["anyOf"][0]["maxLength"] == 255
+        assert properties["description"]["anyOf"][0]["maxLength"] == 65536
+
+    @pytest.mark.asyncio
     async def test_tools_parameters_get_unknown_tool_functional(self, mcp_server):
         """Test that tools_parameters_get raises error for unknown tools through MCP."""
         with pytest.raises(ToolError) as exc_info:
@@ -208,9 +231,10 @@ class TestParameterRegistryConsistency:
             "templates_get_trigger",
             "templates_list_variables",
             "templates_get_variable",
-            # Container settings (read-only)
+            # Container settings (read-only / delete)
             "container_settings_get_installation_code",
             "container_settings_list",
+            "container_settings_app_delete",
             # Tracker settings (read-only / delete)
             "tracker_settings_global_get",
             "tracker_settings_app_get",

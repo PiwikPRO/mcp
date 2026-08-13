@@ -15,6 +15,7 @@ from piwik_pro_mcp.api.methods.cdp.models import EditableAudienceAttributes, New
 from piwik_pro_mcp.api.methods.tag_manager.models import TagFilters, TriggerFilters, VariableFilters
 from piwik_pro_mcp.api.methods.tracker_settings.models import AppTrackerSettings, GlobalTrackerSettings
 
+from ..tools.container_settings.models import ContainerAppSettingsUpdate
 from ..tools.tag_manager.models import (
     TagCreateAttributes,
     TagUpdateAttributes,
@@ -22,6 +23,7 @@ from ..tools.tag_manager.models import (
     TriggerUpdateAttributes,
     VariableCreateAttributes,
     VariableUpdateAttributes,
+    VersionUpdateAttributes,
 )
 
 TOOL_PARAMETER_MODELS: dict[str, type[BaseModel]] = {
@@ -31,6 +33,7 @@ TOOL_PARAMETER_MODELS: dict[str, type[BaseModel]] = {
     "audiences_update": EditableAudienceAttributes,
     "tracker_settings_app_update": AppTrackerSettings,
     "tracker_settings_global_update": GlobalTrackerSettings,
+    "container_settings_app_update": ContainerAppSettingsUpdate,
     "tags_create": TagCreateAttributes,
     "tags_update": TagUpdateAttributes,
     "tags_list": TagFilters,
@@ -40,6 +43,7 @@ TOOL_PARAMETER_MODELS: dict[str, type[BaseModel]] = {
     "variables_create": VariableCreateAttributes,
     "variables_update": VariableUpdateAttributes,
     "variables_list": VariableFilters,
+    "versions_update": VersionUpdateAttributes,
     "analytics_query_execute": QueryRequest,
 }
 

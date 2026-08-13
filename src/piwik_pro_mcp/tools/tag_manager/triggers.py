@@ -52,6 +52,10 @@ def list_triggers(
     filters: dict[str, Any] | None = None,
 ) -> TagManagerListResponse:
     if filters is not None:
+        filters = dict(filters)
+        trigger_type = filters.get("trigger_type")
+        if isinstance(trigger_type, str) and trigger_type.strip().lower() == "pageview":
+            filters["trigger_type"] = "page_view"
         filters = validate_data_against_model(filters, TriggerFilters, invalid_item_label="filter")
     try:
         client = create_piwik_client()
@@ -276,7 +280,8 @@ def register_trigger_tools(mcp: FastMCP) -> None:
             limit: Maximum number of triggers to return (default: 10)
             offset: Number of triggers to skip (default: 0)
             filters: Optional filter keys: name, trigger_type, has_any_tags,
-                has_any_condition_with_audience, condition_with_audience_id
+                has_any_condition_with_audience, condition_with_audience_id.
+                For page-view triggers use trigger_type `page_view` (not `pageview`).
         """
         return list_triggers(
             app_id=app_id,
@@ -310,8 +315,13 @@ def register_trigger_tools(mcp: FastMCP) -> None:
 
         Required workflow:
             1. templates_list_triggers() → get exact trigger type names
-            2. templates_get_trigger(template_name='...') → get requirements for your chosen type
-            3. triggers_create() → create the trigger with verified type name
+            2. templates_get_trigger(template_name='...') → get requirements and copy
+               built-in conditions[].variable_id from
+               conditions_reference.conditions.<key>.builtin_variable_id
+            3. For custom variables, call variables_list(app_id, filters={"builtin": false})
+               and copy the matching resource id
+            4. triggers_create() → only after every conditions[].variable_id is verified;
+               do not guess UUIDs (wrong variable_id causes API errors and duplicate drafts)
 
         Args:
             relationships: Optional object with only ``tags`` and/or ``triggers`` (see tool schema).
