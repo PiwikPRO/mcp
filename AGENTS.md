@@ -32,7 +32,8 @@
 
 - Default transport is `stdio`.
 - HTTP mode is `streamable-http` with `http` accepted as an alias.
-- Standard HTTP invocation is `uv run piwik-pro-mcp --transport streamable-http --host 0.0.0.0 --port 8000 --path /mcp`.
+- Standard local HTTP invocation is `uv run piwik-pro-mcp --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp`.
+- HTTP transport does not authenticate incoming MCP requests; do not expose it publicly (see `docs/DEVELOPMENT.md#http-transport`).
 - The unauthenticated `/health` endpoint exists only in HTTP transport.
 - HTTP host allow-list behavior comes from `PIWIK_PRO_HTTP_ALLOWED_HOSTS`; localhost variants are always allowed by default.
 

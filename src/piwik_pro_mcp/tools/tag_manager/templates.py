@@ -5,30 +5,22 @@ This module provides MCP tools for discovering and retrieving information
 about available templates for tags, triggers, and variables.
 """
 
-from pathlib import Path
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
 from piwik_pro_mcp.common.templates import (
-    get_assets_base_path,
     list_available_assets,
     load_tag_template_with_extends,
     load_trigger_template_with_extends,
     load_variable_template_with_extends,
+    resolve_whitelisted_template_path,
 )
 
 
 def get_tag_template(template_name: str) -> dict[str, Any]:
     try:
-        assets_dir: Path = get_assets_base_path() / "tag_manager" / "tags"
-        template_file: Path = assets_dir / f"{template_name}.json"
-
-        if not template_file.exists():
-            available_assets = list_available_assets(assets_dir)
-            available_msg = f" Available templates: {', '.join(available_assets.keys())}" if available_assets else ""
-            raise RuntimeError(f"Template '{template_name}' not found.{available_msg}")
-
+        template_file = resolve_whitelisted_template_path("tag_manager/tags", template_name)
         return load_tag_template_with_extends(template_file)
 
     except Exception as e:
@@ -64,16 +56,11 @@ def get_available_tag_templates() -> dict[str, Any]:
 
 def get_trigger_template(template_name: str) -> dict[str, Any]:
     try:
-        assets_dir: Path = get_assets_base_path() / "tag_manager" / "triggers"
-        template_file: Path = assets_dir / f"{template_name}.json"
-
-        if not template_file.exists():
-            available_assets = list_available_assets(assets_dir)
-            available_msg = (
-                f" Available trigger templates: {', '.join(available_assets.keys())}" if available_assets else ""
-            )
-            raise RuntimeError(f"Trigger template '{template_name}' not found.{available_msg}")
-
+        template_file = resolve_whitelisted_template_path(
+            "tag_manager/triggers",
+            template_name,
+            resource_label="Trigger template",
+        )
         return load_trigger_template_with_extends(template_file)
 
     except Exception as e:
@@ -111,16 +98,11 @@ def get_available_trigger_templates() -> dict[str, Any]:
 
 def get_variable_template(template_name: str) -> dict[str, Any]:
     try:
-        assets_dir: Path = get_assets_base_path() / "tag_manager" / "variables"
-        template_file: Path = assets_dir / f"{template_name}.json"
-
-        if not template_file.exists():
-            available_assets = list_available_assets(assets_dir)
-            available_msg = (
-                f" Available variable templates: {', '.join(available_assets.keys())}" if available_assets else ""
-            )
-            raise RuntimeError(f"Variable template '{template_name}' not found.{available_msg}")
-
+        template_file = resolve_whitelisted_template_path(
+            "tag_manager/variables",
+            template_name,
+            resource_label="Variable template",
+        )
         return load_variable_template_with_extends(template_file)
 
     except Exception as e:

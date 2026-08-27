@@ -160,6 +160,27 @@ class TestTemplateDiscoveryFunctional:
         assert "template_options.custom_dimensions[].value" in data["variable_reference_fields"]
 
     @pytest.mark.asyncio
+    async def test_template_path_traversal_rejected(self, mcp_server, tmp_path):
+        secret_file = tmp_path / "poc_secrets.json"
+        secret_file.write_text(
+            json.dumps({"client_secret": "DECOY-SECRET-DO-NOT-USE", "api_key": "DECOY-KEY-1234"}),
+            encoding="utf-8",
+        )
+
+        payloads = [
+            ("templates_get_tag", {"template_name": str(secret_file.with_suffix(""))}),
+            ("templates_get_tag", {"template_name": "/tmp/poc_secrets"}),
+            ("templates_get_tag", {"template_name": "../../../etc/passwd"}),
+            ("templates_get_trigger", {"template_name": str(secret_file.with_suffix(""))}),
+            ("templates_get_variable", {"template_name": str(secret_file.with_suffix(""))}),
+        ]
+        for tool_name, payload in payloads:
+            with pytest.raises(Exception) as exc_info:
+                await mcp_server.call_tool(tool_name, payload)
+            assert "DECOY-SECRET" not in str(exc_info.value)
+            assert "not found" in str(exc_info.value).lower() or "template" in str(exc_info.value).lower()
+
+    @pytest.mark.asyncio
     async def test_unknown_templates_list_suggestions(self, mcp_server):
         # unknown template names should produce error listing available ones
         with pytest.raises(Exception) as exc_info:

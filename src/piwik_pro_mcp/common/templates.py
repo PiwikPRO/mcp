@@ -103,6 +103,33 @@ def load_template_asset(asset_path: Path) -> dict[str, Any]:
         raise RuntimeError(f"Failed to load template asset {asset_path}: {str(e)}")
 
 
+def resolve_whitelisted_template_path(
+    directory: Path | str,
+    template_name: str,
+    *,
+    resource_label: str = "Template",
+) -> Path:
+    """Resolve a template JSON path after validating against the asset catalogue.
+
+    Only template names returned by ``list_available_assets`` for ``directory`` are
+    accepted. The resolved path must stay within the assets directory.
+    """
+    assets_dir = Path(directory)
+    if not assets_dir.is_absolute():
+        assets_dir = get_assets_base_path() / assets_dir
+
+    available_assets = list_available_assets(assets_dir)
+    available_msg = f" Available templates: {', '.join(available_assets.keys())}" if available_assets else ""
+    if template_name not in available_assets:
+        raise RuntimeError(f"{resource_label} '{template_name}' not found.{available_msg}")
+
+    template_file = (assets_dir / f"{template_name}.json").resolve()
+    if not template_file.is_relative_to(assets_dir.resolve()):
+        raise RuntimeError(f"{resource_label} '{template_name}' not found.{available_msg}")
+
+    return template_file
+
+
 def list_available_assets(directory: Path | str) -> dict[str, dict[str, Any]]:
     """Return metadata for available template assets keyed by template name.
 

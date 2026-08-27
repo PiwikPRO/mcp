@@ -7,7 +7,7 @@ module-name = "piwik_pro_mcp"
 
 [project]
 name = "piwik-pro-mcp"
-version = "0.8.0"
+version = "0.9.0"
 description = "Piwik PRO MCP server"
 readme = "README.md"
 authors = [
@@ -57,6 +57,9 @@ dev = [
 [tool.uv]
 package = true
 exclude-newer = "2 weeks"
+# Allow cryptography security bumps immediately; a global 2-week cutoff otherwise
+# hides new releases and Dependabot can silently drop the package from the graph.
+exclude-newer-package = { cryptography = false }
 
 [tool.uv.workspace]
 members = ["."]

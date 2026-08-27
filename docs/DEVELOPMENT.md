@@ -75,20 +75,28 @@ You can also use a `.env` file (supported via python-dotenv).
 
 ## HTTP Transport
 
-By default the server communicates over `stdio`. To expose the server remotely through `streamable-http` transport:
+By default the server communicates over `stdio`. The optional `streamable-http` transport opens an HTTP endpoint for MCP clients that connect over the network instead of stdio.
+
+> **Security warning — local use only**
+>
+> The HTTP transport does **not** authenticate incoming MCP requests. Anyone who can reach the server can invoke all exposed MCP tools, using the server's configured Piwik PRO API credentials (within that token's permissions).
+>
+> This transport is intended for **local development only**. The default bind address is `127.0.0.1`. **Do not expose the server to the public internet** or untrusted networks without placing it behind your own authentication layer (for example, a reverse proxy with access controls).
+>
+> For typical MCP client use, prefer the default `stdio` transport, which does not open a network port. Authentication for remote MCP deployments is planned as part of the Remote MCP initiative.
+
+To run the server with HTTP transport locally:
 
 ```bash
-uv run piwik-pro-mcp --transport streamable-http --host 0.0.0.0 --port 8000 --path /mcp
+uv run piwik-pro-mcp --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
 ```
 
 Options:
 
-- `--host` defaults to `127.0.0.1`; change it to `0.0.0.0` to allow remote access on your network
+- `--host` defaults to `127.0.0.1`; keep this for local use. Only bind to `0.0.0.0` on a trusted network if you understand the security implications above
 - `--port` defaults to `8000`; adjust to fit your environment or reverse proxy
 - `--path` defaults to `/mcp`, matching the SDK client expectations
 - `--transport http` may be used as an alias for `streamable-http`
-
-Ensure you protect public deployments (reverse proxy, TLS, allow-listed origins) to prevent unauthorized access.
 
 MCP configuration for HTTP transport:
 

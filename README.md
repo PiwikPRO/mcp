@@ -219,6 +219,12 @@ Copy the tag <NAME> from app <APP> to all apps with the <PREFIX> prefix.
 - `PIWIK_PRO_TELEMETRY` (default `1`): Controls anonymous usage telemetry. Set this to `0` to disable it.
 - `PIWIK_PRO_TM_RESOURCE_CHECK` (default `1`): Enables Tag Manager template validation. Set to `0` to bypass when experimenting with custom templates.
 
+## 🔒 Security
+
+The default `stdio` transport is recommended for MCP clients such as Cursor and Claude Desktop.
+
+If you use the optional `streamable-http` transport, be aware that **the server does not authenticate incoming MCP requests**. All tools are accessible to anyone who can reach the endpoint, within the limits of the configured Piwik PRO API token. **Do not expose the HTTP server to the public internet.** See the [Development Guide — HTTP Transport](docs/DEVELOPMENT.md#http-transport) for details.
+
 ## 🔈 Feedback
 
 We value your feedback and questions. If you have suggestions, run into issues, or want to request a feature,
