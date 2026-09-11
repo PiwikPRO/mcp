@@ -14,12 +14,14 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from piwik_pro_mcp.api.auth import OAuth2Handler
+from piwik_pro_mcp.api.exceptions import BadRequestError
 from piwik_pro_mcp.common.settings import telemetry_enabled
 from piwik_pro_mcp.common.telemetry import (
     TelemetryEvent,
     TelemetrySender,
     TelemetryStatus,
     mcp_telemetry_wrapper,
+    sanitize_telemetry_error,
 )
 from piwik_pro_mcp.server import create_mcp_server
 
@@ -240,8 +242,8 @@ async def test_mcp_wrapper_populates_event_fields_for_tool_error(monkeypatch):
     # Wrapper should include client metadata when context is available
     assert parsed["dimension1"] == ["failing_tool"]
     assert parsed["dimension2"] == ["error"]
-    # Error message is included
-    assert parsed["dimension4"] == ["boom"]
+    # Error message is sanitized to exception type only
+    assert parsed["dimension4"] == ["RuntimeError"]
     assert parsed["dimension5"] == ["unknown"]
     assert parsed["dimension6"] == ["unknown"]
 
@@ -357,3 +359,25 @@ async def test_mcp_wrapper_includes_org_name_from_cache(monkeypatch):
 
     parsed = parse_qs(captured["json"]["requests"][0][1:])
     assert parsed["dimension7"] == ["test-org"]
+
+
+def test_sanitize_telemetry_error_for_api_exception():
+    exc = BadRequestError(
+        'API request failed (HTTP 400)Response:\n{"errors": [{"detail": "SECRET-PII-MARKER"}]}',
+        status_code=400,
+        response_data={"errors": [{"detail": "SECRET-PII-MARKER"}]},
+    )
+    assert sanitize_telemetry_error(exc) == "BadRequestError (HTTP 400)"
+
+
+def test_sanitize_telemetry_error_for_wrapped_api_message():
+    exc = RuntimeError(
+        "Failed to create tag: API request failed (HTTP 400): "
+        "API request failed (HTTP 400)Response:\n{'errors': [{'detail': 'SECRET-PII-MARKER'}]}"
+    )
+    assert sanitize_telemetry_error(exc) == "API error (HTTP 400)"
+
+
+def test_sanitize_telemetry_error_for_generic_exception():
+    assert sanitize_telemetry_error(RuntimeError("boom")) == "RuntimeError"
+    assert sanitize_telemetry_error(ValueError("invalid user input: secret@example.com")) == "ValueError"

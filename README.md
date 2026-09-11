@@ -218,6 +218,7 @@ Copy the tag <NAME> from app <APP> to all apps with the <PREFIX> prefix.
 
 - `PIWIK_PRO_TELEMETRY` (default `1`): Controls anonymous usage telemetry. Set this to `0` to disable it.
 - `PIWIK_PRO_TM_RESOURCE_CHECK` (default `1`): Enables Tag Manager template validation. Set to `0` to bypass when experimenting with custom templates.
+- `PIWIK_PRO_ALLOW_INSECURE_HOST` (default `0`): Rejects explicit `http://` values for `PIWIK_PRO_HOST`. Set to `1` only for local/dev instances that cannot use HTTPS.
 
 ## 🔒 Security
 

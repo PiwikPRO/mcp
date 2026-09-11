@@ -2,9 +2,14 @@
 Configuration management for Piwik PRO API client.
 """
 
+import logging
 import os
 
 from dotenv import load_dotenv
+
+from piwik_pro_mcp.common.settings import allow_insecure_host
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -54,6 +59,15 @@ class Config:
         # Ensure host has proper format
         if not self.host.startswith(("http://", "https://")):
             self.host = f"https://{self.host}"
+        elif self.host.startswith("http://"):
+            if not allow_insecure_host():
+                raise ValueError(
+                    "Insecure HTTP host is not allowed. Use HTTPS (scheme-less host or https://), "
+                    "or set PIWIK_PRO_ALLOW_INSECURE_HOST=1 to opt in to plaintext API connections."
+                )
+            logger.warning(
+                "PIWIK_PRO_HOST uses HTTP; API credentials and data will be sent over an unencrypted connection."
+            )
 
     @property
     def base_url(self) -> str:

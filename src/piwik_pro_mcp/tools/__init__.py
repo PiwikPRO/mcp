@@ -9,6 +9,7 @@ import logging
 
 from mcp.server.fastmcp import FastMCP
 
+from ..common.mcp_tools import wrap_sync_tools_in_thread_pool
 from .analytics import register_analytics_tools
 from .apps import register_app_tools
 from .cdp import register_cdp_tools
@@ -52,6 +53,9 @@ def register_all_tools(mcp: FastMCP) -> None:
 
     # Register analytics tools
     register_analytics_tools(mcp)
+
+    wrapped_count = wrap_sync_tools_in_thread_pool(mcp)
+    logger.debug("Wrapped %d sync MCP tools to run in thread pool", wrapped_count)
 
 
 def filter_write_tools(mcp: FastMCP) -> int:

@@ -55,6 +55,18 @@ def tag_manager_resource_check_enabled() -> bool:
 
 
 @cache
+def allow_insecure_host() -> bool:
+    """Return whether an explicit http:// PIWIK_PRO_HOST is permitted.
+
+    Scheme-less hosts are always normalized to https://. Set
+    PIWIK_PRO_ALLOW_INSECURE_HOST=1 only for local/dev instances that
+    cannot use HTTPS.
+    """
+
+    return _get_bool("PIWIK_PRO_ALLOW_INSECURE_HOST", default=False)
+
+
+@cache
 def safe_mode_enabled() -> bool:
     """Return whether safe mode (read-only) is enabled.
 

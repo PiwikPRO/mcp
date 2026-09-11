@@ -18,14 +18,14 @@
 ## Configuration
 
 - Required env vars: `PIWIK_PRO_HOST`, `PIWIK_PRO_CLIENT_ID`, `PIWIK_PRO_CLIENT_SECRET`.
-- Optional env vars commonly affecting behavior: `PIWIK_PRO_SAFE_MODE`, `PIWIK_PRO_TELEMETRY`, `PIWIK_PRO_TM_RESOURCE_CHECK`, `PIWIK_PRO_HTTP_ALLOWED_HOSTS`.
+- Optional env vars commonly affecting behavior: `PIWIK_PRO_SAFE_MODE`, `PIWIK_PRO_TELEMETRY`, `PIWIK_PRO_TM_RESOURCE_CHECK`, `PIWIK_PRO_HTTP_ALLOWED_HOSTS`, `PIWIK_PRO_ALLOW_INSECURE_HOST`.
 - `.env` files are supported via `python-dotenv`.
 
 ## Behavioral Gotchas
 
 - Safe mode is on by default. `filter_write_tools()` removes any tool without `annotations.readOnlyHint=True`, so read-only tools must be annotated correctly or they disappear from the exposed server.
 - `src/piwik_pro_mcp/tests/test_integration.py` is the enforced inventory of registered tools. When adding or removing tools, update the `READ_ONLY_TOOLS` or `WRITE_TOOLS` lists there.
-- Settings helpers in `common/settings.py` use `@cache`. Tests that patch `PIWIK_PRO_SAFE_MODE`, `PIWIK_PRO_TELEMETRY`, `PIWIK_PRO_TM_RESOURCE_CHECK`, or `PIWIK_PRO_HTTP_ALLOWED_HOSTS` must clear caches before and after, following `src/piwik_pro_mcp/tests/conftest.py`, `src/piwik_pro_mcp/tests/common/test_settings.py`, and `src/piwik_pro_mcp/tests/test_telemetry.py`.
+- Settings helpers in `common/settings.py` use `@cache`. Tests that patch `PIWIK_PRO_SAFE_MODE`, `PIWIK_PRO_TELEMETRY`, `PIWIK_PRO_TM_RESOURCE_CHECK`, `PIWIK_PRO_HTTP_ALLOWED_HOSTS`, or `PIWIK_PRO_ALLOW_INSECURE_HOST` must clear caches before and after, following `src/piwik_pro_mcp/tests/conftest.py`, `src/piwik_pro_mcp/tests/common/test_settings.py`, and `src/piwik_pro_mcp/tests/test_telemetry.py`.
 - If a tool accepts free-form `attributes`, keep its `tools_parameters_get` schema path working and add or maintain the corresponding MCP tests under `src/piwik_pro_mcp/tests/tools/`.
 
 ## Transport Notes

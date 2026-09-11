@@ -5,8 +5,38 @@ from unittest.mock import patch
 
 from piwik_pro_mcp.common.settings import (
     _DEFAULT_HTTP_ALLOWED_HOSTS,
+    allow_insecure_host,
     http_allowed_hosts,
 )
+
+
+class TestAllowInsecureHost:
+    """Tests for allow_insecure_host function."""
+
+    def setup_method(self):
+        allow_insecure_host.cache_clear()
+
+    def teardown_method(self):
+        allow_insecure_host.cache_clear()
+
+    def test_defaults_to_false_when_env_not_set(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("PIWIK_PRO_ALLOW_INSECURE_HOST", None)
+            allow_insecure_host.cache_clear()
+
+            assert allow_insecure_host() is False
+
+    def test_truthy_values_enable_insecure_host(self):
+        for value in ("1", "true", "yes", "on"):
+            with patch.dict(os.environ, {"PIWIK_PRO_ALLOW_INSECURE_HOST": value}):
+                allow_insecure_host.cache_clear()
+                assert allow_insecure_host() is True
+
+    def test_falsy_values_disable_insecure_host(self):
+        for value in ("0", "false", "no", "off"):
+            with patch.dict(os.environ, {"PIWIK_PRO_ALLOW_INSECURE_HOST": value}):
+                allow_insecure_host.cache_clear()
+                assert allow_insecure_host() is False
 
 
 class TestHttpAllowedHosts:

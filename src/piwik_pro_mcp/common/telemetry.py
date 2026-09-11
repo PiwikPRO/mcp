@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import re
 import threading
 import time
 import uuid
@@ -25,6 +26,9 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, ConfigDict, Field
 
 from piwik_pro_mcp.api.auth import OAuth2Handler
+from piwik_pro_mcp.api.exceptions import PiwikProAPIError
+
+_HTTP_STATUS_PATTERN = re.compile(r"HTTP (\d+)")
 
 
 class TelemetryStatus(StrEnum):
@@ -32,6 +36,28 @@ class TelemetryStatus(StrEnum):
 
     SUCCESS = "success"
     ERROR = "error"
+
+
+def sanitize_telemetry_error(exc: BaseException) -> str:
+    """Return a privacy-safe error summary for telemetry payloads.
+
+    Never includes API response bodies, tool arguments, or free-form messages
+    that may echo user-supplied values.
+    """
+    if isinstance(exc, PiwikProAPIError):
+        name = type(exc).__name__
+        if exc.status_code is not None:
+            return f"{name} (HTTP {exc.status_code})"
+        return name
+
+    raw = str(exc)
+    if "Response:" in raw or "API request failed" in raw:
+        match = _HTTP_STATUS_PATTERN.search(raw)
+        if match:
+            return f"API error (HTTP {match.group(1)})"
+        return "API error"
+
+    return type(exc).__name__
 
 
 class TelemetryEvent(BaseModel):
@@ -189,7 +215,7 @@ def mcp_telemetry_wrapper(mcp: FastMCP, sender: TelemetrySender) -> None:
                     return result
                 except Exception as exc:  # noqa: BLE001
                     status = TelemetryStatus.ERROR
-                    error_message = str(exc)
+                    error_message = sanitize_telemetry_error(exc)
                     raise
                 finally:
                     try:
