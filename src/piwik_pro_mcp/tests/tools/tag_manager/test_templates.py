@@ -105,6 +105,81 @@ class TestTemplateDiscoveryFunctional:
         assert "template_options.category" in data["variable_reference_fields"]
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("template_name", "field_path"),
+        [
+            (
+                "piwik_custom_dimension",
+                ("required_attributes", "template_options.custom_dimensions", "structure", "id"),
+            ),
+            ("piwik", ("optional_attributes", "template_options.piwik_custom_dimensions", "structure", "id")),
+            ("piwik_event", ("optional_attributes", "template_options.custom_dimensions", "structure", "id")),
+            (
+                "piwik_goal_conversion",
+                ("optional_attributes", "template_options.custom_dimensions", "structure", "id"),
+            ),
+            (
+                "piwik_virtual_page_view",
+                ("optional_attributes", "template_options.custom_dimensions", "structure", "id"),
+            ),
+            ("video_html5", ("optional_attributes", "template_options.volume_dimension_id", "description")),
+            ("ecommerce_order", ("optional_attributes", "template_options.custom_dimensions", "description")),
+            (
+                "ecommerce_add_to_cart",
+                ("optional_attributes", "template_options.custom_dimensions", "description"),
+            ),
+            (
+                "ecommerce_remove_from_cart",
+                ("optional_attributes", "template_options.custom_dimensions", "description"),
+            ),
+            ("ecommerce_cart_update", ("optional_attributes", "template_options.custom_dimensions", "description")),
+            (
+                "ecommerce_product_detail_view",
+                ("optional_attributes", "template_options.custom_dimensions", "description"),
+            ),
+        ],
+    )
+    async def test_tag_template_custom_dimension_id_points_to_tracking_id(self, mcp_server, template_name, field_path):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": template_name})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert "attributes.tracking_id" in data["custom_dimension_id_guide"]["source_of_truth"]
+        field = data
+        for key in field_path:
+            field = field[key]
+        assert "custom_dimension_id_guide" in field
+        assert "tracking_id" in field
+        assert "slot" not in field.lower()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "template_name",
+        [
+            "ecommerce_order",
+            "ecommerce_add_to_cart",
+            "ecommerce_remove_from_cart",
+            "ecommerce_cart_update",
+            "ecommerce_product_detail_view",
+        ],
+    )
+    async def test_ecommerce_template_product_dimension_id_points_to_slot(self, mcp_server, template_name):
+        result = await mcp_server.call_tool("templates_get_tag", {"template_name": template_name})
+
+        if isinstance(result, list):
+            data = json.loads(result[0].text)
+        else:
+            _, data = result
+
+        assert "attributes.slot" in data["custom_dimension_id_guide"]["product_dimensions"]
+        description = data["optional_attributes"]["template_options.product_dimensions"]["description"]
+        assert "slot" in description
+        assert "custom_dimension_id_guide" in description
+
+    @pytest.mark.asyncio
     async def test_tag_template_can_expose_variant_specific_variable_reference_fields(self, mcp_server):
         result = await mcp_server.call_tool("templates_get_tag", {"template_name": "doubleclick_floodlight"})
 

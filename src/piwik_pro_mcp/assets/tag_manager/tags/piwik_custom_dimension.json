@@ -1,5 +1,5 @@
 {
-  "extends": "tag_base",
+  "extends": "tag_base_analytics",
   "template_name": "piwik_custom_dimension",
   "name_aliases": [
     "Custom Dimension Tag",
@@ -54,7 +54,7 @@
     },
     "template_options.custom_dimensions": {
       "type": "array",
-      "description": "Array of custom dimension objects. Each has id (dimension slot 1-400) and value (string, number, boolean, or variable reference like {{ Variable }}).",
+      "description": "Array of custom dimension objects. Each has id and value (string, number, boolean, or variable reference like {{ Variable }}).",
       "mutability": "editable",
       "validation": {
         "required": true,
@@ -62,7 +62,7 @@
         "maxItems": 400
       },
       "structure": {
-        "id": "integer (1-400) - Custom dimension slot ID from Analytics > Settings > Custom dimensions",
+        "id": "integer 1-400 - custom dimension tracking_id, see custom_dimension_id_guide",
         "value": "string|number|boolean or variable reference - Value to send"
       },
       "example": [
@@ -141,7 +141,7 @@
           "triggers": "pageview-trigger-uuid"
         }
       },
-      "prerequisite": "Create custom dimension slot 1 in Analytics > Settings > Custom dimensions. Create a variable for User Role."
+      "prerequisite": "Create a session custom dimension in Analytics > Settings > Custom dimensions and use its tracking_id (1 in this example). Create a variable for User Role."
     },
     "multiple_dimensions": {
       "description": "Send multiple custom dimensions",
@@ -228,6 +228,7 @@
   "common_mistakes": [
     "Omitting template_options.custom_dimensions or passing empty array",
     "Using dimension id not created in Analytics > Settings > Custom dimensions",
+    "Using the custom dimension UUID (id) or slot instead of attributes.tracking_id",
     "For event dimensions: not setting higher priority than Piwik PRO tag",
     "Forgetting to create a variable for dynamic values",
     "Changing template in updates (create-only; ignored)"
@@ -235,7 +236,7 @@
   "troubleshooting": {
     "dimension_not_recorded": [
       "Verify custom dimension exists in Analytics > Settings > Custom dimensions",
-      "Check dimension id matches the slot (1-400)",
+      "Check dimension id matches the custom dimension tracking_id",
       "For event dimensions: ensure this tag has higher priority than Piwik PRO tag",
       "Verify triggers are attached and firing"
     ],

@@ -70,8 +70,8 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
 
         Optional attributes:
           • slot (int, min=1)
-              Slot number. Auto-assigned by API if not provided.
-              Cannot be changed after creation.
+              Internal storage slot. Auto-assigned by API if not provided.
+              Cannot be changed after creation. Not the ID used in Tag Manager.
 
           • extractions (list of objects)
               Rules to automatically extract values from page data.
@@ -187,6 +187,10 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         Returns:
             CustomDimensionItem (for session/event) or ProductCustomDimensionItem (for product)
 
+            For standard (session/event) dimensions, the returned attributes.tracking_id is the integer
+            ID shown in the UI and used in Tag Manager; id is the UUID for get/update, and slot is not an ID.
+            For product dimensions, attributes.slot is the ID used in Tag Manager (product_dimensions[].id).
+
         Raises:
             ValueError: Invalid or missing attributes for the specified scope
             RuntimeError: API request failed
@@ -237,6 +241,9 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
     ) -> CustomDimensionsList | ProductCustomDimensionsList | UnifiedCustomDimensionsList:
         """
         List custom dimensions, optionally filtered by scope.
+
+        For standard (session/event) dimensions, attributes.tracking_id is the integer ID shown
+        in the UI and used in Tag Manager; data[].id is the UUID for get/update, and slot is not an ID.
 
         Args:
             website_id: Website/App UUID
@@ -320,7 +327,7 @@ def register_custom_dimensions_tools(mcp: FastMCP) -> None:  # noqa: PLR0915
         to find the dimension and its scope.
 
         Args:
-            dimension_id: Custom Dimension UUID
+            dimension_id: Custom Dimension UUID (data.id, not attributes.tracking_id)
             website_id: Website/App UUID
             scope: Dimension scope (required for API routing):
                    - "session" or "event": Query standard custom dimensions API

@@ -1,5 +1,5 @@
 {
-  "extends": "tag_base",
+  "extends": "tag_base_analytics",
   "template_name": "piwik",
   "name_aliases": [
     "Piwik PRO Tag (Tracking Code)",
@@ -138,7 +138,7 @@
       "description": "Custom dimensions to collect. Create dimensions first in Analytics > Settings > Custom dimensions.",
       "mutability": "editable",
       "structure": {
-        "id": "integer (1-400) - Custom dimension slot ID",
+        "id": "integer 1-400 - custom dimension tracking_id, see custom_dimension_id_guide",
         "value": "string|number|boolean or variable reference - Value to set"
       },
       "example": [

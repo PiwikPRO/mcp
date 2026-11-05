@@ -505,7 +505,7 @@ class AnalyticsAPI:
 
         Args:
             website_id: Website/App UUID (required; sent as website_id query param)
-            limit: Maximum number of rows to return (default: 10, min: 1, max: 100000)
+            limit: Maximum number of rows to return (default: 400, min: 1, max: 100000)
             offset: Number of rows to skip (default: 0, min: 0)
 
         Returns:

@@ -1,6 +1,6 @@
 {
-  "_comment": "Shared base for ecommerce tag templates. Extends tag_base and adds product presets. Ecommerce tags extend this; order and cart_update tags add order/grand_total to presets.",
-  "extends": "tag_base",
+  "_comment": "Shared base for ecommerce tag templates. Extends tag_base_analytics and adds product presets. Ecommerce tags extend this; order and cart_update tags add order/grand_total to presets.",
+  "extends": "tag_base_analytics",
   "variable_reference_fields": [
     "template_options.currency",
     "template_options.custom_dimensions[].value"

@@ -65,6 +65,8 @@ class TestCustomDimensionsCrudFunctional:
         assert response_data["data"]["id"] == "cd-123"
         assert response_data["data"]["type"] == "CustomDimension"
         assert response_data["data"]["attributes"]["scope"] == "session"
+        # tracking_id is the integer ID shown in the UI and used by Tag Manager
+        assert response_data["data"]["attributes"]["tracking_id"] == 100
 
         # Verify call was made with correct parameters
         mock_piwik_client.analytics.create_custom_dimension.assert_called_once()

@@ -121,19 +121,19 @@
     },
     "template_options.custom_dimensions": {
       "type": "array",
-      "description": "Custom dimensions for the event. Each has id (1-400) and value.",
+      "description": "Custom dimensions for the event. Each has id (custom dimension tracking_id 1-400, see custom_dimension_id_guide) and value.",
       "mutability": "editable",
       "structure": {
-        "id": "integer 1-400",
+        "id": "integer 1-400 - custom dimension tracking_id, see custom_dimension_id_guide",
         "value": "string|number|boolean or variable"
       }
     },
     "template_options.product_dimensions": {
       "type": "array",
-      "description": "Product-level custom dimensions. Each has id (1-20) and value.",
+      "description": "Product-level custom dimensions. Each has id (product dimension slot 1-20, see custom_dimension_id_guide) and value.",
       "mutability": "editable",
       "structure": {
-        "id": "integer 1-20",
+        "id": "integer 1-20 - product dimension slot, see custom_dimension_id_guide",
         "value": "string|number|boolean"
       }
     },

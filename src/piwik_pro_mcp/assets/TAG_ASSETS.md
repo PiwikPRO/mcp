@@ -16,7 +16,8 @@ Our Tag Manager template system follows a **"pregenerated, AI-optimized document
 piwik_pro_mcp/assets/tag_manager/
 ├── _common/
 │   ├── tag_base.json           # Base for all the tags templates assets
-│   ├── tag_base_ecommerce.json # Base for all the ecommerce tags templates assets
+│   ├── tag_base_analytics.json # Base for tags with a custom dimension id field (extends tag_base)
+│   ├── tag_base_ecommerce.json # Base for all the ecommerce tags templates assets (extends tag_base_analytics)
 │   ├── trigger_base.json       # Base for all the triggers types assets
 │   └── variable_base.json     # Base for all the variables types assets
 ├── tags/
@@ -48,6 +49,7 @@ piwik_pro_mcp/assets/tag_manager/
 To avoid repeating the same sections across many tag templates, shared content lives in **`tag_manager/_common/`**. A tag JSON can set `"extends": "tag_base"` so that at load time the loader deep-merges `_common/tag_base.json` with the template (template keys win). That way you only define template-specific parts in each file.
 
 - **Base file**: `tag_manager/_common/tag_base.json` — contains `mcp_usage`, `required_attributes` (generic `name`, `template`), `optional_attributes` (e.g. `is_active`, `priority`, `consent_type`, `scheduler`), `read_only_attributes`, `trigger_management`, `field_mutability_guide`, `related_mcp_tools`, `triggers_troubleshooting`.
+- **Analytics base**: `tag_manager/_common/tag_base_analytics.json` extends `tag_base` and adds `custom_dimension_id_guide` (session/event dimensions use `attributes.tracking_id`, not the UUID or slot; product dimensions use `attributes.slot`). Tags with a custom dimension id field (`piwik*`, `video_html5`) and `tag_base_ecommerce` extend it; those fields just point to the guide. Tags that send data to Analytics without such a field (e.g. `video_youtube`, `heatmaps`) stay on `tag_base`.
 - **In a template**: Add `"extends": "tag_base"`, then only add `template_name`, `name_aliases`, `description`, `ai_usage_guide`, template-specific `required_attributes` (e.g. `code`, `template_options`) and any overrides, template-specific `optional_attributes`, `complete_examples`, `common_mistakes`, `troubleshooting`, and optional overrides to `field_mutability_guide` or `related_mcp_tools`.
 - **Loader**: `get_tag_template()` uses `load_tag_template_with_extends()` so that extended templates are resolved before being returned; the `extends` key is removed from the result.
 - **Variable references**: `variable_reference_fields` can be either a flat array of field paths or a mapping keyed by variant identifier when variable support depends on template variants.

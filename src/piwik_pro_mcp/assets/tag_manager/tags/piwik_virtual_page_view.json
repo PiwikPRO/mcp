@@ -1,5 +1,5 @@
 {
-  "extends": "tag_base",
+  "extends": "tag_base_analytics",
   "template_name": "piwik_virtual_page_view",
   "name_aliases": [
     "Virtual Page View Tag",
@@ -76,10 +76,10 @@
     },
     "template_options.custom_dimensions": {
       "type": "array",
-      "description": "Custom dimensions for this virtual page view. Each has id (slot 1-400) and value.",
+      "description": "Custom dimensions for this virtual page view. Each has id and value.",
       "mutability": "editable",
       "structure": {
-        "id": "integer (1-400) - Custom dimension slot ID",
+        "id": "integer 1-400 - custom dimension tracking_id, see custom_dimension_id_guide",
         "value": "string|number|boolean or variable reference"
       },
       "example": [

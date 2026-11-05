@@ -1,0 +1,20 @@
+{
+  "_comment": "Shared base for tag templates with a custom dimension id field (piwik*, ecommerce_*, video_html5). Extends tag_base and adds guidance for fields that reference Analytics custom dimensions.",
+  "extends": "tag_base",
+  "custom_dimension_id_guide": {
+    "overview": "Tag fields that reference a session/event custom dimension take its integer ID, shown as 'ID' in Analytics > Settings > Custom dimensions.",
+    "source_of_truth": "Call analytics_custom_dimensions_list(website_id, scope='session' or 'event', limit=1000), match by name and copy data[].attributes.tracking_id.",
+    "warning": "For session/event dimensions, do not use data[].id (a UUID for the management API) or data[].attributes.slot (internal storage slot). Neither is the ID used in Tag Manager.",
+    "product_dimensions": "Product dimensions (product_dimensions[].id) use attributes.slot. Call analytics_custom_dimensions_list(website_id, scope='product'), match by name and copy data[].attributes.slot.",
+    "examples": {
+      "valid": [
+        1,
+        12
+      ],
+      "invalid": [
+        "12345678-1234-1234-1234-123456789012",
+        "a session/event dimension's slot number (slot is valid only for product_dimensions[].id)"
+      ]
+    }
+  }
+}

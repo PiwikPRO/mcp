@@ -426,7 +426,9 @@ class CustomDimensionAttributes(BaseModel):
     active: bool = Field(..., description="Whether dimension is active")
     case_sensitive: bool = Field(..., description="Whether dimension is case sensitive")
     scope: Literal["session", "event"] = Field(..., description="Dimension scope (session or event level)")
-    tracking_id: int | None = Field(None, ge=1, description="Tracking ID (readonly)")
+    tracking_id: int | None = Field(
+        None, ge=1, description="ID shown in the UI; use it in Tag Manager and tracking code (readonly)"
+    )
     slot: int | None = Field(None, ge=1, description="Slot number (readonly after creation)")
     extractions: list[ExtractionConfig] | None = Field(
         None,
@@ -437,7 +439,7 @@ class CustomDimensionAttributes(BaseModel):
 class CustomDimensionResource(BaseModel):
     """Standard Custom Dimension resource."""
 
-    id: str = Field(..., description="Custom Dimension UUID")
+    id: str = Field(..., description="Custom Dimension UUID (management API only)")
     type: Literal["CustomDimension"]
     attributes: CustomDimensionAttributes
 

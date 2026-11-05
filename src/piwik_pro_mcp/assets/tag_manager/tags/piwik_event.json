@@ -1,5 +1,5 @@
 {
-  "extends": "tag_base",
+  "extends": "tag_base_analytics",
   "template_name": "piwik_event",
   "name_aliases": [
     "Custom Event Tag",
@@ -95,9 +95,19 @@
       "mutability": "editable"
     },
     "template_options.custom_dimensions": {
-      "type": "object",
-      "description": "Custom dimensions map as supported by Piwik PRO",
-      "mutability": "editable"
+      "type": "array",
+      "description": "Custom dimensions to attach to the event. Each has id and value.",
+      "mutability": "editable",
+      "structure": {
+        "id": "integer 1-400 - custom dimension tracking_id, see custom_dimension_id_guide",
+        "value": "string|number|boolean or variable reference"
+      },
+      "example": [
+        {
+          "id": 1,
+          "value": "{{ User Role }}"
+        }
+      ]
     }
   },
   "field_mutability_guide": {

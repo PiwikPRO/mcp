@@ -1,5 +1,5 @@
 {
-  "extends": "tag_base",
+  "extends": "tag_base_analytics",
   "template_name": "video_html5",
   "name_aliases": [
     "HTML5 Video Tracking Tag"
@@ -88,13 +88,13 @@
     },
     "template_options.volume_dimension_id": {
       "type": "integer",
-      "description": "Custom dimension ID (1-400) to store volume level as percentage. Create the dimension in Analytics > Settings > Custom dimensions first.",
+      "description": "Custom dimension ID (custom dimension tracking_id 1-400, see custom_dimension_id_guide) to store volume level as percentage. Create the dimension in Analytics > Settings > Custom dimensions first.",
       "mutability": "editable",
       "validation": {
         "minimum": 1,
         "maximum": 400
       },
-      "recommendation": "Create custom dimension in Analytics first, then use its ID"
+      "recommendation": "Create custom dimension in Analytics first, then use its tracking_id"
     },
     "is_active": {
       "description": "Whether the tag is active"
@@ -242,7 +242,7 @@
     ],
     "volume_or_progress_not_working": [
       "Create custom dimensions in Analytics > Settings > Custom dimensions first",
-      "Use correct dimension ID for volume_dimension_id"
+      "Use the custom dimension tracking_id for volume_dimension_id"
     ]
   }
 }
